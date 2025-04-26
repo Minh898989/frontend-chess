@@ -1,0 +1,254 @@
+/* Toàn bộ giao diện của màn hình game */
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Căn giữa theo chiều dọc */
+  padding: 40px 15px;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  min-height: 100vh; /* Đảm bảo chiều cao chiếm toàn bộ màn hình */
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Tiêu đề của game */
+.game-screen h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+/* Nút chơi game */
+.game-screen button {
+  align-self: flex-start;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border-radius: 16px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+/* Hiệu ứng hover khi di chuột qua nút */
+.game-screen button:hover {
+  background: #ff3b3b;
+}
+
+/* Căn giữa bàn cờ */
+.board-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Căn giữa bàn cờ theo chiều ngang */
+  margin: 20px 0; /* Thêm khoảng cách trên và dưới bàn cờ */
+}
+
+/* Bàn cờ */
+.react-chessboard {
+  width: 320px !important; /* Thu nhỏ bàn cờ */
+  height: 320px !important;
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Thêm bóng đổ cho bàn cờ */
+}
+
+/* Nút quay lại */
+.back-button {
+  background-color: #4CAF50; /* Màu nền xanh lá */
+  color: white; /* Màu chữ trắng */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
+}
+
+/* Hiệu ứng hover khi di chuột qua nút quay lại */
+.back-button:hover {
+  background-color: #45a049;
+  transform: scale(1.05); /* Hiệu ứng phóng to nhẹ khi hover */
+}
+
+/* Hiệu ứng focus cho nút quay lại */
+.back-button:focus {
+  outline: none; /* Xóa viền khi nút được nhấn */
+}
+
+/* Phần quân cờ bị ăn (captured pieces) */
+.captured {
+  width: 100px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: start;
+  min-height: 720px;
+  padding: 10px;
+  font-size: 48px; /* Tăng kích thước quân bị ăn */
+  line-height: 1.2;
+}
+
+/* Tách phần quân cờ bị ăn bên trái và phải */
+.captured.left {
+  border-right: 2px solid #ddd;
+}
+
+.captured.right {
+  border-left: 2px solid #ddd;
+}
+
+/* Quân cờ bị ăn */
+.captured-piece {
+  margin: 4px;
+  cursor: default;
+}
+
+/* Phần chọn chế độ game */
+.mode-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Các nút lựa chọn chế độ game */
+.mode-selection button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 10px;
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hiệu ứng hover khi di chuột qua các nút chế độ game */
+.mode-selection button:hover {
+  background-color: #ff3b3b;
+}
+
+/* Hiệu ứng thay đổi màu sắc khi nút đang được chọn */
+.mode-selection button:active {
+  background-color: #ff2a2a;
+}
+
+/* Phần background của màn hình game */
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 15px;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  min-height: 100vh;
+  color: #ffffff;
+}
+.captured-pieces {
+  margin: 12px 0;
+  font-size: 40px;
+  display: flex;
+  justify-content: space-between;
+  width: 600px;
+}
+
+.captured-piece {
+  margin-right: 5px;
+}
+@media (max-width: 1024px) {
+  .game-screen h2 {
+    font-size: 1.6rem;
+  }
+
+  .game-screen button {
+    font-size: 0.8rem;
+  }
+
+  .react-chessboard {
+    width: 280px !important;
+    height: 280px !important;
+  }
+
+  .captured-pieces {
+    font-size: 35px;
+    width: 480px;
+  }
+
+  .captured-piece {
+    font-size: 32px;
+  }
+
+  .mode-selection {
+    gap: 12px;
+  }
+
+  .mode-selection button {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-screen h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+
+  .game-screen button {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+  }
+
+  .react-chessboard {
+    width: 250px !important;
+    height: 250px !important;
+  }
+
+  .captured-pieces {
+    font-size: 30px;
+    width: 360px;
+  }
+
+  .captured-piece {
+    font-size: 28px;
+  }
+
+  .mode-selection button {
+    font-size: 0.85rem;
+    padding: 7px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-screen h2 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+  }
+
+  .game-screen button {
+    font-size: 0.7rem;
+    padding: 5px 12px;
+  }
+
+  .react-chessboard {
+    width: 220px !important;
+    height: 220px !important;
+  }
+
+  .captured-pieces {
+    font-size: 28px;
+    width: 320px;
+  }
+
+  .captured-piece {
+    font-size: 24px;
+  }
+
+  .mode-selection button {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+
+  .captured {
+    font-size: 36px;
+  }
+}

@@ -1,0 +1,115 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    min-height: 100vh;
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    padding: 60px 20px;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .home h1 {
+    font-size: 3rem;
+    margin-bottom: 30px;
+    color: #ffe066;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .home button {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 30px;
+    background: #ff6b6b;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .home button:hover {
+    background: #ff8787;
+    transform: scale(1.05);
+  }
+  .extra-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 16px; /* tạo khoảng cách giữa các nút */
+    flex-wrap: wrap;
+  }
+  @media (max-width: 1024px) {
+    .home h1 {
+      font-size: 2.5rem; /* Slightly smaller heading */
+      margin-bottom: 20px;
+    }
+  
+    .home button {
+      padding: 12px 30px;
+      font-size: 1rem;
+    }
+  
+    .extra-buttons {
+      gap: 12px; /* Reduce gap between buttons */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .home h1 {
+      font-size: 2.2rem; /* Smaller font for smaller screens */
+      margin-bottom: 15px;
+    }
+  
+    .home button {
+      padding: 10px 25px;
+      font-size: 0.95rem;
+    }
+  
+    .extra-buttons {
+      flex-direction: column; /* Stack the extra buttons vertically on smaller screens */
+      gap: 10px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .home h1 {
+      font-size: 1.8rem; /* Even smaller heading on very small screens */
+      margin-bottom: 10px;
+    }
+  
+    .home button {
+      padding: 8px 20px;
+      font-size: 0.9rem; /* Adjust button font size */
+    }
+  
+    .extra-buttons {
+      flex-direction: column; /* Stack buttons vertically */
+      gap: 8px;
+      padding: 0 15px;
+    }
+  }
+  .account-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+  }
+  
+  .username {
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  
