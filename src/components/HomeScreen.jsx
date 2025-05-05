@@ -9,15 +9,36 @@ function HomeScreen() {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.ready(); 
-      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe); // <-- THÊM DÒNG NÀY
-      const userInfo = window.Telegram.WebApp.initDataUnsafe.user;
-      if (userInfo) {
-        setUser(userInfo);
+    try {
+      if (!window.Telegram) {
+        console.warn("❌ window.Telegram không tồn tại");
+        return;
       }
+  
+      if (!window.Telegram.WebApp) {
+        console.warn("❌ window.Telegram.WebApp không tồn tại");
+        return;
+      }
+  
+      window.Telegram.WebApp.ready();
+      console.log("✅ Telegram WebApp đã sẵn sàng");
+  
+      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+      console.log("📦 initDataUnsafe:", initDataUnsafe);
+  
+      if (!initDataUnsafe || !initDataUnsafe.user) {
+        console.warn("⚠️ Không tìm thấy user trong initDataUnsafe");
+        return;
+      }
+  
+      const userInfo = initDataUnsafe.user;
+      console.log("👤 Thông tin người dùng:", userInfo);
+      setUser(userInfo);
+    } catch (error) {
+      console.error("❗ Lỗi khi khởi tạo Telegram WebApp:", error);
     }
   }, []);
+  
   
   
   const handleModeSelection = (selectedMode) => {
