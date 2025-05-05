@@ -32,12 +32,18 @@ function HomeScreen() {
   return (
     <div className="home">
        
-      {/* Hiển thị avatar người dùng nếu đã có thông tin */}
-      {user && (
-        <div className="username-display">
-          👤 @{user.username || user.first_name}
-        </div>
-      )}
+       {user && (
+  <div className="user-info">
+    <img
+      src={user.photo_url}
+      alt="avatar"
+      className="avatar"
+    />
+    <div className="username-display">
+      👤 @{user.username || user.first_name}
+    </div>
+  </div>
+)}
 
       <h1>♟️ Game Cờ Vua</h1>
 
