@@ -1,39 +1,44 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/HomeScreen.css";
 
 function HomeScreen() {
   const [showModes, setShowModes] = useState(false);
   const [showAIDifficulty, setShowAIDifficulty] = useState(false);
-  const [telegramUser, setTelegramUser] = useState(null); 
-  const navigate = useNavigate();
+  const [user, setUser] = useState(null); 
 
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready(); 
+      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe); // <-- THÊM DÒNG NÀY
+      const userInfo = window.Telegram.WebApp.initDataUnsafe.user;
+      if (userInfo) {
+        setUser(userInfo);
+      }
+    }
+  }, []);
+  
+  
   const handleModeSelection = (selectedMode) => {
     navigate(`/game/${selectedMode}`);
   };
   const goToQuests = () => {
   navigate("/missions");
 };
-useEffect(() => {
-  if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-    setTelegramUser(window.Telegram.WebApp.initDataUnsafe.user);
-  }
-}, []);
 
 
 
   return (
     <div className="home">
-         {telegramUser && (
-        <div className="account-info">
-          <img 
-            src={telegramUser.photo_url} 
-            alt="avatar" 
-            className="avatar" 
-          />
-          <span className="username">{telegramUser.first_name}</span>
+       
+      {/* Hiển thị avatar người dùng nếu đã có thông tin */}
+      {user && (
+        <div className="username-display">
+          👤 @{user.username || user.first_name}
         </div>
       )}
+
       <h1>♟️ Game Cờ Vua</h1>
 
       {!showModes ? (

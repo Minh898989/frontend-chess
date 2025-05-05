@@ -73,6 +73,13 @@
     }
   }
   
+  .username-display {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #fff;
+    text-align: center;
+  }
+  
   @media (max-width: 480px) {
     .home h1 {
       font-size: 1.8rem; /* Even smaller heading on very small screens */
