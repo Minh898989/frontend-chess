@@ -11,21 +11,30 @@ function HomeScreen() {
   
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
+
     if (tg) {
       try {
         tg.ready();
         console.log("✅ Telegram WebApp đã sẵn sàng");
+
         const userInfo = tg.initDataUnsafe?.user;
         if (userInfo) {
           setUser(userInfo);
         } else {
-          console.warn("⚠️ Không tìm thấy thông tin người dùng");
+          console.warn("⚠️ Không tìm thấy thông tin người dùng từ Telegram");
         }
-      } catch (error) {
-        console.error("❌ Lỗi khi khởi tạo Telegram WebApp:", error);
+      } catch (err) {
+        console.error("❌ Lỗi khởi tạo Telegram WebApp:", err);
       }
     } else {
-      console.warn("⚠️ Đang chạy ngoài Telegram — một số tính năng có thể không hoạt động");
+      console.warn("⚠️ Không chạy trong Telegram WebApp — thử lấy từ URL");
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get("uid");
+      const un = params.get("un");
+
+      if (uid && un) {
+        setUser({ id: uid, username: un });
+      }
     }
   }, []);
 
