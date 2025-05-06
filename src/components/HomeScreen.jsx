@@ -45,13 +45,10 @@ function HomeScreen() {
   return (
     <div className="home">
        {user && (
-        <div className="user-info">
-          <img src={user.photo_url} alt="avatar" className="avatar" />
-          <div className="username-display">
-            👤 @{user.username || user.first_name}
-          </div>
-        </div>
-      )}
+  <div className="user-top-right">
+    👤 @{user.username || user.first_name}
+  </div>
+)}
 
       <h1>♟️ Game Cờ Vua</h1>
 
