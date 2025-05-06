@@ -1,0 +1,103 @@
+.chess-guide {
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px; /* Added padding for overall spacing */
+}
+
+.chess-guide h1 {
+    font-size: 2.2rem;
+    color: #00ffd9;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 0 0 12px #00ffd9;
+}
+
+.chess-guide section {
+    background: linear-gradient(135deg, #1a1a2e, #222244);
+    border-radius: 16px;
+    padding: 16px 30px; /* Reduced padding */
+    margin-bottom: 15px; /* Reduced margin */
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.07); /* Slightly smaller shadow */
+    border: 1px solid #2e3e4e;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 1200px;
+    margin-left: auto; /* Centers the section horizontally */
+    margin-right: auto;
+}
+
+
+.chess-guide section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 18px rgba(0, 255, 255, 0.12);
+}
+
+.chess-guide h2 {
+    font-size: 1.4rem;
+    color: #00ffe5;
+    margin-bottom: 12px;
+}
+
+.chess-guide p,
+.chess-guide li {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #cccccc;
+}
+
+.chess-guide ul {
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.chess-guide li {
+    margin-bottom: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chess-guide h1 {
+        font-size: 1.8rem;
+    }
+
+    .chess-guide h2 {
+        font-size: 1.2rem;
+    }
+
+    .chess-guide section {
+        padding: 20px;
+    }
+
+    .chess-guide p,
+    .chess-guide li {
+        font-size: 0.95rem;
+    }
+
+    .chess-guide {
+        padding: 10px; /* Reduce padding for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .chess-guide h1 {
+        font-size: 1.6rem;
+    }
+
+    .chess-guide h2 {
+        font-size: 1.1rem;
+    }
+
+    .chess-guide section {
+        padding: 16px;
+    }
+
+    .chess-guide p,
+    .chess-guide li {
+        font-size: 0.9rem;
+    }
+
+    .chess-guide {
+        padding: 5px; /* Further reduce padding for very small screens */
+    }
+}

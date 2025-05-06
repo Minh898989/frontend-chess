@@ -85,6 +85,9 @@ function HomeScreen() {
   const goToQuests = () => {
   navigate("/missions");
 };
+const goToGuide = () => {
+  navigate("/guide");
+};
 
 
 
@@ -117,6 +120,9 @@ function HomeScreen() {
        <div className="extra-buttons">
         <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng </button>
         
+      </div>
+      <div className="extra-buttons">
+      <button onClick={goToGuide}>📖 Hướng dẫn chơi</button>
       </div>
     </div>
   );
