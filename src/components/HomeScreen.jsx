@@ -10,25 +10,25 @@ function HomeScreen() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
       try {
-        window.Telegram.WebApp.ready();
+        tg.ready();
         console.log("✅ Telegram WebApp đã sẵn sàng");
-        console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
-
-        const userInfo = window.Telegram.WebApp.initDataUnsafe.user;
+        const userInfo = tg.initDataUnsafe?.user;
         if (userInfo) {
           setUser(userInfo);
         } else {
-          console.warn("⚠️ Không có user trong initDataUnsafe");
+          console.warn("⚠️ Không tìm thấy thông tin người dùng");
         }
       } catch (error) {
         console.error("❌ Lỗi khi khởi tạo Telegram WebApp:", error);
       }
     } else {
-      console.error("❌ window.Telegram hoặc Telegram.WebApp không tồn tại");
+      console.warn("⚠️ Đang chạy ngoài Telegram — một số tính năng có thể không hoạt động");
     }
   }, []);
+
   
   
   
@@ -44,19 +44,14 @@ function HomeScreen() {
 
   return (
     <div className="home">
-       
        {user && (
-  <div className="user-info">
-    <img
-      src={user.photo_url}
-      alt="avatar"
-      className="avatar"
-    />
-    <div className="username-display">
-      👤 @{user.username || user.first_name}
-    </div>
-  </div>
-)}
+        <div className="user-info">
+          <img src={user.photo_url} alt="avatar" className="avatar" />
+          <div className="username-display">
+            👤 @{user.username || user.first_name}
+          </div>
+        </div>
+      )}
 
       <h1>♟️ Game Cờ Vua</h1>
 
