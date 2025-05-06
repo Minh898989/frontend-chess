@@ -11,33 +11,56 @@ function HomeScreen() {
   
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
-
+  
+    const saveUser = (userData) => {
+      setUser(userData);
+      localStorage.setItem("chessUser", JSON.stringify(userData)); // lưu vào localStorage
+    };
+  
+    const loadFromLocalStorage = () => {
+      const stored = localStorage.getItem("chessUser");
+      if (stored) {
+        setUser(JSON.parse(stored));
+        console.log("✅ Đã lấy user từ localStorage");
+      }
+    };
+  
     if (tg) {
       try {
         tg.ready();
         console.log("✅ Telegram WebApp đã sẵn sàng");
-
+  
         const userInfo = tg.initDataUnsafe?.user;
         if (userInfo) {
-          setUser(userInfo);
+          saveUser(userInfo);
         } else {
-          console.warn("⚠️ Không tìm thấy thông tin người dùng từ Telegram");
+          console.warn("⚠️ Không có user từ Telegram — thử URL");
+          const params = new URLSearchParams(window.location.search);
+          const uid = params.get("uid");
+          const un = params.get("un");
+          if (uid && un) {
+            saveUser({ id: uid, username: un });
+          } else {
+            loadFromLocalStorage(); // fallback
+          }
         }
       } catch (err) {
-        console.error("❌ Lỗi khởi tạo Telegram WebApp:", err);
+        console.error("❌ Lỗi Telegram WebApp:", err);
+        loadFromLocalStorage();
       }
     } else {
-      console.warn("⚠️ Không chạy trong Telegram WebApp — thử lấy từ URL");
+      console.warn("⚠️ Ngoài Telegram — thử URL rồi localStorage");
       const params = new URLSearchParams(window.location.search);
       const uid = params.get("uid");
       const un = params.get("un");
-
       if (uid && un) {
-        setUser({ id: uid, username: un });
+        saveUser({ id: uid, username: un });
+      } else {
+        loadFromLocalStorage();
       }
     }
   }, []);
-
+  
   
   
   
