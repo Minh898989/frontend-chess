@@ -38,8 +38,11 @@ const AuthForm = () => {
   };
   
   return (
+    
     <div className="auth-container">
+      
       <div className="auth-box">
+      <h1 className="auth-title">♟️ Game Cờ Vua</h1>
         <div className="tab-buttons">
           <button
             className={mode === 'login' ? 'active' : ''}

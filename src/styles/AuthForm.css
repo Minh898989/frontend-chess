@@ -88,3 +88,14 @@
     font-weight: 500;
   }
   
+  .auth-title {
+    text-align: center;
+    font-size: 2rem;
+    
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+  }
+  
+  
+  
