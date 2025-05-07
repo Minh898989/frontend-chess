@@ -67,7 +67,7 @@ function MissionsScreen() {
     {
       id: "capture50",
       title: "♟️ Ăn 50 quân cờ",
-      condition: stats.totalCaptured >= 50,
+      condition: stats.totalCaptured >= 1,
       reward: "+40",
     },
    
