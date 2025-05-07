@@ -11,6 +11,7 @@ function MissionsScreen() {
 
   const [claimedRewards, setClaimedRewards] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
+  const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
 
   useEffect(() => {
     const storedStats = JSON.parse(localStorage.getItem("chessStats")) || {
@@ -21,23 +22,28 @@ function MissionsScreen() {
     };
     setStats(storedStats);
 
-    const claimed = JSON.parse(localStorage.getItem("claimedRewards")) || [];
-    setClaimedRewards(claimed);
+    const lastLogin = localStorage.getItem("lastLoginDate");
+    if (lastLogin !== today) {
+      // Reset claimed rewards mỗi ngày
+      localStorage.setItem("claimedRewards", JSON.stringify([]));
+      localStorage.setItem("lastLoginDate", today);
+      setClaimedRewards([]);
+    } else {
+      const claimed = JSON.parse(localStorage.getItem("claimedRewards")) || [];
+      setClaimedRewards(claimed);
+    }
 
-    // Load the total points from localStorage
     const storedPoints = JSON.parse(localStorage.getItem("totalPoints")) || 0;
     setTotalPoints(storedPoints);
-  }, []);
+  }, [today]);
 
   const handleClaimReward = (id, reward) => {
     if (claimedRewards.includes(id)) return;
 
-    // Update the claimed rewards
     const updated = [...claimedRewards, id];
     setClaimedRewards(updated);
     localStorage.setItem("claimedRewards", JSON.stringify(updated));
 
-    // Update the total points and save to localStorage
     const newTotalPoints = totalPoints + parseInt(reward, 10);
     setTotalPoints(newTotalPoints);
     localStorage.setItem("totalPoints", JSON.stringify(newTotalPoints));
@@ -46,6 +52,12 @@ function MissionsScreen() {
   };
 
   const missions = [
+    {
+      id: "dailyLogin",
+      title: "📅 Đăng nhập mỗi ngày",
+      condition: true,
+      reward: "+5",
+    },
     {
       id: "play5",
       title: "🎯 Chơi 5 trận",
@@ -60,17 +72,16 @@ function MissionsScreen() {
     },
     {
       id: "play60min",
-      title: "⏱ Chơi 60 phút",
+      title: "⏱ Chơi 10 phút",
       condition: stats.totalMinutes >= 10,
       reward: "+30",
     },
     {
       id: "capture50",
       title: "♟️ Ăn 50 quân cờ",
-      condition: stats.totalCaptured >= 1,
+      condition: stats.totalCaptured >= 10,
       reward: "+40",
     },
-   
   ];
 
   return (
