@@ -61,7 +61,7 @@ function MissionsScreen() {
     {
       id: "play60min",
       title: "⏱ Chơi 60 phút",
-      condition: stats.totalMinutes >= 1,
+      condition: stats.totalMinutes >= 10,
       reward: "+30",
     },
     {
