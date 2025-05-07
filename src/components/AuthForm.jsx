@@ -27,6 +27,7 @@ const AuthForm = () => {
       setMessage(res.data.message);
   
       if (mode === 'login' && res.data.message === 'Đăng nhập thành công') {
+        console.log('Đăng nhập với userId:', userid);
         localStorage.setItem('user', JSON.stringify({ userid }));
         navigate('/');
       }

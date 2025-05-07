@@ -14,7 +14,11 @@ function MissionsScreen() {
   const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
 
   useEffect(() => {
-    const storedStats = JSON.parse(localStorage.getItem("chessStats")) || {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.userid) return;
+
+    const key = `chessStats_${user.userid}`;
+    const storedStats = JSON.parse(localStorage.getItem(key)) || {
       gamesPlayed: 0,
       gamesWon: 0,
       totalMinutes: 0,
@@ -22,31 +26,34 @@ function MissionsScreen() {
     };
     setStats(storedStats);
 
-    const lastLogin = localStorage.getItem("lastLoginDate");
+    const lastLogin = localStorage.getItem(`lastLoginDate_${user.userid}`);
     if (lastLogin !== today) {
       // Reset claimed rewards mỗi ngày
-      localStorage.setItem("claimedRewards", JSON.stringify([]));
-      localStorage.setItem("lastLoginDate", today);
+      localStorage.setItem(`claimedRewards_${user.userid}`, JSON.stringify([]));
+      localStorage.setItem(`lastLoginDate_${user.userid}`, today);
       setClaimedRewards([]);
     } else {
-      const claimed = JSON.parse(localStorage.getItem("claimedRewards")) || [];
+      const claimed = JSON.parse(localStorage.getItem(`claimedRewards_${user.userid}`)) || [];
       setClaimedRewards(claimed);
     }
 
-    const storedPoints = JSON.parse(localStorage.getItem("totalPoints")) || 0;
+    const storedPoints = JSON.parse(localStorage.getItem(`totalPoints_${user.userid}`)) || 0;
     setTotalPoints(storedPoints);
   }, [today]);
 
   const handleClaimReward = (id, reward) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.userid) return;
+
     if (claimedRewards.includes(id)) return;
 
     const updated = [...claimedRewards, id];
     setClaimedRewards(updated);
-    localStorage.setItem("claimedRewards", JSON.stringify(updated));
+    localStorage.setItem(`claimedRewards_${user.userid}`, JSON.stringify(updated));
 
     const newTotalPoints = totalPoints + parseInt(reward, 10);
     setTotalPoints(newTotalPoints);
-    localStorage.setItem("totalPoints", JSON.stringify(newTotalPoints));
+    localStorage.setItem(`totalPoints_${user.userid}`, JSON.stringify(newTotalPoints));
 
     alert("🎉 Bạn đã nhận phần thưởng!");
   };
@@ -79,8 +86,8 @@ function MissionsScreen() {
     {
       id: "capture50",
       title: "♟️ Ăn 50 quân cờ",
-      condition: stats.totalCaptured >= 10,
-      reward: "+40",
+      condition: stats.totalCaptured >= 1,
+      reward: "+50",
     },
   ];
 

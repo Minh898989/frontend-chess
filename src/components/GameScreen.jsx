@@ -13,6 +13,8 @@ function GameScreen() {
   const [winner, setWinner] = useState(null);
 
   const isAI = mode !== "2players";
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?.userid;
 
   const getTotalCaptured = useCallback(() => {
     return capturedPieces.w.length + capturedPieces.b.length;
@@ -23,8 +25,9 @@ function GameScreen() {
     return Math.floor(totalSeconds / 60);
   }, [timeLeft]);
 
-  const updateLocalStats = (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-    const stored = JSON.parse(localStorage.getItem("chessStats")) || {
+  const updateLocalStats = useCallback((didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+    const statsKey = `chessStats_${userId}`;
+    const stored = JSON.parse(localStorage.getItem(statsKey)) || {
       gamesPlayed: 0,
       gamesWon: 0,
       totalMinutes: 0,
@@ -36,9 +39,8 @@ function GameScreen() {
     stored.totalMinutes += minutesPlayed;
     stored.totalCaptured += capturedCount;
 
-    localStorage.setItem("chessStats", JSON.stringify(stored));
-  };
-
+    localStorage.setItem(statsKey, JSON.stringify(stored));
+  }, [userId]);
   const onDrop = (sourceSquare, targetSquare) => {
     if (isGameOver) return false;
 
@@ -225,7 +227,7 @@ function GameScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isGameOver, getMinutesPlayed, getTotalCaptured]);
+  }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
 
   const renderCapturedPieces = (color) => {
     const pieceIcons = {
@@ -262,7 +264,7 @@ function GameScreen() {
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
-          boardWidth={500}
+          boardWidth={600}
           arePiecesDraggable={!game.game_over()}
         />
       </div>
