@@ -1,0 +1,90 @@
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364); /* đồng bộ */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* đồng bộ */
+    padding: 40px 20px;
+  }
+  
+  .auth-box {
+    background-color: rgba(255, 255, 255, 0.05); /* nền mờ tối */
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    color: #fff;
+  }
+  
+  .tab-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  
+  .tab-buttons button {
+    flex: 1;
+    padding: 0.75rem;
+    font-weight: bold;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .tab-buttons button.active {
+    background-color: #ff6b6b; /* giống nút ở trang home */
+    color: white;
+  }
+  
+  form label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #ffe066; /* vàng nhạt giống header */
+  }
+  
+  form input {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  
+  form input::placeholder {
+    color: #ccc;
+  }
+  
+  form button[type='submit'] {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  form button[type='submit']:hover {
+    background-color: #ff8787;
+    transform: scale(1.05);
+  }
+  
+  .message {
+    margin-top: 1rem;
+    text-align: center;
+    color: #ffcccc;
+    font-weight: 500;
+  }
+  
