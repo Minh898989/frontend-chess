@@ -9,22 +9,29 @@ function HomeScreen() {
 
   const navigate = useNavigate();
 
-  
   const handleModeSelection = (selectedMode) => {
     navigate(`/game/${selectedMode}`);
   };
   const goToQuests = () => {
   navigate("/missions");
 };
-const goToGuide = () => {
+  const goToGuide = () => {
   navigate("/guide");
 };
+  
+const handleLogout = () => {
+  localStorage.removeItem("user");
+  navigate("/auth");
+};
 
+const user = JSON.parse(localStorage.getItem("user"));
 
 
   return (
     <div className="home">
-
+      <div className="user-top-right">
+        👤 {user?.userid || "Người dùng"} | <button onClick={handleLogout}>Đăng xuất</button>
+      </div>
 
       <h1>♟️ Game Cờ Vua</h1>
 

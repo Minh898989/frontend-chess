@@ -94,13 +94,46 @@
   }
   .user-top-right {
     position: absolute;
-    top: 10px;
-    right: 15px;
-    font-weight: bold;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 14px;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 10px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
+  
+  .user-top-right .username {
+    color: #ffe066;
+    font-weight: bold;
+  }
+  
+  .user-top-right button {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .user-top-right button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1.05);
+  }
+  
+  
+  
+  
+  
   
