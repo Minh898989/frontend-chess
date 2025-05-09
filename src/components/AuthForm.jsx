@@ -17,7 +17,7 @@ const AuthForm = () => {
     const endpoint = mode === 'login' ? 'login' : 'register';
   
     try {
-      const res = await axios.post(`https://backend-chess-eiev.vercel.app/api/auth/${endpoint}`, {
+      const res = await axios.post(`http://localhost:5000/api/auth/${endpoint}`, {
         userid,
         password,
       });
