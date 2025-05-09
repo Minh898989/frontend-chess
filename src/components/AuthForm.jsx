@@ -17,11 +17,11 @@ const AuthForm = () => {
     const endpoint = mode === 'login' ? 'login' : 'register';
   
     try {
-      const res = await axios.post(`https://backend-chess-g7jv.onrender.com/api/auth/${endpoint}
-`, {
-        userid,
-        password,
-      });
+      const res = await axios.post(`https://backend-chess-g7jv.onrender.com/api/auth/${endpoint}`, {
+  userid,
+  password,
+});
+
       
   
       console.log('Response:', res.data); // 👈 Thêm dòng này để kiểm tra
