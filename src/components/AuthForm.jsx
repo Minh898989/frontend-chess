@@ -10,42 +10,45 @@ const AuthForm = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
+    setMessage(''); // Clear any previous message
+
     const endpoint = mode === 'login' ? 'login' : 'register';
   
     try {
-      const res = await axios.post(`https://backend-chess-g7jv.onrender.com/api/auth/${endpoint}`, {
-  userid,
-  password,
-});
+      const res = await axios.post(
+        `https://backend-chess-g7jv.onrender.com/api/auth/${endpoint}`, 
+        { userid, password }
+      );
 
-      
-  
       console.log('Response:', res.data); // 👈 Thêm dòng này để kiểm tra
-  
       setMessage(res.data.message);
-  
+
       if (mode === 'login' && res.data.message === 'Đăng nhập thành công') {
         console.log('Đăng nhập với userId:', userid);
         localStorage.setItem('user', JSON.stringify({ userid }));
-        navigate('/');
+        navigate('/'); // Navigate to the home page after login
+      } else if (mode === 'register' && res.data.message === 'Đăng ký thành công') {
+        // Redirect to login page after successful registration
+        navigate('/login');
       }
+      // Clear input fields after successful action
+      setUserid('');
+      setPassword('');
     } catch (err) {
+      // If error occurs, display a message
       setMessage(
         err.response?.data?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.'
       );
+      console.error('Error details:', err); // Log the error for debugging
     }
   };
-  
+
   return (
-    
     <div className="auth-container">
-      
       <div className="auth-box">
-      <h1 className="auth-title">♟️ Game Cờ Vua</h1>
+        <h1 className="auth-title">♟️ Game Cờ Vua</h1>
         <div className="tab-buttons">
           <button
             className={mode === 'login' ? 'active' : ''}
