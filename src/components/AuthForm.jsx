@@ -17,10 +17,11 @@ const AuthForm = () => {
     const endpoint = mode === 'login' ? 'login' : 'register';
   
     try {
-      const res = await axios.post(`https://backend-chess-eiev.vercel.app/${endpoint}`, {
+      const res = await axios.post(`https://backend-chess-eiev.vercel.app/api/auth/${endpoint}`, {
         userid,
         password,
       });
+      
   
       console.log('Response:', res.data); // 👈 Thêm dòng này để kiểm tra
   
