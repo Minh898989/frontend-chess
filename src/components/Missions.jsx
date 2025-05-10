@@ -62,6 +62,7 @@ function QuestsScreen() {
       .get(`https://backend-chess-fjr7.onrender.com/api/stats/${userId}`)
       .then((res) => {
         const userStats = res.data;
+        console.log("User Stats:", userStats);
         setStats(userStats);
 
         // Lấy danh sách nhiệm vụ đã nhận hôm nay
