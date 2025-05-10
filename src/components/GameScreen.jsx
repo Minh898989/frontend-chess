@@ -27,8 +27,12 @@ function GameScreen() {
   }, [timeLeft]);
 
   const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+    if (!userId) {
+      console.warn("Không tìm thấy userId, không gửi thống kê.");
+      return;
+    }
+
     try {
-      if (!userId) return;
       await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
         userid: userId,
         win: didPlayerWin,
@@ -47,9 +51,10 @@ function GameScreen() {
     if (!move) return false;
 
     if (move.captured) {
+      const opponent = move.color === "w" ? "b" : "w";
       setCapturedPieces((prev) => ({
         ...prev,
-        [move.color === "w" ? "b" : "w"]: [...prev[move.color === "w" ? "b" : "w"], move.captured],
+        [opponent]: [...prev[opponent], move.captured],
       }));
     }
 
@@ -83,9 +88,10 @@ function GameScreen() {
     if (move) {
       const result = currentGame.move(move);
       if (result?.captured) {
+        const opponent = result.color === "w" ? "b" : "w";
         setCapturedPieces((prev) => ({
           ...prev,
-          [result.color === "w" ? "b" : "w"]: [...prev[result.color === "w" ? "b" : "w"], result.captured],
+          [opponent]: [...prev[opponent], result.captured],
         }));
       }
 
@@ -158,27 +164,28 @@ function GameScreen() {
 
   const handleGameOver = (finalGame) => {
     setIsGameOver(true);
-    let winnerMsg = "Hòa";
+    let winMsg = "Hòa";
     let didPlayerWin = false;
 
     if (finalGame.in_checkmate()) {
-      if (finalGame.turn() === "w") {
-        winnerMsg = isAI ? "Máy thắng" : "Đen thắng";
+      const turn = finalGame.turn(); // người sắp đi tiếp
+      if (turn === "w") {
+        winMsg = isAI ? "Máy thắng" : "Đen thắng";
       } else {
-        winnerMsg = isAI ? "Bạn thắng" : "Trắng thắng";
+        winMsg = isAI ? "Bạn thắng" : "Trắng thắng";
         didPlayerWin = isAI;
       }
     }
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
-    setWinner(winnerMsg);
+    setWinner(winMsg);
   };
 
   const handleResign = (color) => {
     setIsGameOver(true);
-    const isPlayerWhite = color === "w";
-    const didPlayerWin = !isPlayerWhite && isAI;
-    const winMsg = isPlayerWhite ? (isAI ? "Máy thắng" : "Đen thắng") : (isAI ? "Bạn thắng" : "Trắng thắng");
+    const isWhite = color === "w";
+    const winMsg = isWhite ? (isAI ? "Máy thắng" : "Đen thắng") : (isAI ? "Bạn thắng" : "Trắng thắng");
+    const didPlayerWin = !isWhite && isAI;
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(winMsg);
@@ -189,7 +196,7 @@ function GameScreen() {
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev === 0) {
+        if (prev <= 1) {
           clearInterval(timer);
           setIsGameOver(true);
           setWinner("⏱ Hết giờ - Hòa");
@@ -251,6 +258,13 @@ function GameScreen() {
       )}
 
       {winner && <p>🏆 {winner}</p>}
+
+      {/* Debug (bỏ nếu không cần) */}
+      <div className="debug-info" style={{ marginTop: 20 }}>
+        <p><strong>🆔 User ID:</strong> {userId}</p>
+        <p><strong>⏱ Phút đã chơi:</strong> {getMinutesPlayed()} phút</p>
+        <p><strong>♟️ Quân đã ăn:</strong> {getTotalCaptured()} quân</p>
+      </div>
     </div>
   );
 }
