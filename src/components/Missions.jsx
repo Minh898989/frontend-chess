@@ -46,7 +46,7 @@ function QuestsScreen() {
   const [missions, setMissions] = useState([]);
   const [message, setMessage] = useState("");
   const [totalPoints, setTotalPoints] = useState(0);
-  const [loading, setLoading] = useState(true); // Thêm trạng thái loading
+  const [loading, setLoading] = useState(true); 
 
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
@@ -150,27 +150,28 @@ function QuestsScreen() {
           </div>
 
           <div className="missions-list">
-            {missions.map((mission) => (
-              <div
-                key={mission.id}
-                className={`mission ${mission.claimed ? "completed" : ""}`}
-              >
-                <h3>{mission.name}</h3>
-                <p>{mission.description}</p>
-                <p>🎁 Thưởng: {mission.rewardPoints} điểm</p>
-                <button
-                  disabled={!mission.completed || mission.claimed}
-                  onClick={() => claimReward(mission.id)}
-                >
-                  {mission.claimed
-                    ? "✅ Đã nhận"
-                    : mission.completed
-                    ? "🎁 Nhận thưởng"
-                    : "⏳ Chưa hoàn thành"}
-                </button>
-              </div>
-            ))}
-          </div>
+  {missions.map((mission) => (
+    <div
+      key={mission.id}
+      className={`mission ${mission.claimed ? "completed" : ""}`}
+    >
+      <h3>{mission.name}</h3>
+      <p>{mission.description}</p>
+      <p>🎁 Thưởng: {mission.rewardPoints} điểm</p>
+      <button
+        disabled={mission.claimed}
+        onClick={() => claimReward(mission.id)}
+      >
+        {mission.claimed
+          ? "✅ Đã nhận"
+          : mission.completed
+          ? "🎁 Nhận thưởng"
+          : "⏳ Chưa hoàn thành"}
+      </button>
+    </div>
+  ))}
+</div>
+
         </>
       )}
 
