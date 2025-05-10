@@ -54,7 +54,6 @@ function QuestsScreen() {
   useEffect(() => {
     if (!userId) return;
 
-    
     setLoading(true);
 
     // Lấy thống kê người chơi
@@ -65,19 +64,28 @@ function QuestsScreen() {
         console.log("User Stats:", userStats);
         setStats(userStats);
 
-        // Lấy danh sách nhiệm vụ đã nhận hôm nay
+        // Lấy tất cả nhiệm vụ
+        const updatedMissions = missionConditions.map((m) => ({
+          ...m,
+          completed: m.condition(userStats),
+          claimed: false, // Default to false, we will update this later
+        }));
+
+        setMissions(updatedMissions);
+
+        // Lấy danh sách nhiệm vụ đã hoàn thành từ backend
         axios
           .get(`https://backend-chess-fjr7.onrender.com/api/missions/${userId}`)
           .then((claimedRes) => {
             const claimedMissions = claimedRes.data.claimed;
 
-            const updatedMissions = missionConditions.map((m) => ({
-              ...m,
-              completed: m.condition(userStats),
-              claimed: claimedMissions.includes(m.id),
+            // Update the missions array to mark claimed ones
+            const finalMissions = updatedMissions.map((mission) => ({
+              ...mission,
+              claimed: claimedMissions.includes(mission.id),
             }));
 
-            setMissions(updatedMissions);
+            setMissions(finalMissions);
             setLoading(false);
           })
           .catch((err) => {
