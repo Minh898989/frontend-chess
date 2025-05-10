@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
 import axios from "axios";
-import Stockfish from "stockfish";
 import "../styles/GameScreen.css";
 
 function GameScreen() {
@@ -18,23 +17,11 @@ function GameScreen() {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
-  const stockfish = useRef(null);
-
-  const getTotalCaptured = useCallback(() => {
-    return capturedPieces.w.length + capturedPieces.b.length;
-  }, [capturedPieces]);
-
-  const getMinutesPlayed = useCallback(() => {
-    const totalSeconds = 15 * 60 - timeLeft;
-    return Math.floor(totalSeconds / 60);
-  }, [timeLeft]);
+  const getTotalCaptured = useCallback(() => capturedPieces.w.length + capturedPieces.b.length, [capturedPieces]);
+  const getMinutesPlayed = useCallback(() => Math.floor((15 * 60 - timeLeft) / 60), [timeLeft]);
 
   const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-    if (!userId) {
-      console.warn("Không tìm thấy userId, không gửi thống kê.");
-      return;
-    }
-
+    if (!userId) return;
     try {
       await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
         userid: userId,
@@ -47,54 +34,68 @@ function GameScreen() {
     }
   }, [userId]);
 
-  useEffect(() => {
-    if (isAI) {
-      stockfish.current = Stockfish();
-      stockfish.current.onmessage = (event) => {
-        const line = typeof event === "object" ? event.data : event;
-        if (line.startsWith("bestmove")) {
-          const move = line.split(" ")[1];
-          if (move) {
-            const result = game.move({
-              from: move.substring(0, 2),
-              to: move.substring(2, 4),
-              promotion: "q"
-            });
-
-            if (result?.captured) {
-              const opponent = result.color === "w" ? "b" : "w";
-              setCapturedPieces((prev) => ({
-                ...prev,
-                [opponent]: [...prev[opponent], result.captured],
-              }));
-            }
-
-            const newGame = new Chess(game.fen());
-            setGame(newGame);
-
-            if (newGame.game_over()) {
-              handleGameOver(newGame);
-            }
-          }
-        }
-      };
+  const evaluateMove = (gameInstance, move) => {
+    const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+    let score = 0;
+    if (move.captured) {
+      score += pieceValues[move.captured.toLowerCase()] || 0;
     }
 
-    return () => {
-      if (stockfish.current) stockfish.current.terminate();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAI, game]);
+    gameInstance.move(move);
+    if (gameInstance.in_check()) score += 0.5;
+
+    const opponentMoves = gameInstance.moves({ verbose: true });
+    const ourColor = move.color === "w" ? "b" : "w";
+
+    for (const opMove of opponentMoves) {
+      if (opMove.captured && opMove.to === move.to && opMove.color === ourColor) {
+        score -= pieceValues[move.piece.toLowerCase()] || 0.5;
+      }
+    }
+
+    gameInstance.undo();
+    return score;
+  };
 
   const makeAIMove = (currentGame) => {
-    if (!stockfish.current || currentGame.game_over()) return;
+    if (currentGame.game_over()) return;
 
-    const fen = currentGame.fen();
-    stockfish.current.postMessage("ucinewgame");
-    stockfish.current.postMessage(`position fen ${fen}`);
+    const possibleMoves = currentGame.moves({ verbose: true });
+    if (possibleMoves.length === 0) return;
 
-    const depth = mode === "easy" ? 5 : mode === "medium" ? 10 : 15;
-    stockfish.current.postMessage(`go depth ${depth}`);
+    let selectedMove;
+    const scoredMoves = [];
+
+    for (const move of possibleMoves) {
+      const score = evaluateMove(currentGame, move);
+      scoredMoves.push({ move, score });
+    }
+
+    if (mode === "easy") {
+      const safeMoves = scoredMoves.filter(m => m.score >= 0);
+      selectedMove = (safeMoves.length ? safeMoves : scoredMoves)[Math.floor(Math.random() * (safeMoves.length || scoredMoves.length))].move;
+    } else if (mode === "medium") {
+      scoredMoves.sort((a, b) => b.score - a.score);
+      selectedMove = scoredMoves[0].move;
+    } else {
+      scoredMoves.sort((a, b) => b.score - a.score);
+      selectedMove = scoredMoves[0].move;
+    }
+
+    const result = currentGame.move(selectedMove);
+
+    if (result?.captured) {
+      const opponent = result.color === "w" ? "b" : "w";
+      setCapturedPieces((prev) => ({
+        ...prev,
+        [opponent]: [...prev[opponent], result.captured],
+      }));
+    }
+
+    const newGame = new Chess(currentGame.fen());
+    setGame(newGame);
+
+    if (newGame.game_over()) handleGameOver(newGame);
   };
 
   const onDrop = (sourceSquare, targetSquare) => {
@@ -153,6 +154,13 @@ function GameScreen() {
   };
 
   useEffect(() => {
+    if (isAI && game.turn() === "b" && !isGameOver) {
+      setTimeout(() => makeAIMove(game), 300);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAI, game, isGameOver]);
+
+  useEffect(() => {
     if (isGameOver) return;
 
     const timer = setInterval(() => {
@@ -169,7 +177,7 @@ function GameScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats,]);
+  }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
 
   const renderCapturedPieces = (color) => {
     const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
