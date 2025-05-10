@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
 import axios from "axios";
+import Stockfish from "stockfish";
 import "../styles/GameScreen.css";
 
 function GameScreen() {
@@ -16,6 +17,8 @@ function GameScreen() {
   const isAI = mode !== "2players";
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
+
+  const stockfish = useRef(null);
 
   const getTotalCaptured = useCallback(() => {
     return capturedPieces.w.length + capturedPieces.b.length;
@@ -34,15 +37,65 @@ function GameScreen() {
 
     try {
       await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
-         userid: userId,
-         didWin: didPlayerWin,
-         minutesPlayed,
-         capturedCount,
+        userid: userId,
+        didWin: didPlayerWin,
+        minutesPlayed,
+        capturedCount,
       });
     } catch (error) {
       console.error("Lỗi cập nhật thống kê:", error);
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (isAI) {
+      stockfish.current = Stockfish();
+      stockfish.current.onmessage = (event) => {
+        const line = typeof event === "object" ? event.data : event;
+        if (line.startsWith("bestmove")) {
+          const move = line.split(" ")[1];
+          if (move) {
+            const result = game.move({
+              from: move.substring(0, 2),
+              to: move.substring(2, 4),
+              promotion: "q"
+            });
+
+            if (result?.captured) {
+              const opponent = result.color === "w" ? "b" : "w";
+              setCapturedPieces((prev) => ({
+                ...prev,
+                [opponent]: [...prev[opponent], result.captured],
+              }));
+            }
+
+            const newGame = new Chess(game.fen());
+            setGame(newGame);
+
+            if (newGame.game_over()) {
+              handleGameOver(newGame);
+            }
+          }
+        }
+      };
+    }
+
+    return () => {
+      if (stockfish.current) stockfish.current.terminate();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAI, game]);
+
+  const makeAIMove = (currentGame) => {
+    if (!stockfish.current || currentGame.game_over()) return;
+
+    const fen = currentGame.fen();
+    stockfish.current.postMessage("ucinewgame");
+    stockfish.current.postMessage(`position fen ${fen}`);
+
+    const depth = mode === "easy" ? 5 : mode === "medium" ? 10 : 15;
+    stockfish.current.postMessage(`go depth ${depth}`);
+  };
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (isGameOver) return false;
@@ -70,105 +123,13 @@ function GameScreen() {
     return true;
   };
 
-  const makeAIMove = (currentGame) => {
-    if (currentGame.game_over()) return;
-
-    const possibleMoves = currentGame.moves();
-    if (!possibleMoves.length) return;
-
-    let move;
-    if (mode === "easy") {
-      move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-    } else if (mode === "medium") {
-      move = getBestMove(currentGame, 2);
-    } else if (mode === "hard") {
-      move = getBestMove(currentGame, 3);
-    }
-
-    if (move) {
-      const result = currentGame.move(move);
-      if (result?.captured) {
-        const opponent = result.color === "w" ? "b" : "w";
-        setCapturedPieces((prev) => ({
-          ...prev,
-          [opponent]: [...prev[opponent], result.captured],
-        }));
-      }
-
-      const newGame = new Chess(currentGame.fen());
-      setGame(newGame);
-
-      if (newGame.game_over()) {
-        handleGameOver(newGame);
-      }
-    }
-  };
-
-  const getBestMove = (game, depth) => {
-    let bestMove = null;
-    let bestValue = -Infinity;
-    for (const move of game.moves()) {
-      game.move(move);
-      const value = minimax(game, depth - 1, -Infinity, Infinity, false);
-      game.undo();
-      if (value > bestValue) {
-        bestValue = value;
-        bestMove = move;
-      }
-    }
-    return bestMove;
-  };
-
-  const minimax = (game, depth, alpha, beta, isMaximizing) => {
-    if (depth === 0 || game.game_over()) return evaluateBoard(game.board());
-
-    const moves = game.moves();
-    if (isMaximizing) {
-      let maxEval = -Infinity;
-      for (const move of moves) {
-        game.move(move);
-        const evalScore = minimax(game, depth - 1, alpha, beta, false);
-        game.undo();
-        maxEval = Math.max(maxEval, evalScore);
-        alpha = Math.max(alpha, evalScore);
-        if (beta <= alpha) break;
-      }
-      return maxEval;
-    } else {
-      let minEval = Infinity;
-      for (const move of moves) {
-        game.move(move);
-        const evalScore = minimax(game, depth - 1, alpha, beta, true);
-        game.undo();
-        minEval = Math.min(minEval, evalScore);
-        beta = Math.min(beta, evalScore);
-        if (beta <= alpha) break;
-      }
-      return minEval;
-    }
-  };
-
-  const evaluateBoard = (board) => {
-    const values = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000 };
-    let score = 0;
-    for (const row of board) {
-      for (const piece of row) {
-        if (piece) {
-          const value = values[piece.type];
-          score += piece.color === "w" ? value : -value;
-        }
-      }
-    }
-    return score;
-  };
-
   const handleGameOver = (finalGame) => {
     setIsGameOver(true);
     let winMsg = "Hòa";
     let didPlayerWin = false;
 
     if (finalGame.in_checkmate()) {
-      const turn = finalGame.turn(); // người sắp đi tiếp
+      const turn = finalGame.turn();
       if (turn === "w") {
         winMsg = isAI ? "Máy thắng" : "Đen thắng";
       } else {
@@ -208,7 +169,7 @@ function GameScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
+  }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats,]);
 
   const renderCapturedPieces = (color) => {
     const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
@@ -258,13 +219,6 @@ function GameScreen() {
       )}
 
       {winner && <p>🏆 {winner}</p>}
-
-      {/* Debug (bỏ nếu không cần) */}
-      <div className="debug-info" style={{ marginTop: 20 }}>
-        <p><strong>🆔 User ID:</strong> {userId}</p>
-        <p><strong>⏱ Phút đã chơi:</strong> {getMinutesPlayed()} phút</p>
-        <p><strong>♟️ Quân đã ăn:</strong> {getTotalCaptured()} quân</p>
-      </div>
     </div>
   );
 }
