@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import '../styles/Missions.css';
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com/api/missions';
 
