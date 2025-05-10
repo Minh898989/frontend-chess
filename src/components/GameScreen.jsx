@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
+import axios from "axios";
 import "../styles/GameScreen.css";
 
 function GameScreen() {
   const { mode } = useParams();
   const [game, setGame] = useState(new Chess());
   const [capturedPieces, setCapturedPieces] = useState({ w: [], b: [] });
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes
+  const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
 
@@ -25,33 +26,25 @@ function GameScreen() {
     return Math.floor(totalSeconds / 60);
   }, [timeLeft]);
 
-  const updateLocalStats = useCallback((didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-    const statsKey = chessStats_${userId};
-    const stored = JSON.parse(localStorage.getItem(statsKey)) || {
-      gamesPlayed: 0,
-      gamesWon: 0,
-      totalMinutes: 0,
-      totalCaptured: 0,
-    };
-
-    stored.gamesPlayed += 1;
-    if (didPlayerWin) stored.gamesWon += 1;
-    stored.totalMinutes += minutesPlayed;
-    stored.totalCaptured += capturedCount;
-
-    localStorage.setItem(statsKey, JSON.stringify(stored));
+  const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+    try {
+      if (!userId) return;
+      await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
+        userid: userId,
+        win: didPlayerWin,
+        minutes: minutesPlayed,
+        captured: capturedCount,
+      });
+    } catch (error) {
+      console.error("Lỗi cập nhật thống kê:", error);
+    }
   }, [userId]);
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (isGameOver) return false;
 
-    const move = game.move({
-      from: sourceSquare,
-      to: targetSquare,
-      promotion: "q", // Automatically promote pawn to queen
-    });
-
-    if (move === null) return false;
+    const move = game.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
+    if (!move) return false;
 
     if (move.captured) {
       setCapturedPieces((prev) => ({
@@ -66,7 +59,7 @@ function GameScreen() {
     if (newGame.game_over()) {
       handleGameOver(newGame);
     } else if (isAI && newGame.turn() === "b") {
-      setTimeout(() => makeAIMove(newGame), 300); // AI move delay
+      setTimeout(() => makeAIMove(newGame), 300);
     }
 
     return true;
@@ -76,10 +69,9 @@ function GameScreen() {
     if (currentGame.game_over()) return;
 
     const possibleMoves = currentGame.moves();
-    if (possibleMoves.length === 0) return;
+    if (!possibleMoves.length) return;
 
-    let move = null;
-
+    let move;
     if (mode === "easy") {
       move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
     } else if (mode === "medium") {
@@ -90,7 +82,6 @@ function GameScreen() {
 
     if (move) {
       const result = currentGame.move(move);
-
       if (result?.captured) {
         setCapturedPieces((prev) => ({
           ...prev,
@@ -110,9 +101,7 @@ function GameScreen() {
   const getBestMove = (game, depth) => {
     let bestMove = null;
     let bestValue = -Infinity;
-    const moves = game.moves();
-
-    for (const move of moves) {
+    for (const move of game.moves()) {
       game.move(move);
       const value = minimax(game, depth - 1, -Infinity, Infinity, false);
       game.undo();
@@ -121,17 +110,13 @@ function GameScreen() {
         bestMove = move;
       }
     }
-
     return bestMove;
   };
 
   const minimax = (game, depth, alpha, beta, isMaximizing) => {
-    if (depth === 0 || game.game_over()) {
-      return evaluateBoard(game.board());
-    }
+    if (depth === 0 || game.game_over()) return evaluateBoard(game.board());
 
     const moves = game.moves();
-
     if (isMaximizing) {
       let maxEval = -Infinity;
       for (const move of moves) {
@@ -181,7 +166,7 @@ function GameScreen() {
         winnerMsg = isAI ? "Máy thắng" : "Đen thắng";
       } else {
         winnerMsg = isAI ? "Bạn thắng" : "Trắng thắng";
-        if (isAI) didPlayerWin = true;
+        didPlayerWin = isAI;
       }
     }
 
@@ -193,10 +178,7 @@ function GameScreen() {
     setIsGameOver(true);
     const isPlayerWhite = color === "w";
     const didPlayerWin = !isPlayerWhite && isAI;
-
-    const winMsg = isPlayerWhite
-      ? (isAI ? "Máy thắng" : "Đen thắng")
-      : (isAI ? "Bạn thắng" : "Trắng thắng");
+    const winMsg = isPlayerWhite ? (isAI ? "Máy thắng" : "Đen thắng") : (isAI ? "Bạn thắng" : "Trắng thắng");
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(winMsg);
@@ -206,15 +188,15 @@ function GameScreen() {
     if (isGameOver) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime === 0) {
+      setTimeLeft((prev) => {
+        if (prev === 0) {
           clearInterval(timer);
           setIsGameOver(true);
           setWinner("⏱ Hết giờ - Hòa");
           updateLocalStats(false, getMinutesPlayed(), getTotalCaptured());
           return 0;
         }
-        return prevTime - 1;
+        return prev - 1;
       });
     }, 1000);
 
@@ -222,13 +204,10 @@ function GameScreen() {
   }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
 
   const renderCapturedPieces = (color) => {
-    const pieceIcons = {
-      p: "♙", n: "♘", b: "♗", r: "♖", q: "♕",
-    };
-
-    return capturedPieces[color].map((type, index) => (
-      <span key={index} className="captured-piece">
-        {color === "w" ? pieceIcons[type] : pieceIcons[type].toLowerCase()}
+    const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
+    return capturedPieces[color].map((type, idx) => (
+      <span key={idx} className="captured-piece">
+        {color === "w" ? icons[type] : icons[type].toLowerCase()}
       </span>
     ));
   };
