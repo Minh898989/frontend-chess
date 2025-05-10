@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../styles/Missions.css"; // Đảm bảo file CSS tồn tại
+import "../styles/Missions.css";
 
-// 💡 Mảng nhiệm vụ đặt ngoài component để tránh cảnh báo React
 const missionConditions = [
   {
     id: 1,
@@ -32,6 +31,14 @@ const missionConditions = [
     condition: (s) => s.total_captured >= 10,
     rewardPoints: 25,
   },
+  {
+    id: 5,
+    name: "📅 Đăng nhập mỗi ngày",
+    description: "Đăng nhập hôm nay để nhận thưởng",
+    condition: () => true,
+    rewardPoints: 5,
+    daily: true,
+  },
 ];
 
 function QuestsScreen() {
@@ -43,6 +50,9 @@ function QuestsScreen() {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
+  const today = new Date().toISOString().split("T")[0];
+  const lastClaimDate = localStorage.getItem("lastClaimDate");
+
   useEffect(() => {
     if (!userId) return;
 
@@ -52,30 +62,64 @@ function QuestsScreen() {
         const userStats = res.data;
         setStats(userStats);
 
+        const resetClaims = lastClaimDate !== today;
+
         const updatedMissions = missionConditions.map((m) => ({
           ...m,
           completed: m.condition(userStats),
-          claimed: false,
+          claimed: resetClaims
+            ? false
+            : JSON.parse(localStorage.getItem(`mission_${m.id}_claimed`) || "false"),
         }));
 
         setMissions(updatedMissions);
+
+        if (resetClaims) {
+          missionConditions.forEach((m) => {
+            localStorage.setItem(`mission_${m.id}_claimed`, "false");
+          });
+          localStorage.setItem("lastClaimDate", today);
+        }
       })
       .catch((err) => {
         console.error("Lỗi khi lấy thống kê:", err);
       });
-  }, [userId]);
 
-  const claimReward = (missionId) => {
-    setMissions((prev) =>
-      prev.map((m) => {
-        if (m.id === missionId && m.completed && !m.claimed) {
-          setMessage(`🎉 Bạn nhận được ${m.rewardPoints} điểm từ "${m.name}"!`);
-          setTotalPoints((prevPoints) => prevPoints + m.rewardPoints);
-          return { ...m, claimed: true };
-        }
-        return m;
+    // Lấy tổng điểm từ backend (nếu muốn)
+    axios
+      .get(`https://backend-chess-fjr7.onrender.com/api/rewards/${userId}`)
+      .then((res) => {
+        setTotalPoints(res.data.points || 0);
       })
-    );
+      .catch((err) => {
+        console.error("Lỗi khi lấy điểm:", err);
+      });
+  }, [userId, today, lastClaimDate]);
+
+  const claimReward = async (missionId) => {
+    const mission = missions.find((m) => m.id === missionId);
+    if (!mission || !mission.completed || mission.claimed) return;
+
+    try {
+      // Gửi điểm về backend
+      await axios.post(`https://backend-chess-fjr7.onrender.com/api/rewards/${userId}/add`, {
+        points: mission.rewardPoints,
+      });
+
+      setMessage(`🎉 Bạn nhận được ${mission.rewardPoints} điểm từ "${mission.name}"!`);
+      setTotalPoints((prev) => prev + mission.rewardPoints);
+      localStorage.setItem(`mission_${mission.id}_claimed`, "true");
+
+      // Cập nhật trạng thái mission
+      setMissions((prev) =>
+        prev.map((m) =>
+          m.id === missionId ? { ...m, claimed: true } : m
+        )
+      );
+    } catch (err) {
+      console.error("Lỗi khi gửi điểm:", err);
+      setMessage("❌ Có lỗi khi nhận thưởng. Vui lòng thử lại.");
+    }
   };
 
   return (
@@ -88,6 +132,9 @@ function QuestsScreen() {
           <p>🏆 Ván thắng: {stats.games_won}</p>
           <p>⏱ Thời gian chơi: {stats.total_minutes} phút</p>
           <p>🗡 Quân đã ăn: {stats.total_captured}</p>
+          <div className="points">
+            🌟 Tổng điểm thưởng đã nhận: <strong>{totalPoints}</strong>
+          </div>
         </div>
       ) : (
         <p>Đang tải thống kê...</p>
@@ -117,10 +164,6 @@ function QuestsScreen() {
       </div>
 
       {message && <div className="message">{message}</div>}
-
-      <div className="points">
-        🌟 Tổng điểm thưởng đã nhận: <strong>{totalPoints}</strong>
-      </div>
     </div>
   );
 }
