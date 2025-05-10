@@ -2,45 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/Missions.css";
 
-const missionConditions = [
-  {
-    id: 1,
-    name: "📅 Đăng nhập mỗi ngày",
-    description: "Đăng nhập hôm nay để nhận thưởng",
-    condition: () => true,
-    rewardPoints: 5,
-    daily: true,
-  },
-  {
-    id: 2,
-    name: "🎯 Chơi 5 ván",
-    description: "Chơi ít nhất 5 ván cờ",
-    condition: (s) => s.games_played >= 5,
-    rewardPoints: 10,
-  },
-  {
-    id: 3,
-    name: "🏆 Thắng 3 ván",
-    description: "Thắng ít nhất 3 ván cờ",
-    condition: (s) => s.games_won >= 3,
-    rewardPoints: 20,
-  },
-  {
-    id: 4,
-    name: "⏱ Chơi 10 phút",
-    description: "Chơi ít nhất 10 phút tổng cộng",
-    condition: (s) => s.total_minutes >= 10,
-    rewardPoints: 15,
-  },
-  {
-    id: 5,
-    name: "🗡 Ăn 10 quân",
-    description: "Ăn ít nhất 10 quân trong các ván đấu",
-    condition: (s) => s.total_captured >= 10,
-    rewardPoints: 25,
-  },
-];
-
 function QuestsScreen() {
   const [stats, setStats] = useState(null);
   const [missions, setMissions] = useState([]);
@@ -54,13 +15,51 @@ function QuestsScreen() {
   const today = new Date().toISOString().split("T")[0];
   const lastClaimDate = localStorage.getItem("lastClaimDate");
 
+  // Danh sách nhiệm vụ nhúng trong component
+  const missionConditions = [
+    {
+      id: 1,
+      name: "📅 Đăng nhập mỗi ngày",
+      description: "Đăng nhập hôm nay để nhận thưởng",
+      condition: () => true,
+      rewardPoints: 5,
+      daily: true,
+    },
+    {
+      id: 2,
+      name: "🎯 Chơi 5 ván",
+      description: "Chơi ít nhất 5 ván cờ",
+      condition: (s) => s.games_played >= 5,
+      rewardPoints: 10,
+    },
+    {
+      id: 3,
+      name: "🏆 Thắng 3 ván",
+      description: "Thắng ít nhất 3 ván cờ",
+      condition: (s) => s.games_won >= 3,
+      rewardPoints: 20,
+    },
+    {
+      id: 4,
+      name: "⏱ Chơi 10 phút",
+      description: "Chơi ít nhất 10 phút tổng cộng",
+      condition: (s) => s.total_minutes >= 10,
+      rewardPoints: 15,
+    },
+    {
+      id: 5,
+      name: "🗡 Ăn 10 quân",
+      description: "Ăn ít nhất 10 quân trong các ván đấu",
+      condition: (s) => s.total_captured >= 10,
+      rewardPoints: 25,
+    },
+  ];
+
   useEffect(() => {
     if (!userId) return;
 
-    // Bắt đầu tải dữ liệu
     setLoading(true);
 
-    // Lấy thông tin thống kê người dùng
     axios
       .get(`https://backend-chess-fjr7.onrender.com/api/stats/${userId}`)
       .then((res) => {
@@ -86,15 +85,13 @@ function QuestsScreen() {
           localStorage.setItem("lastClaimDate", today);
         }
 
-        // Kết thúc tải dữ liệu
         setLoading(false);
       })
       .catch((err) => {
         console.error("Lỗi khi lấy thống kê:", err);
-        setLoading(false); // Kết thúc tải dù có lỗi
+        setLoading(false);
       });
 
-    // Lấy tổng điểm từ backend
     axios
       .get(`https://backend-chess-fjr7.onrender.com/api/rewards/${userId}`)
       .then((res) => {
@@ -103,6 +100,7 @@ function QuestsScreen() {
       .catch((err) => {
         console.error("Lỗi khi lấy điểm:", err);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, today, lastClaimDate]);
 
   const claimReward = async (missionId) => {
@@ -110,7 +108,6 @@ function QuestsScreen() {
     if (!mission || !mission.completed || mission.claimed) return;
 
     try {
-      // Gửi điểm về backend
       await axios.post(`https://backend-chess-fjr7.onrender.com/api/rewards/${userId}/add`, {
         points: mission.rewardPoints,
       });
@@ -119,7 +116,6 @@ function QuestsScreen() {
       setTotalPoints((prev) => prev + mission.rewardPoints);
       localStorage.setItem(`mission_${mission.id}_claimed`, "true");
 
-      // Cập nhật trạng thái mission
       setMissions((prev) =>
         prev.map((m) =>
           m.id === missionId ? { ...m, claimed: true } : m
@@ -136,7 +132,7 @@ function QuestsScreen() {
       <h1>🎯 Nhiệm Vụ & Phần Thưởng</h1>
 
       {loading ? (
-        <p>Đang tải thống kê...</p> // Thông báo khi đang tải
+        <p>Đang tải thống kê...</p>
       ) : (
         <>
           <div className="stats">
@@ -150,28 +146,27 @@ function QuestsScreen() {
           </div>
 
           <div className="missions-list">
-  {missions.map((mission) => (
-    <div
-      key={mission.id}
-      className={`mission ${mission.claimed ? "completed" : ""}`}
-    >
-      <h3>{mission.name}</h3>
-      <p>{mission.description}</p>
-      <p>🎁 Thưởng: {mission.rewardPoints} điểm</p>
-      <button
-        disabled={mission.claimed}
-        onClick={() => claimReward(mission.id)}
-      >
-        {mission.claimed
-          ? "✅ Đã nhận"
-          : mission.completed
-          ? "🎁 Nhận thưởng"
-          : "⏳ Chưa hoàn thành"}
-      </button>
-    </div>
-  ))}
-</div>
-
+            {missions.map((mission) => (
+              <div
+                key={mission.id}
+                className={`mission ${mission.claimed ? "completed" : ""}`}
+              >
+                <h3>{mission.name}</h3>
+                <p>{mission.description}</p>
+                <p>🎁 Thưởng: {mission.rewardPoints} điểm</p>
+                <button
+                  disabled={mission.claimed || !mission.completed}
+                  onClick={() => claimReward(mission.id)}
+                >
+                  {mission.claimed
+                    ? "✅ Đã nhận"
+                    : mission.completed
+                    ? "🎁 Nhận thưởng"
+                    : "⏳ Chưa hoàn thành"}
+                </button>
+              </div>
+            ))}
+          </div>
         </>
       )}
 
