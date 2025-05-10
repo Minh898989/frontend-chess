@@ -3,12 +3,22 @@ import axios from 'axios';
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com/api/missions';
 
-const MissionsScreen = ({ userId }) => {
+const MissionsScreen = () => {
   const [missions, setMissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.userid) {
+      setUserId(user.userid);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return; // Don't fetch missions if userId is not set
+
     const fetchMissions = async () => {
       try {
         const res = await axios.get(`${API_BASE}/${userId}`);
