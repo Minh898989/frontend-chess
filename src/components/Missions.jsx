@@ -10,7 +10,7 @@ const MissionsScreen = () => {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem('user'));
     if (user?.userid) {
       setUserId(user.userid);
     }
@@ -52,30 +52,37 @@ const MissionsScreen = () => {
   if (loading) return <p>Đang tải danh sách nhiệm vụ...</p>;
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Nhiệm vụ</h2>
+    <div className="missions-screen">
+      <h1>Nhiệm vụ</h1>
       {message && <p style={{ color: 'green' }}>{message}</p>}
-      {missions.map((mission) => (
-        <div key={mission.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
-          <h3>{mission.name}</h3>
-          <p>{mission.description}</p>
-          <p>Thưởng: {mission.reward_points} điểm</p>
-          <p>
-            Trạng thái:{' '}
-            {mission.claimed
-              ? '✅ Đã nhận thưởng'
-              : mission.eligible
-              ? '🎯 Hoàn thành - Chưa nhận thưởng'
-              : '🔄 Chưa hoàn thành'}
-          </p>
-          {mission.progress !== undefined && (
-            <p>Tiến độ: {mission.progress.current} / {mission.progress.required}</p>
-          )}
-          {mission.eligible && !mission.claimed && (
-            <button onClick={() => claimReward(mission.id)}>Nhận thưởng</button>
-          )}
-        </div>
-      ))}
+      <div className="missions-list">
+        {missions.map((mission) => (
+          <div
+            key={mission.id}
+            className={`mission ${mission.claimed ? 'completed' : ''}`}
+          >
+            <h3>{mission.name}</h3>
+            <p>{mission.description}</p>
+            <p>Thưởng: {mission.reward_points} điểm</p>
+            <p>
+              Trạng thái:{' '}
+              {mission.claimed
+                ? '✅ Đã nhận thưởng'
+                : mission.eligible
+                ? '🎯 Hoàn thành - Chưa nhận thưởng'
+                : '🔄 Chưa hoàn thành'}
+            </p>
+            {mission.progress !== undefined && (
+              <p>
+                Tiến độ: {mission.progress.current} / {mission.progress.required}
+              </p>
+            )}
+            {mission.eligible && !mission.claimed && (
+              <button onClick={() => claimReward(mission.id)}>Nhận thưởng</button>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
