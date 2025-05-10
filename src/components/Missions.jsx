@@ -7,15 +7,11 @@ function QuestsScreen() {
   const [missions, setMissions] = useState([]);
   const [message, setMessage] = useState("");
   const [totalPoints, setTotalPoints] = useState(0);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
-  const today = new Date().toISOString().split("T")[0];
-  const lastClaimDate = localStorage.getItem("lastClaimDate");
-
-  // Danh sách nhiệm vụ nhúng trong component
   const missionConditions = [
     {
       id: 1,
@@ -58,40 +54,42 @@ function QuestsScreen() {
   useEffect(() => {
     if (!userId) return;
 
+    
     setLoading(true);
 
+    // Lấy thống kê người chơi
     axios
       .get(`https://backend-chess-fjr7.onrender.com/api/stats/${userId}`)
       .then((res) => {
         const userStats = res.data;
         setStats(userStats);
 
-        const resetClaims = lastClaimDate !== today;
+        // Lấy danh sách nhiệm vụ đã nhận hôm nay
+        axios
+          .get(`https://backend-chess-fjr7.onrender.com/api/missions/${userId}`)
+          .then((claimedRes) => {
+            const claimedMissions = claimedRes.data.claimed;
 
-        const updatedMissions = missionConditions.map((m) => ({
-          ...m,
-          completed: m.condition(userStats),
-          claimed: resetClaims
-            ? false
-            : JSON.parse(localStorage.getItem(`mission_${m.id}_claimed`) || "false"),
-        }));
+            const updatedMissions = missionConditions.map((m) => ({
+              ...m,
+              completed: m.condition(userStats),
+              claimed: claimedMissions.includes(m.id),
+            }));
 
-        setMissions(updatedMissions);
-
-        if (resetClaims) {
-          missionConditions.forEach((m) => {
-            localStorage.setItem(`mission_${m.id}_claimed`, "false");
+            setMissions(updatedMissions);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error("Lỗi khi lấy claimed missions:", err);
+            setLoading(false);
           });
-          localStorage.setItem("lastClaimDate", today);
-        }
-
-        setLoading(false);
       })
       .catch((err) => {
         console.error("Lỗi khi lấy thống kê:", err);
         setLoading(false);
       });
 
+    // Lấy điểm thưởng
     axios
       .get(`https://backend-chess-fjr7.onrender.com/api/rewards/${userId}`)
       .then((res) => {
@@ -101,28 +99,32 @@ function QuestsScreen() {
         console.error("Lỗi khi lấy điểm:", err);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, today, lastClaimDate]);
+  }, [userId]);
 
   const claimReward = async (missionId) => {
     const mission = missions.find((m) => m.id === missionId);
     if (!mission || !mission.completed || mission.claimed) return;
 
     try {
+      // Cộng điểm
       await axios.post(`https://backend-chess-fjr7.onrender.com/api/rewards/${userId}/add`, {
         points: mission.rewardPoints,
       });
 
+      // Đánh dấu nhiệm vụ đã nhận
+      await axios.post(`https://backend-chess-fjr7.onrender.com/api/missions/${userId}/claim`, {
+        missionId: mission.id,
+      });
+
       setMessage(`🎉 Bạn nhận được ${mission.rewardPoints} điểm từ "${mission.name}"!`);
       setTotalPoints((prev) => prev + mission.rewardPoints);
-      localStorage.setItem(`mission_${mission.id}_claimed`, "true");
 
+      // Cập nhật trạng thái nhiệm vụ
       setMissions((prev) =>
-        prev.map((m) =>
-          m.id === missionId ? { ...m, claimed: true } : m
-        )
+        prev.map((m) => (m.id === missionId ? { ...m, claimed: true } : m))
       );
     } catch (err) {
-      console.error("Lỗi khi gửi điểm:", err.response ? err.response.data : err.message);
+      console.error("Lỗi khi nhận thưởng:", err);
       setMessage("❌ Có lỗi khi nhận thưởng. Vui lòng thử lại.");
     }
   };
