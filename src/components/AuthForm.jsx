@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/AuthForm.css';
@@ -8,11 +8,35 @@ const AuthForm = () => {
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [isReadonlyUser, setIsReadonlyUser] = useState(false); // để khóa input nếu từ Telegram
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp;
+    const tgUser = tg?.initDataUnsafe?.user;
+
+    if (tgUser?.username) {
+      setUserid(tgUser.username);
+      setIsReadonlyUser(true);
+    } else {
+      // Nếu không mở từ Telegram → thử lấy từ URL (?uid=abc)
+      const query = new URLSearchParams(window.location.search);
+      const uidFromUrl = query.get("uid");
+
+      if (uidFromUrl) {
+        setUserid(uidFromUrl);
+        setIsReadonlyUser(true);
+      } else {
+        // Dữ liệu test khi debug trong trình duyệt
+        setUserid("test_user");
+        setIsReadonlyUser(false); // cho phép sửa khi test
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(''); // Clear any previous message
+    setMessage('');
 
     const endpoint = mode === 'login' ? 'login' : 'register';
 
@@ -21,24 +45,19 @@ const AuthForm = () => {
         `https://backend-chess-fjr7.onrender.com/api/auth/${endpoint}`,
         { userid, password },
         {
-          withCredentials: true, // Ensure cookies are sent/received (if necessary)
+          withCredentials: true,
         }
       );
 
-      console.log('Response:', res.data); // Log the response for debugging
       setMessage(res.data.message);
 
       if (mode === 'login' && res.data.message === 'Đăng nhập thành công') {
-        console.log('Đăng nhập với userId:', userid);
         localStorage.setItem('user', JSON.stringify({ userid }));
-        navigate('/'); // Navigate to the home page after login
+        navigate('/');
       } else if (mode === 'register' && res.data.message === 'Đăng ký thành công') {
-        console.log('Đăng ký thành công, chuyển sang đăng nhập');
-        setMode('login'); // Switch to login mode after successful registration
+        setMode('login');
       }
 
-      // Clear input fields after successful action
-      setUserid('');
       setPassword('');
     } catch (err) {
       const errorMessage = err.response
@@ -46,7 +65,6 @@ const AuthForm = () => {
         : 'Lỗi kết nối mạng. Vui lòng kiểm tra lại.';
 
       setMessage(errorMessage);
-      console.error('Error details:', err);
     }
   };
 
@@ -75,6 +93,7 @@ const AuthForm = () => {
             value={userid}
             onChange={(e) => setUserid(e.target.value)}
             required
+            readOnly={isReadonlyUser}
           />
 
           <label>Mật khẩu:</label>
