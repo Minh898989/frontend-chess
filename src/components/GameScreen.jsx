@@ -34,10 +34,10 @@ function GameScreen() {
 
     try {
       await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
-        userid: userId,
-        win: didPlayerWin,
-        minutes: minutesPlayed,
-        captured: capturedCount,
+         userid: userId,
+         didWin: didPlayerWin,
+         minutesPlayed,
+         capturedCount,
       });
     } catch (error) {
       console.error("Lỗi cập nhật thống kê:", error);
