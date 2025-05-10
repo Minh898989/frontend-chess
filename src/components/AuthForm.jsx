@@ -15,10 +15,10 @@ const AuthForm = () => {
     setMessage(''); // Clear any previous message
 
     const endpoint = mode === 'login' ? 'login' : 'register';
-  
+
     try {
       const res = await axios.post(
-        `https://backend-chess-fjr7.onrender.com/api/auth/${endpoint}`, 
+        `https://backend-chess-fjr7.onrender.com/api/auth/${endpoint}`,
         { userid, password },
         {
           withCredentials: true, // Ensure cookies are sent/received (if necessary)
@@ -33,21 +33,20 @@ const AuthForm = () => {
         localStorage.setItem('user', JSON.stringify({ userid }));
         navigate('/'); // Navigate to the home page after login
       } else if (mode === 'register' && res.data.message === 'Đăng ký thành công') {
-        // Redirect to login page after successful registration
-        navigate('/login');
+        console.log('Đăng ký thành công, chuyển sang đăng nhập');
+        setMode('login'); // Switch to login mode after successful registration
       }
 
       // Clear input fields after successful action
       setUserid('');
       setPassword('');
     } catch (err) {
-      // Handle the error more clearly
       const errorMessage = err.response
         ? err.response.data?.message || 'Đã xảy ra lỗi từ server. Vui lòng thử lại.'
         : 'Lỗi kết nối mạng. Vui lòng kiểm tra lại.';
-        
+
       setMessage(errorMessage);
-      console.error('Error details:', err); // Log error for debugging
+      console.error('Error details:', err);
     }
   };
 
