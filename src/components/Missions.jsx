@@ -1,52 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const Mission = ({ userid }) => {
+const API_BASE = 'https://backend-chess-fjr7.onrender.com/api/missions';
+
+const MissionsScreen = ({ userId }) => {
   const [missions, setMissions] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
+    const fetchMissions = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/${userId}`);
+        setMissions(res.data);
+      } catch (error) {
+        console.error('Lỗi khi tải nhiệm vụ:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMissions();
-  }, []);
+  }, [userId]);
 
-  const fetchMissions = async () => {
+  const claimReward = async (missionId) => {
     try {
-      const res = await axios.get(`https://backend-chess-fjr7.onrender.com/missions/status/${userid}`);
-      setMissions(res.data.missions); // Mỗi mission: { id, name, description, reward_points, is_claimable, is_claimed }
+      const res = await axios.post(`${API_BASE}/claim`, {
+        userid: userId,
+        missionId,
+      });
+      setMessage(res.data.message);
+
+      // Refresh mission list
+      const refreshed = await axios.get(`${API_BASE}/${userId}`);
+      setMissions(refreshed.data);
     } catch (err) {
-      console.error(err);
+      setMessage(err.response?.data?.message || 'Lỗi không xác định khi nhận thưởng');
     }
   };
 
-  const handleClaim = async (missionId) => {
-    setLoading(true);
-    try {
-      await axios.post(`https://backend-chess-fjr7.onrender.com/missions/claim/${userid}`, { missionId });
-      fetchMissions(); // cập nhật lại danh sách sau khi nhận
-    } catch (err) {
-      console.error(err);
-      alert('Có lỗi khi nhận nhiệm vụ.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) return <p>Đang tải danh sách nhiệm vụ...</p>;
 
   return (
-    <div className="mission-container" style={{ padding: 20 }}>
-      <h2>🎯 Danh sách nhiệm vụ</h2>
-      {missions.map((m) => (
-        <div key={m.id} style={{ border: '1px solid #ccc', padding: 10, marginBottom: 10, borderRadius: 8 }}>
-          <h4>{m.name}</h4>
-          <p>{m.description}</p>
-          <p>🎁 Điểm thưởng: {m.reward_points}</p>
-          {m.is_claimed ? (
-            <button disabled style={{ backgroundColor: '#ccc' }}>✅ Đã nhận</button>
-          ) : m.is_claimable ? (
-            <button onClick={() => handleClaim(m.id)} disabled={loading}>
-              {loading ? 'Đang xử lý...' : 'Nhận thưởng'}
-            </button>
-          ) : (
-            <button disabled style={{ backgroundColor: '#eee' }}>🚫 Chưa đủ điều kiện</button>
+    <div style={{ padding: '1rem' }}>
+      <h2>Nhiệm vụ</h2>
+      {message && <p style={{ color: 'green' }}>{message}</p>}
+      {missions.map((mission) => (
+        <div key={mission.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+          <h3>{mission.name}</h3>
+          <p>{mission.description}</p>
+          <p>Thưởng: {mission.reward_points} điểm</p>
+          <p>
+            Trạng thái:{' '}
+            {mission.claimed
+              ? '✅ Đã nhận thưởng'
+              : mission.eligible
+              ? '🎯 Hoàn thành - Chưa nhận thưởng'
+              : '🔄 Chưa hoàn thành'}
+          </p>
+          {mission.progress !== undefined && (
+            <p>Tiến độ: {mission.progress.current} / {mission.progress.required}</p>
+          )}
+          {mission.eligible && !mission.claimed && (
+            <button onClick={() => claimReward(mission.id)}>Nhận thưởng</button>
           )}
         </div>
       ))}
@@ -54,4 +70,4 @@ const Mission = ({ userid }) => {
   );
 };
 
-export default Mission;
+export default MissionsScreen;
