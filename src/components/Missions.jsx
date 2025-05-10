@@ -17,8 +17,12 @@ function MissionsScreen() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.userid) return;
 
-    const key = `chessStats_${user.userid}`;
-    const storedStats = JSON.parse(localStorage.getItem(key)) || {
+    const statsKey = `chessStats_${user.userid}`;
+    const claimedKey = `claimedRewards_${user.userid}`;
+    const pointsKey = `totalPoints_${user.userid}`;
+    const lastLoginKey = `lastLoginDate_${user.userid}`;
+
+    const storedStats = JSON.parse(localStorage.getItem(statsKey)) || {
       gamesPlayed: 0,
       gamesWon: 0,
       totalMinutes: 0,
@@ -26,19 +30,32 @@ function MissionsScreen() {
     };
     setStats(storedStats);
 
-    const lastLogin = localStorage.getItem(`lastLoginDate_${user.userid}`);
-    if (lastLogin !== today) {
-      // Reset claimed rewards mỗi ngày
-      localStorage.setItem(`claimedRewards_${user.userid}`, JSON.stringify([]));
-      localStorage.setItem(`lastLoginDate_${user.userid}`, today);
-      setClaimedRewards([]);
-    } else {
-      const claimed = JSON.parse(localStorage.getItem(`claimedRewards_${user.userid}`)) || [];
-      setClaimedRewards(claimed);
-    }
+    const lastLogin = localStorage.getItem(lastLoginKey);
+    let claimed = JSON.parse(localStorage.getItem(claimedKey)) || [];
 
-    const storedPoints = JSON.parse(localStorage.getItem(`totalPoints_${user.userid}`)) || 0;
-    setTotalPoints(storedPoints);
+    // Nếu là ngày mới
+    if (lastLogin !== today) {
+      claimed = [];
+      localStorage.setItem(claimedKey, JSON.stringify([]));
+      localStorage.setItem(lastLoginKey, today);
+
+      // ✅ Tự động nhận thưởng "dailyLogin"
+      const dailyLoginId = "dailyLogin";
+      const dailyRewardValue = 5;
+
+      claimed.push(dailyLoginId);
+      localStorage.setItem(claimedKey, JSON.stringify(claimed));
+      setClaimedRewards(claimed);
+
+      const previousPoints = JSON.parse(localStorage.getItem(pointsKey)) || 0;
+      const updatedPoints = previousPoints + dailyRewardValue;
+      localStorage.setItem(pointsKey, JSON.stringify(updatedPoints));
+      setTotalPoints(updatedPoints);
+    } else {
+      setClaimedRewards(claimed);
+      const storedPoints = JSON.parse(localStorage.getItem(pointsKey)) || 0;
+      setTotalPoints(storedPoints);
+    }
   }, [today]);
 
   const handleClaimReward = (id, reward) => {
