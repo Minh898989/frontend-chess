@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
-import axios from "axios";
 import "../styles/GameScreen.css";
 
 function GameScreen() {
@@ -26,18 +25,21 @@ function GameScreen() {
     return Math.floor(totalSeconds / 60);
   }, [timeLeft]);
 
-  const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-    try {
-      if (!userId) return;
-      await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
-        userid: userId,
-        win: didPlayerWin,
-        minutes: minutesPlayed,
-        captured: capturedCount,
-      });
-    } catch (error) {
-      console.error("Lỗi cập nhật thống kê:", error);
-    }
+  const updateLocalStats = useCallback((didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+    const statsKey = chessStats_${userId};
+    const stored = JSON.parse(localStorage.getItem(statsKey)) || {
+      gamesPlayed: 0,
+      gamesWon: 0,
+      totalMinutes: 0,
+      totalCaptured: 0,
+    };
+
+    stored.gamesPlayed += 1;
+    if (didPlayerWin) stored.gamesWon += 1;
+    stored.totalMinutes += minutesPlayed;
+    stored.totalCaptured += capturedCount;
+
+    localStorage.setItem(statsKey, JSON.stringify(stored));
   }, [userId]);
 
   const onDrop = (sourceSquare, targetSquare) => {
@@ -46,7 +48,7 @@ function GameScreen() {
     const move = game.move({
       from: sourceSquare,
       to: targetSquare,
-      promotion: "q",
+      promotion: "q", // Automatically promote pawn to queen
     });
 
     if (move === null) return false;
@@ -64,7 +66,7 @@ function GameScreen() {
     if (newGame.game_over()) {
       handleGameOver(newGame);
     } else if (isAI && newGame.turn() === "b") {
-      setTimeout(() => makeAIMove(newGame), 300);
+      setTimeout(() => makeAIMove(newGame), 300); // AI move delay
     }
 
     return true;
