@@ -11,36 +11,59 @@ function GameScreen() {
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   const isAI = mode !== "2players";
   const user = JSON.parse(localStorage.getItem("user"));
-  const userId = user?.userid;
 
+  // Initialize userId from localStorage
+  useEffect(() => {
+    if (user) {
+      setUserId(user.userid);
+    }
+  }, [user]);
+
+  // Get total captured pieces (both white and black)
   const getTotalCaptured = useCallback(() => {
     return capturedPieces.w.length + capturedPieces.b.length;
   }, [capturedPieces]);
 
+  // Get minutes played
   const getMinutesPlayed = useCallback(() => {
     const totalSeconds = 15 * 60 - timeLeft;
     return Math.floor(totalSeconds / 60);
   }, [timeLeft]);
 
-  const updateLocalStats = useCallback((didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-    const statsKey = `chessStats_${userId}`;
-    const stored = JSON.parse(localStorage.getItem(statsKey)) || {
-      gamesPlayed: 0,
-      gamesWon: 0,
-      totalMinutes: 0,
-      totalCaptured: 0,
+  // API function to update stats
+  const updateStatsAPI = async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+    if (!userId) return; // Ensure userId is available before making the API request
+    
+    const statsData = {
+      userId: userId,
+      gamesPlayed: 1,
+      gamesWon: didPlayerWin ? 1 : 0,
+      totalMinutes: minutesPlayed,
+      totalCaptured: capturedCount,
     };
 
-    stored.gamesPlayed += 1;
-    if (didPlayerWin) stored.gamesWon += 1;
-    stored.totalMinutes += minutesPlayed;
-    stored.totalCaptured += capturedCount;
+    try {
+      const response = await fetch('https://backend-chess-fjr7.onrender.com/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(statsData),
+      });
 
-    localStorage.setItem(statsKey, JSON.stringify(stored));
-  }, [userId]);
+      if (!response.ok) {
+        throw new Error('Failed to update stats');
+      }
+    } catch (error) {
+      console.error('Error updating stats:', error);
+    }
+  };
+
+  // Handle move drop
   const onDrop = (sourceSquare, targetSquare) => {
     if (isGameOver) return false;
 
@@ -74,6 +97,7 @@ function GameScreen() {
     return true;
   };
 
+  // Make AI move
   const makeAIMove = (currentGame) => {
     if (currentGame.game_over()) return;
 
@@ -112,6 +136,7 @@ function GameScreen() {
     }
   };
 
+  // Get best move for AI using minimax algorithm
   const getBestMove = (game, depth) => {
     let bestMove = null;
     let bestValue = -Infinity;
@@ -130,6 +155,7 @@ function GameScreen() {
     return bestMove;
   };
 
+  // Minimax algorithm to evaluate the board
   const minimax = (game, depth, alpha, beta, isMaximizing) => {
     if (depth === 0 || game.game_over()) {
       return evaluateBoard(game.board());
@@ -162,6 +188,7 @@ function GameScreen() {
     }
   };
 
+  // Evaluate board based on piece values
   const evaluateBoard = (board) => {
     const values = {
       p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000,
@@ -178,11 +205,11 @@ function GameScreen() {
     return score;
   };
 
+  // Handle game over logic
   const handleGameOver = (finalGame) => {
     setIsGameOver(true);
     let winnerMsg = "Hòa";
     let didPlayerWin = false;
-    
 
     if (finalGame.in_checkmate()) {
       if (finalGame.turn() === "w") {
@@ -193,10 +220,11 @@ function GameScreen() {
       }
     }
 
-    updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
+    updateStatsAPI(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(winnerMsg);
   };
 
+  // Handle resignation logic
   const handleResign = (color) => {
     setIsGameOver(true);
     const isPlayerWhite = color === "w";
@@ -206,10 +234,11 @@ function GameScreen() {
       ? (isAI ? "Máy thắng" : "Đen thắng")
       : (isAI ? "Bạn thắng" : "Trắng thắng");
 
-    updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
+    updateStatsAPI(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(winMsg);
   };
 
+  // Timer logic
   useEffect(() => {
     if (isGameOver) return;
 
@@ -219,7 +248,7 @@ function GameScreen() {
           clearInterval(timer);
           setIsGameOver(true);
           setWinner("⏱ Hết giờ - Hòa");
-          updateLocalStats(false, getMinutesPlayed(), getTotalCaptured());
+          updateStatsAPI(false, getMinutesPlayed(), getTotalCaptured());
           return 0;
         }
         return prevTime - 1;
@@ -227,8 +256,9 @@ function GameScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
+  }, [isGameOver, getMinutesPlayed, getTotalCaptured]);
 
+  // Render captured pieces for both players
   const renderCapturedPieces = (color) => {
     const pieceIcons = {
       p: "♙", n: "♘", b: "♗", r: "♖", q: "♕",
@@ -241,6 +271,7 @@ function GameScreen() {
     ));
   };
 
+  // Get game mode name
   const getModeName = () => {
     switch (mode) {
       case "2players": return "👥 Chế độ 2 người";
