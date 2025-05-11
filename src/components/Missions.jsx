@@ -45,37 +45,30 @@ const MissionsScreen = () => {
   };
 
   const claimReward = async (missionId) => {
-    if (claiming[missionId]) return;
+  if (claiming[missionId]) return;
 
-    setClaiming(prev => ({ ...prev, [missionId]: true }));
-    setMessage('');
+  setClaiming(prev => ({ ...prev, [missionId]: true }));
+  setMessage('');
 
-    try {
-      const res = await axios.post(`${API_BASE}/claim`, {
-        userid: userId,
-        missionId,
-      });
+  try {
+    const res = await axios.post(`${API_BASE}/claim`, {
+      userid: userId,
+      missionId,
+    });
 
-      setMessage(res.data.message || 'Nhận thưởng thành công!');
+    setMessage(res.data.message || 'Nhận thưởng thành công!');
 
-      // ✅ Cập nhật nhiệm vụ đã nhận trong state
-      setMissions(prevMissions =>
-        prevMissions.map(m =>
-          m.id === missionId ? { ...m, claimed: true } : m
-        )
-      );
+    // ✅ Lấy lại toàn bộ nhiệm vụ để cập nhật trạng thái chính xác
+    await fetchMissions();
 
-      // ✅ Cập nhật điểm và cấp nếu có từ response
-      if (res.data.totalPoints !== undefined) setTotalPoints(res.data.totalPoints);
-      if (res.data.level !== undefined) setLevel(res.data.level);
+  } catch (err) {
+    const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
+    setMessage(msg);
+  } finally {
+    setClaiming(prev => ({ ...prev, [missionId]: false }));
+  }
+};
 
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
-      setMessage(msg);
-    } finally {
-      setClaiming(prev => ({ ...prev, [missionId]: false }));
-    }
-  };
 
   if (loading) return <p>Đang tải dữ liệu nhiệm vụ...</p>;
 
