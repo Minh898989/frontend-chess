@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import "../styles/Missions.css";
 const Mission = () => {
   const [missions, setMissions] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -67,27 +67,29 @@ const Mission = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div>
-      <h1>Your Missions</h1>
+    <div className="missions-screen">
+      <h2>Your Missions</h2>
       <p>Total Points: {totalPoints}</p>
-      <ul>
+      <div className="missions-list">
         {missions.map((mission) => (
-          <li key={mission.id}>
-            <div>
-              <h3>{mission.name}</h3>
-              <p>{mission.description}</p>
-              <p>{mission.isCompleted ? "Completed" : "Not completed"}</p>
-              <p>{mission.isClaimedToday ? "Already claimed today" : "Not claimed yet"}</p>
-              <button
-                onClick={() => handleClaimMission(mission.id)}
-                disabled={mission.isClaimedToday || !mission.isCompleted}
-              >
-                Claim Reward
-              </button>
-            </div>
-          </li>
+          <div
+            key={mission.id}
+            className={`mission-card ${mission.isClaimedToday || mission.isCompleted ? "claimed" : ""}`}
+          >
+            <h3>{mission.name}</h3>
+            <p>{mission.description}</p>
+            <p>{mission.isCompleted ? "Completed" : "Not completed"}</p>
+            <p>{mission.isClaimedToday ? "Already claimed today" : "Not claimed yet"}</p>
+            <button
+              onClick={() => handleClaimMission(mission.id)}
+              className="claim-button"
+              disabled={mission.isClaimedToday || !mission.isCompleted}
+            >
+              Claim Reward
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
