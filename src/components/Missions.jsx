@@ -24,8 +24,10 @@ const MissionsScreen = () => {
     const fetchMissions = async () => {
       try {
         const res = await axios.get(`${API_BASE}/${userId}`);
-        setMissions(res.data);
-        setTotalPoints(res.data.totalPoints);
+        console.log('Missions response:', res.data);
+        setMissions(Array.isArray(res.data.missions) ? res.data.missions : []);
+        setTotalPoints(res.data.totalPoints || 0);
+
       } catch (error) {
         console.error('Lỗi khi tải nhiệm vụ:', error);
       } finally {
