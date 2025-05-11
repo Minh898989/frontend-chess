@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const Missions = ({ userid }) => {
+const Missions = () => {
   const [missions, setMissions] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [loading, setLoading] = useState(true);
   const [claimingId, setClaimingId] = useState(null);
 
+  const userid = JSON.parse(localStorage.getItem('user'))?.userid;
+
   useEffect(() => {
-    fetchMissions();
+    if (userid) {
+      fetchMissions();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userid]);
 
   const fetchMissions = async () => {
@@ -29,7 +34,7 @@ const Missions = ({ userid }) => {
       setClaimingId(missionId);
       const res = await axios.post('/api/missions/claim', { userid, missionId });
       alert(res.data.message || 'Nhận thưởng thành công!');
-      await fetchMissions(); // cập nhật lại sau khi claim
+      await fetchMissions();
     } catch (err) {
       alert(err.response?.data?.error || 'Lỗi nhận thưởng');
     } finally {
@@ -37,6 +42,7 @@ const Missions = ({ userid }) => {
     }
   };
 
+  if (!userid) return <p>Không tìm thấy người dùng.</p>;
   if (loading) return <p>Đang tải nhiệm vụ...</p>;
 
   return (
