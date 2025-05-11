@@ -1,108 +1,100 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 
-const Missions = () => {
+const Mission = () => {
   const [missions, setMissions] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [claimingId, setClaimingId] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Lấy userid từ localStorage
-  const userid = JSON.parse(localStorage.getItem('user'))?.userid;
+  // Lấy thông tin người dùng từ localStorage
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userid = user ? user.userid : null;
 
   useEffect(() => {
-    if (userid) {
-      fetchMissions();
+    if (!userid) {
+      setError('User not found');
+      setLoading(false);
+      return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // Gọi API để lấy các nhiệm vụ và tổng điểm người chơi
+    const fetchMissions = async () => {
+      try {
+        const response = await fetch(`https://backend-chess-fjr7.onrender.com/missions/user/${userid}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          setMissions(data.missions);
+          setTotalPoints(data.totalPoints);
+        } else {
+          setError(data.error || 'Something went wrong');
+        }
+      } catch (err) {
+        setError('Failed to fetch missions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMissions();
   }, [userid]);
 
-  const fetchMissions = async () => {
-    setLoading(true);
+  const claimMission = async (missionId) => {
     try {
-      // Gửi yêu cầu GET đến backend
-      const res = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
-      const missionList = res.data.missions || [];
-      setMissions(missionList);
-      setTotalPoints(res.data.totalPoints || 0);
-    } catch (err) {
-      console.error('Lỗi khi tải nhiệm vụ:', err.response?.data || err.message);
-      alert('Lỗi khi tải nhiệm vụ, vui lòng thử lại sau.');
-      setMissions([]);
-      setTotalPoints(0);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClaim = async (missionId) => {
-    setClaimingId(missionId);
-    try {
-      const res = await axios.post(`https://backend-chess-fjr7.onrender.com/api/missions/claim`, {
-        userid,
-        missionId
+      const response = await fetch('https://backend-chess-fjr7.onrender.com/missions/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userid: userid,
+          missionId: missionId,
+        }),
       });
-      alert(res.data.message || 'Nhận thưởng thành công!');
-      await fetchMissions();
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Mission claimed successfully!');
+        // Refresh mission data to reflect changes
+        setLoading(true);
+      } else {
+        alert(data.error || 'Failed to claim mission');
+      }
     } catch (err) {
-      alert(err.response?.data?.error || 'Lỗi nhận thưởng');
-    } finally {
-      setClaimingId(null);
+      alert('Error claiming mission');
     }
   };
 
-  if (!userid) return <p>❗ Không tìm thấy thông tin người dùng.</p>;
-  if (loading) return <p>⏳ Đang tải nhiệm vụ...</p>;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h2>📋 Nhiệm vụ hôm nay</h2>
-      <p><strong>🏆 Tổng điểm:</strong> {totalPoints}</p>
-
-      {missions.length === 0 ? (
-        <p>Không có nhiệm vụ nào.</p>
-      ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {missions.map((m) => (
-            <li
-              key={m.id}
-              style={{
-                marginBottom: '15px',
-                padding: '15px',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-              }}
-            >
-              <h4>{m.name}</h4>
-              <p>{m.description}</p>
-              <p>🎁 Thưởng: <strong>{m.reward_points}</strong> điểm</p>
-              <p>📌 Trạng thái: {m.isCompleted ? '✅ Đã hoàn thành' : '❌ Chưa xong'}</p>
-              <p>📆 Đã nhận hôm nay: {m.isClaimedToday ? '🟢 Rồi' : '⚪ Chưa'}</p>
-
-              {m.isCompleted && !m.isClaimedToday && (
-                <button
-                  onClick={() => handleClaim(m.id)}
-                  disabled={claimingId === m.id}
-                  style={{
-                    marginTop: '10px',
-                    padding: '8px 14px',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {claimingId === m.id ? 'Đang nhận...' : '🎉 Nhận thưởng'}
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+    <div>
+      <h1>Your Missions</h1>
+      <p>Total Points: {totalPoints}</p>
+      <ul>
+        {missions.map((mission) => (
+          <li key={mission.id}>
+            <h3>{mission.name}</h3>
+            <p>{mission.description}</p>
+            <p>Status: {mission.isCompleted ? 'Completed' : 'Not Completed'}</p>
+            {mission.isClaimedToday ? (
+              <p>You have already claimed this mission today.</p>
+            ) : (
+              <button onClick={() => claimMission(mission.id)} disabled={mission.isCompleted === false}>
+                Claim Reward
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default Missions;
+export default Mission;
