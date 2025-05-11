@@ -15,9 +15,7 @@ const MissionsScreen = () => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
-    if (user?.userid) {
-      setUserId(user.userid);
-    }
+    if (user?.userid) setUserId(user.userid);
   }, []);
 
   const fetchMissions = async () => {
@@ -80,18 +78,13 @@ const MissionsScreen = () => {
                 ? '🎯 Hoàn thành - Chưa nhận thưởng'
                 : '🔄 Chưa hoàn thành'}
             </p>
-            {mission.progress !== undefined && (
-              <p>
-                Tiến độ: {mission.progress.current} / {mission.progress.required}
-              </p>
-            )}
             {mission.eligible && !mission.claimed && (
               <button
-  onClick={() => claimReward(mission.id)}
-  disabled={claimingId !== null} // không chỉ so sánh với mission.id
->
-  {claimingId === mission.id ? 'Đang xử lý...' : 'Nhận thưởng'}
-</button>
+                onClick={() => claimReward(mission.id)}
+                disabled={claimingId !== null}
+              >
+                {claimingId === mission.id ? 'Đang xử lý...' : 'Nhận thưởng'}
+              </button>
             )}
           </div>
         ))}
