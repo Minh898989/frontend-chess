@@ -58,8 +58,17 @@ const MissionsScreen = () => {
 
     setMessage(res.data.message || 'Nhận thưởng thành công!');
 
-    // ✅ GỌI LẠI fetchMissions để cập nhật lại toàn bộ
+    // ✅ Kiểm tra dữ liệu trả về và cập nhật nhiệm vụ đã nhận
+    const updatedMission = res.data.updatedMission; // Nhiệm vụ đã được cập nhật
+    setMissions(prevMissions =>
+      prevMissions.map(m =>
+        m.id === updatedMission.id ? { ...m, claimed: true } : m
+      )
+    );
+
+    // Gọi lại fetchMissions để đồng bộ thêm
     await fetchMissions();
+
   } catch (err) {
     const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
     setMessage(msg);
