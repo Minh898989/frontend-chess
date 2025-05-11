@@ -1,117 +1,71 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import '../styles/Missions.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const API_BASE = 'https://backend-chess-fjr7.onrender.com/api/missions';
-
-const MissionsScreen = () => {
+const Mission = ({ userid }) => {
   const [missions, setMissions] = useState([]);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [level, setLevel] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(null);
-  const [message, setMessage] = useState('');
-  const [claiming, setClaiming] = useState({});
-
-  // Lấy userId từ localStorage
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user?.userid) {
-      setUserId(user.userid);
-    } else {
-      setMessage('Không tìm thấy người dùng.');
-      setLoading(false);
-    }
-  }, []);
-
-  // Gọi API lấy nhiệm vụ khi có userId
-  useEffect(() => {
-    if (userId) fetchMissions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  const [loading, setLoading] = useState(false);
 
   const fetchMissions = async () => {
-    setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/${userId}`);
-      setMissions(res.data.missions || []);
-      setTotalPoints(res.data.totalPoints || 0);
-      setLevel(res.data.level || 1);
+      const res = await axios.get(`/missions/status/${userid}`);
+      setMissions(res.data);
     } catch (err) {
-      setMessage('Lỗi khi tải nhiệm vụ.');
-    } finally {
-      setLoading(false);
+      console.error("Error fetching missions:", err);
     }
   };
 
   const claimReward = async (missionId) => {
-    if (claiming[missionId]) return;
-
-    setClaiming(prev => ({ ...prev, [missionId]: true }));
-    setMessage('');
-
     try {
-      const res = await axios.post(`${API_BASE}/claim`, {
-        userid: userId,
-        missionId,
+      setLoading(true);
+      await axios.post("/missions/claim", {
+        userid,
+        mission_id: missionId,
       });
-
-      setMessage(res.data.message || 'Nhận thưởng thành công!');
-
-      // ✅ Kiểm tra dữ liệu trả về và cập nhật nhiệm vụ đã nhận
-      const updatedMission = res.data.updatedMission; // Nhiệm vụ đã được cập nhật
-      setMissions(prevMissions =>
-        prevMissions.map(m =>
-          m.id === updatedMission.id ? { ...m, claimed: true } : m
-        )
-      );
-
-      // Gọi lại fetchMissions để đồng bộ thêm
-      await fetchMissions();
-
+      await fetchMissions(); // Refresh state after claiming
     } catch (err) {
-      const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
-      setMessage(msg);
+      alert(err.response?.data?.message || "Lỗi khi nhận thưởng");
     } finally {
-      setClaiming(prev => ({ ...prev, [missionId]: false }));
+      setLoading(false);
     }
   };
 
-  if (loading) return <p>Đang tải dữ liệu nhiệm vụ...</p>;
+  useEffect(() => {
+    fetchMissions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userid]);
 
   return (
-    <div className="missions-screen">
-      <h2>Nhiệm vụ hằng ngày</h2>
-      <p>🌟 Tổng điểm: <strong>{totalPoints}</strong></p>
-      <p>📈 Cấp độ hiện tại: <strong>Level {level}</strong></p>
-
-      {message && <div className="message-box">{message}</div>}
-
-      <div className="missions-list">
-        {missions.map((m) => (
-          <div key={m.id} className={`mission-card ${m.claimed ? 'claimed' : ''}`}>
-            <h3>{m.name}</h3>
-            <p>{m.description}</p>
-            <p>🎁 Thưởng: {m.reward_points} điểm</p>
-            <p>
-              Trạng thái:{' '}
-              {m.claimed
-                ? '✅ Đã nhận thưởng'
-                : m.eligible
-                ? '🟢 Hoàn thành - Chưa nhận'
-                : '🔒 Chưa hoàn thành'}
-            </p>
-            <button
-              disabled={m.claimed || !m.eligible || claiming[m.id]}
-              onClick={() => claimReward(m.id)}
-              className="claim-button"
-            >
-              {m.claimed
-                ? 'Đã nhận'
-                : claiming[m.id]
-                ? 'Đang xử lý...'
-                : 'Nhận thưởng'}
-            </button>
+    <div className="p-4 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Nhiệm vụ hôm nay</h1>
+      <div className="space-y-4">
+        {missions.map((mission) => (
+          <div
+            key={mission.id}
+            className="p-4 rounded-xl shadow border bg-white flex justify-between items-center"
+          >
+            <div>
+              <h2 className="font-semibold">{mission.name}</h2>
+              <p className="text-gray-600 text-sm">{mission.description}</p>
+              <p className="text-sm mt-1">
+                🎁 Điểm thưởng:{" "}
+                <span className="font-medium">{mission.reward_points}</span>
+              </p>
+            </div>
+            <div>
+              {mission.isClaimed ? (
+                <span className="text-green-600 font-medium">Đã nhận</span>
+              ) : mission.isCompleted ? (
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  onClick={() => claimReward(mission.id)}
+                  disabled={loading}
+                >
+                  Nhận thưởng
+                </button>
+              ) : (
+                <span className="text-gray-400 italic">Chưa hoàn thành</span>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -119,4 +73,4 @@ const MissionsScreen = () => {
   );
 };
 
-export default MissionsScreen;
+export default Mission;
