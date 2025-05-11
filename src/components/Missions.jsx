@@ -12,7 +12,7 @@ const MissionsScreen = () => {
   const [totalPoints, setTotalPoints] = useState(0);
   const [level, setLevel] = useState(1);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const prevLevelRef = useRef(1); // Để so sánh khi lên cấp
+  const prevLevelRef = useRef(1); 
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));

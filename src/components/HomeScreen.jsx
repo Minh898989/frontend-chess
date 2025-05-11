@@ -1,36 +1,64 @@
-import React, { useState, } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../styles/HomeScreen.css";
+
+const API_BASE = "https://backend-chess-fjr7.onrender.com/api/missions";
 
 function HomeScreen() {
   const [showModes, setShowModes] = useState(false);
   const [showAIDifficulty, setShowAIDifficulty] = useState(false);
-
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [userStats, setUserStats] = useState(null);
 
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    if (showProfileModal && user?.userid) {
+      axios.get(`${API_BASE}/${user.userid}`)
+        .then((res) => {
+          setUserStats({
+            totalPoints: res.data.totalPoints || 0,
+            level: calculateLevel(res.data.totalPoints || 0),
+          });
+        })
+        .catch((err) => {
+          console.error("Lỗi khi tải dữ liệu người dùng:", err);
+        });
+    }
+  }, [showProfileModal, user.userid]);
+
+  const calculateLevel = (points) => {
+    const levelThresholds = [0, 50, 250, 500, 1000, 2000, 4000];
+    for (let i = levelThresholds.length - 1; i >= 0; i--) {
+      if (points >= levelThresholds[i]) return i + 1;
+    }
+    return 1;
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/auth");
+  };
 
   const handleModeSelection = (selectedMode) => {
     navigate(`/game/${selectedMode}`);
   };
-  const goToQuests = () => {
-  navigate("/missions");
-};
-  const goToGuide = () => {
-  navigate("/guide");
-};
-  
-const handleLogout = () => {
-  localStorage.removeItem("user");
-  navigate("/auth");
-};
 
-const user = JSON.parse(localStorage.getItem("user"));
-
+  const goToQuests = () => navigate("/missions");
+  const goToGuide = () => navigate("/guide");
 
   return (
     <div className="home">
       <div className="user-top-right">
-        👤 {user?.userid || "Người dùng"} | <button onClick={handleLogout}>Đăng xuất</button>
+        <span
+          style={{ cursor: "pointer", textDecoration: "underline" }}
+          onClick={() => setShowProfileModal(true)}
+        >
+          👤 {user?.userid || "Người dùng"}
+        </span>{" "}
+        | <button onClick={handleLogout}>Đăng xuất</button>
       </div>
 
       <h1>♟️ Game Cờ Vua</h1>
@@ -51,13 +79,26 @@ const user = JSON.parse(localStorage.getItem("user"));
           <button onClick={() => setShowAIDifficulty(true)}>🤖 Chơi với máy</button>
         </div>
       )}
-       <div className="extra-buttons">
-        <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng </button>
-        
+
+      <div className="extra-buttons">
+        <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng</button>
       </div>
       <div className="extra-buttons">
-      <button onClick={goToGuide}>📖 Hướng dẫn chơi</button>
+        <button onClick={goToGuide}>📖 Hướng dẫn chơi</button>
       </div>
+
+      {/* Modal hiển thị thông tin người dùng */}
+      {showProfileModal && (
+        <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Thông tin người chơi</h2>
+            <p><strong>ID:</strong> {user?.userid}</p>
+            <p><strong>Tổng điểm:</strong> {userStats?.totalPoints ?? "Đang tải..."}</p>
+            <p><strong>Cấp độ:</strong> Level {userStats?.level ?? "..."}</p>
+            <button onClick={() => setShowProfileModal(false)}>Đóng</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

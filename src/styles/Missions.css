@@ -200,23 +200,36 @@ h1 {
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #ffd700;
-  color: #000;
-  font-size: 2rem;
-  padding: 1.5rem 3rem;
-  border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  color: #00ffe5;
+  font-size: 2.2rem;
+  font-weight: bold;
+  padding: 20px 40px;
+  border-radius: 20px;
+  border: 2px solid #00ffe5;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
   z-index: 9999;
   animation: popIn 0.5s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
+  text-shadow: 0 0 10px #00ffd5;
 }
 
 @keyframes popIn {
-  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1); }
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 @keyframes fadeOut {
-  to { opacity: 0; }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
 }
-
