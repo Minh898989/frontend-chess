@@ -22,6 +22,7 @@ const Missions = () => {
     try {
       const res = await axios.get(`/api/missions/user/${userid}`);
       const missionList = res.data.missions || [];
+      console.log('API Response:', res.data); 
       setMissions(missionList);
       setTotalPoints(res.data.totalPoints || 0);
     } catch (err) {
