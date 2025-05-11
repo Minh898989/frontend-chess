@@ -58,9 +58,8 @@ const MissionsScreen = () => {
 
     setMessage(res.data.message || 'Nhận thưởng thành công!');
 
-    // ✅ Lấy lại toàn bộ nhiệm vụ để cập nhật trạng thái chính xác
+    // ✅ GỌI LẠI fetchMissions để cập nhật lại toàn bộ
     await fetchMissions();
-
   } catch (err) {
     const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
     setMessage(msg);
@@ -68,6 +67,7 @@ const MissionsScreen = () => {
     setClaiming(prev => ({ ...prev, [missionId]: false }));
   }
 };
+
 
 
   if (loading) return <p>Đang tải dữ liệu nhiệm vụ...</p>;
