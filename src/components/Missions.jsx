@@ -25,6 +25,7 @@ const MissionsScreen = () => {
 
   useEffect(() => {
     if (userId) fetchMissions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchMissions = async () => {
