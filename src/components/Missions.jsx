@@ -87,11 +87,11 @@ const MissionsScreen = () => {
             )}
             {mission.eligible && !mission.claimed && (
               <button
-                onClick={() => claimReward(mission.id)}
-                disabled={claimingId === mission.id}
-              >
-                {claimingId === mission.id ? 'Đang xử lý...' : 'Nhận thưởng'}
-              </button>
+  onClick={() => claimReward(mission.id)}
+  disabled={claimingId !== null} // không chỉ so sánh với mission.id
+>
+  {claimingId === mission.id ? 'Đang xử lý...' : 'Nhận thưởng'}
+</button>
             )}
           </div>
         ))}
