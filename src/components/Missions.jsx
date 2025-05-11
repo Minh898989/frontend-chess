@@ -11,8 +11,9 @@ const MissionsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [message, setMessage] = useState('');
-  const [claiming, setClaiming] = useState({}); // lưu trạng thái claim từng mission
+  const [claiming, setClaiming] = useState({});
 
+  // Lấy userId từ localStorage
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user?.userid) {
@@ -23,6 +24,7 @@ const MissionsScreen = () => {
     }
   }, []);
 
+  // Gọi API lấy nhiệm vụ khi có userId
   useEffect(() => {
     if (userId) fetchMissions();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -43,7 +45,7 @@ const MissionsScreen = () => {
   };
 
   const claimReward = async (missionId) => {
-    if (claiming[missionId]) return; // Đã nhấn rồi
+    if (claiming[missionId]) return;
 
     setClaiming(prev => ({ ...prev, [missionId]: true }));
     setMessage('');
@@ -53,8 +55,20 @@ const MissionsScreen = () => {
         userid: userId,
         missionId,
       });
+
       setMessage(res.data.message || 'Nhận thưởng thành công!');
-      await fetchMissions();
+
+      // ✅ Cập nhật nhiệm vụ đã nhận trong state
+      setMissions(prevMissions =>
+        prevMissions.map(m =>
+          m.id === missionId ? { ...m, claimed: true } : m
+        )
+      );
+
+      // ✅ Cập nhật điểm và cấp nếu có từ response
+      if (res.data.totalPoints !== undefined) setTotalPoints(res.data.totalPoints);
+      if (res.data.level !== undefined) setLevel(res.data.level);
+
     } catch (err) {
       const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
       setMessage(msg);
@@ -81,8 +95,10 @@ const MissionsScreen = () => {
             <p>🎁 Thưởng: {m.reward_points} điểm</p>
             <p>
               Trạng thái:{' '}
-              {m.claimed ? '✅ Đã nhận thưởng'
-                : m.eligible ? '🟢 Hoàn thành - Chưa nhận'
+              {m.claimed
+                ? '✅ Đã nhận thưởng'
+                : m.eligible
+                ? '🟢 Hoàn thành - Chưa nhận'
                 : '🔒 Chưa hoàn thành'}
             </p>
             <button
@@ -90,8 +106,10 @@ const MissionsScreen = () => {
               onClick={() => claimReward(m.id)}
               className="claim-button"
             >
-              {m.claimed ? 'Đã nhận'
-                : claiming[m.id] ? 'Đang xử lý...'
+              {m.claimed
+                ? 'Đã nhận'
+                : claiming[m.id]
+                ? 'Đang xử lý...'
                 : 'Nhận thưởng'}
             </button>
           </div>
