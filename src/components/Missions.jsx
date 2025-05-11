@@ -1,94 +1,69 @@
-// Missions.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const Missions = ({ userid }) => {
   const [missions, setMissions] = useState([]);
+  const [totalPoints, setTotalPoints] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  const [claimingId, setClaimingId] = useState(null);
 
   useEffect(() => {
-    const fetchMissions = async () => {
-      try {
-        const res = await axios.get(`/missions/status/${userid}`);
-        if (Array.isArray(res.data)) {
-          setMissions(res.data);
-        } else {
-          console.warn("API didn't return an array", res.data);
-          setMissions([]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch missions', err);
-        setMissions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userid) {
-      fetchMissions();
-    }
+    fetchMissions();
   }, [userid]);
+
+  const fetchMissions = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/missions/user/${userid}`);
+      setMissions(res.data.missions);
+      setTotalPoints(res.data.totalPoints);
+    } catch (err) {
+      console.error('Lỗi tải nhiệm vụ:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleClaim = async (missionId) => {
     try {
-      const res = await axios.post('/missions/claim', {
-        userid,
-        missionId,
-      });
-      setMessage(res.data.message);
-
-      // Refresh missions after claim
-      const updated = await axios.get(`/missions/status/${userid}`);
-      setMissions(updated.data);
+      setClaimingId(missionId);
+      const res = await axios.post('/api/missions/claim', { userid, missionId });
+      alert(res.data.message || 'Nhận thưởng thành công!');
+      await fetchMissions(); // cập nhật lại sau khi claim
     } catch (err) {
-      console.error('Error claiming reward:', err);
-      setMessage('Lỗi khi nhận thưởng.');
+      alert(err.response?.data?.error || 'Lỗi nhận thưởng');
+    } finally {
+      setClaimingId(null);
     }
   };
 
   if (loading) return <p>Đang tải nhiệm vụ...</p>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Nhiệm vụ hôm nay</h2>
+    <div style={{ padding: '20px' }}>
+      <h2>Nhiệm vụ hôm nay</h2>
+      <p><strong>Tổng điểm:</strong> {totalPoints}</p>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {missions.map((m) => (
+          <li key={m.id} style={{ marginBottom: '15px', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
+            <h4>{m.name}</h4>
+            <p>{m.description}</p>
+            <p>🎁 Thưởng: {m.reward_points} điểm</p>
+            <p>📌 Trạng thái: {m.isCompleted ? '✅ Hoàn thành' : '❌ Chưa xong'}</p>
+            <p>📆 Đã nhận hôm nay: {m.isClaimedToday ? '🟢 Rồi' : '⚪ Chưa'}</p>
 
-      {message && (
-        <div className="mb-4 text-green-600 font-medium">{message}</div>
-      )}
-
-      {missions.length === 0 ? (
-        <p>Không có nhiệm vụ khả dụng.</p>
-      ) : (
-        <ul className="space-y-3">
-          {missions.map((m) => (
-            <li key={m.id} className="p-4 border rounded-xl flex justify-between items-center shadow-sm">
-              <div>
-                <p className="font-semibold">{m.name}</p>
-                <p className="text-sm text-gray-600">{m.description}</p>
-                <p className="text-sm mt-1">Điểm thưởng: <strong>{m.reward_points}</strong></p>
-              </div>
-              <div>
-                {m.completed ? (
-                  <button
-                    className="bg-green-500 text-white px-3 py-1 rounded-lg cursor-not-allowed"
-                    disabled
-                  >
-                    Đã nhận
-                  </button>
-                ) : (
-                  <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
-                    onClick={() => handleClaim(m.id)}
-                  >
-                    Nhận thưởng
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            {m.isCompleted && !m.isClaimedToday && (
+              <button
+                onClick={() => handleClaim(m.id)}
+                disabled={claimingId === m.id}
+                style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}
+              >
+                {claimingId === m.id ? 'Đang nhận...' : 'Nhận thưởng'}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
