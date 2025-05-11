@@ -7,6 +7,7 @@ const Missions = () => {
   const [loading, setLoading] = useState(true);
   const [claimingId, setClaimingId] = useState(null);
 
+  // Lấy userid từ localStorage
   const userid = JSON.parse(localStorage.getItem('user'))?.userid;
 
   useEffect(() => {
@@ -20,10 +21,13 @@ const Missions = () => {
     setLoading(true);
     try {
       const res = await axios.get(`/api/missions/user/${userid}`);
-      setMissions(res.data.missions);
-      setTotalPoints(res.data.totalPoints);
+      const missionList = res.data.missions || [];
+      setMissions(missionList);
+      setTotalPoints(res.data.totalPoints || 0);
     } catch (err) {
-      console.error('Lỗi tải nhiệm vụ:', err);
+      console.error('Lỗi khi tải nhiệm vụ:', err);
+      setMissions([]);
+      setTotalPoints(0);
     } finally {
       setLoading(false);
     }
@@ -42,34 +46,53 @@ const Missions = () => {
     }
   };
 
-  if (!userid) return <p>Không tìm thấy người dùng.</p>;
-  if (loading) return <p>Đang tải nhiệm vụ...</p>;
+  if (!userid) return <p>❗ Không tìm thấy thông tin người dùng.</p>;
+  if (loading) return <p>⏳ Đang tải nhiệm vụ...</p>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Nhiệm vụ hôm nay</h2>
-      <p><strong>Tổng điểm:</strong> {totalPoints}</p>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {missions.map((m) => (
-          <li key={m.id} style={{ marginBottom: '15px', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
-            <h4>{m.name}</h4>
-            <p>{m.description}</p>
-            <p>🎁 Thưởng: {m.reward_points} điểm</p>
-            <p>📌 Trạng thái: {m.isCompleted ? '✅ Hoàn thành' : '❌ Chưa xong'}</p>
-            <p>📆 Đã nhận hôm nay: {m.isClaimedToday ? '🟢 Rồi' : '⚪ Chưa'}</p>
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+      <h2>📋 Nhiệm vụ hôm nay</h2>
+      <p><strong>🏆 Tổng điểm:</strong> {totalPoints}</p>
 
-            {m.isCompleted && !m.isClaimedToday && (
-              <button
-                onClick={() => handleClaim(m.id)}
-                disabled={claimingId === m.id}
-                style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}
-              >
-                {claimingId === m.id ? 'Đang nhận...' : 'Nhận thưởng'}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      {missions.length === 0 ? (
+        <p>Không có nhiệm vụ nào.</p>
+      ) : (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {missions.map((m) => (
+            <li key={m.id} style={{
+              marginBottom: '15px',
+              padding: '15px',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              backgroundColor: '#f9f9f9'
+            }}>
+              <h4>{m.name}</h4>
+              <p>{m.description}</p>
+              <p>🎁 Thưởng: <strong>{m.reward_points}</strong> điểm</p>
+              <p>📌 Trạng thái: {m.isCompleted ? '✅ Đã hoàn thành' : '❌ Chưa xong'}</p>
+              <p>📆 Đã nhận hôm nay: {m.isClaimedToday ? '🟢 Rồi' : '⚪ Chưa'}</p>
+
+              {m.isCompleted && !m.isClaimedToday && (
+                <button
+                  onClick={() => handleClaim(m.id)}
+                  disabled={claimingId === m.id}
+                  style={{
+                    marginTop: '10px',
+                    padding: '8px 14px',
+                    backgroundColor: '#28a745',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {claimingId === m.id ? 'Đang nhận...' : '🎉 Nhận thưởng'}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
