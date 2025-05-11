@@ -11,7 +11,7 @@ const MissionsScreen = () => {
   const [userId, setUserId] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
   const [level, setLevel] = useState(1);
-  const [claimingId, setClaimingId] = useState(null); // trạng thái đang nhận thưởng
+  const [claimingId, setClaimingId] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -23,11 +23,9 @@ const MissionsScreen = () => {
   const fetchMissions = async () => {
     try {
       const res = await axios.get(`${API_BASE}/${userId}`);
-      const newTotalPoints = res.data.totalPoints || 0;
-      const newLevel = res.data.level || 1;
-      setLevel(newLevel);
-      setTotalPoints(newTotalPoints);
       setMissions(Array.isArray(res.data.missions) ? res.data.missions : []);
+      setTotalPoints(res.data.totalPoints || 0);
+      setLevel(res.data.level || 1);
     } catch (error) {
       console.error('Lỗi khi tải nhiệm vụ:', error);
     } finally {
@@ -37,7 +35,7 @@ const MissionsScreen = () => {
 
   useEffect(() => {
     if (userId) fetchMissions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const claimReward = async (missionId) => {

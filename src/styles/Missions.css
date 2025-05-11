@@ -233,3 +233,8 @@ h1 {
     transform: translate(-50%, -50%) scale(0.9);
   }
 }
+.mission.completed {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
