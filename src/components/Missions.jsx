@@ -20,13 +20,14 @@ const Missions = () => {
   const fetchMissions = async () => {
     setLoading(true);
     try {
-      // Cập nhật URL backend mới
+      // Gửi yêu cầu GET đến backend
       const res = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
       const missionList = res.data.missions || [];
       setMissions(missionList);
       setTotalPoints(res.data.totalPoints || 0);
     } catch (err) {
-      console.error('Lỗi khi tải nhiệm vụ:', err);
+      console.error('Lỗi khi tải nhiệm vụ:', err.response?.data || err.message);
+      alert('Lỗi khi tải nhiệm vụ, vui lòng thử lại sau.');
       setMissions([]);
       setTotalPoints(0);
     } finally {
@@ -35,12 +36,14 @@ const Missions = () => {
   };
 
   const handleClaim = async (missionId) => {
+    setClaimingId(missionId);
     try {
-      setClaimingId(missionId);
-      // Cập nhật URL backend mới
-      const res = await axios.post('https://backend-chess-fjr7.onrender.com/api/missions/claim', { userid, missionId });
+      const res = await axios.post(`https://backend-chess-fjr7.onrender.com/api/missions/claim`, {
+        userid,
+        missionId
+      });
       alert(res.data.message || 'Nhận thưởng thành công!');
-      await fetchMissions(); // Cập nhật lại danh sách nhiệm vụ sau khi nhận thưởng
+      await fetchMissions();
     } catch (err) {
       alert(err.response?.data?.error || 'Lỗi nhận thưởng');
     } finally {
@@ -61,13 +64,16 @@ const Missions = () => {
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {missions.map((m) => (
-            <li key={m.id} style={{
-              marginBottom: '15px',
-              padding: '15px',
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              backgroundColor: '#f9f9f9'
-            }}>
+            <li
+              key={m.id}
+              style={{
+                marginBottom: '15px',
+                padding: '15px',
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                backgroundColor: '#f9f9f9',
+              }}
+            >
               <h4>{m.name}</h4>
               <p>{m.description}</p>
               <p>🎁 Thưởng: <strong>{m.reward_points}</strong> điểm</p>
@@ -85,7 +91,7 @@ const Missions = () => {
                     color: '#fff',
                     border: 'none',
                     borderRadius: '5px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   {claimingId === m.id ? 'Đang nhận...' : '🎉 Nhận thưởng'}
