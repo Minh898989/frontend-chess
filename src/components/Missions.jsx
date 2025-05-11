@@ -45,39 +45,37 @@ const MissionsScreen = () => {
   };
 
   const claimReward = async (missionId) => {
-  if (claiming[missionId]) return;
+    if (claiming[missionId]) return;
 
-  setClaiming(prev => ({ ...prev, [missionId]: true }));
-  setMessage('');
+    setClaiming(prev => ({ ...prev, [missionId]: true }));
+    setMessage('');
 
-  try {
-    const res = await axios.post(`${API_BASE}/claim`, {
-      userid: userId,
-      missionId,
-    });
+    try {
+      const res = await axios.post(`${API_BASE}/claim`, {
+        userid: userId,
+        missionId,
+      });
 
-    setMessage(res.data.message || 'Nhận thưởng thành công!');
+      setMessage(res.data.message || 'Nhận thưởng thành công!');
 
-    // ✅ Kiểm tra dữ liệu trả về và cập nhật nhiệm vụ đã nhận
-    const updatedMission = res.data.updatedMission; // Nhiệm vụ đã được cập nhật
-    setMissions(prevMissions =>
-      prevMissions.map(m =>
-        m.id === updatedMission.id ? { ...m, claimed: true } : m
-      )
-    );
+      // ✅ Kiểm tra dữ liệu trả về và cập nhật nhiệm vụ đã nhận
+      const updatedMission = res.data.updatedMission; // Nhiệm vụ đã được cập nhật
+      setMissions(prevMissions =>
+        prevMissions.map(m =>
+          m.id === updatedMission.id ? { ...m, claimed: true } : m
+        )
+      );
 
-    // Gọi lại fetchMissions để đồng bộ thêm
-    await fetchMissions();
+      // Gọi lại fetchMissions để đồng bộ thêm
+      await fetchMissions();
 
-  } catch (err) {
-    const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
-    setMessage(msg);
-  } finally {
-    setClaiming(prev => ({ ...prev, [missionId]: false }));
-  }
-};
-
-
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Lỗi khi nhận thưởng.';
+      setMessage(msg);
+    } finally {
+      setClaiming(prev => ({ ...prev, [missionId]: false }));
+    }
+  };
 
   if (loading) return <p>Đang tải dữ liệu nhiệm vụ...</p>;
 
@@ -104,7 +102,7 @@ const MissionsScreen = () => {
                 : '🔒 Chưa hoàn thành'}
             </p>
             <button
-              disabled={!m.eligible || m.claimed || claiming[m.id]}
+              disabled={m.claimed || !m.eligible || claiming[m.id]}
               onClick={() => claimReward(m.id)}
               className="claim-button"
             >
