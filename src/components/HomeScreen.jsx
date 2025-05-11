@@ -20,7 +20,7 @@ function HomeScreen() {
         .then((res) => {
           setUserStats({
             totalPoints: res.data.totalPoints || 0,
-            level: calculateLevel(res.data.totalPoints || 0),
+            level: res.data.level || 1,
           });
         })
         .catch((err) => {
@@ -28,14 +28,6 @@ function HomeScreen() {
         });
     }
   }, [showProfileModal, user.userid]);
-
-  const calculateLevel = (points) => {
-    const levelThresholds = [0, 50, 250, 500, 1000, 2000, 4000];
-    for (let i = levelThresholds.length - 1; i >= 0; i--) {
-      if (points >= levelThresholds[i]) return i + 1;
-    }
-    return 1;
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
