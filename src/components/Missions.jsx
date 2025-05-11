@@ -20,9 +20,9 @@ const Missions = () => {
   const fetchMissions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/missions/user/${userid}`);
+      // Cập nhật URL backend mới
+      const res = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
       const missionList = res.data.missions || [];
-      console.log('API Response:', res.data); 
       setMissions(missionList);
       setTotalPoints(res.data.totalPoints || 0);
     } catch (err) {
@@ -37,9 +37,10 @@ const Missions = () => {
   const handleClaim = async (missionId) => {
     try {
       setClaimingId(missionId);
-      const res = await axios.post('/api/missions/claim', { userid, missionId });
+      // Cập nhật URL backend mới
+      const res = await axios.post('https://backend-chess-fjr7.onrender.com/api/missions/claim', { userid, missionId });
       alert(res.data.message || 'Nhận thưởng thành công!');
-      await fetchMissions();
+      await fetchMissions(); // Cập nhật lại danh sách nhiệm vụ sau khi nhận thưởng
     } catch (err) {
       alert(err.response?.data?.error || 'Lỗi nhận thưởng');
     } finally {
