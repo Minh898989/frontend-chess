@@ -30,6 +30,13 @@ function HomeScreen() {
         });
     }
   }, [showProfileModal, user?.userid]);
+  useEffect(() => {
+  if (user?.avatar) {
+    const savedUrl = `https://backend-chess-fjr7.onrender.com${user.avatar}`;
+    setAvatarUrl(savedUrl);
+  }
+}, [user.avatar]);
+
 
   
   const handleLogout = () => {
@@ -46,25 +53,26 @@ function HomeScreen() {
   const goToPlay = () => navigate("?mode=select");
   const goToAIDifficulty = () => navigate("?mode=ai");
   const resetMode = () => navigate("/");
-   const handleAvatarChange = (event) => {
-    const file = event.target.files[0];
-    if (file && user?.userid) {
-      const formData = new FormData();
-      formData.append("avatar", file);
+  const handleAvatarChange = (event) => {
+  const file = event.target.files[0];
+  if (file && user?.userid) {
+    const formData = new FormData();
+    formData.append("avatar", file);
 
-      axios
-        .post(`${API_BASE}/users/upload-avatar/${user.userid}`, formData)
-        .then((res) => {
-          const uploadedUrl = `${API_BASE}${res.data.avatar}`;
-          setAvatarUrl(uploadedUrl);
+    axios
+      .post(`https://backend-chess-fjr7.onrender.com/api/users/upload-avatar/${user.userid}`, formData)
+      .then((res) => {
+        const uploadedUrl = `https://backend-chess-fjr7.onrender.com${res.data.avatar}`;
+        setAvatarUrl(uploadedUrl);
 
-          // Optional: Update local user info
-          const updatedUser = { ...user, avatar: res.data.avatar };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-        })
-        .catch((err) => console.error("Lỗi upload avatar:", err));
-    }
-  };
+        // Cập nhật localStorage nếu cần
+        const updatedUser = { ...user, avatar: res.data.avatar };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      })
+      .catch((err) => console.error("Lỗi upload avatar:", err));
+  }
+};
+
   return (
     <div className="home">
       <div className="user-top-right">
