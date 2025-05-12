@@ -57,47 +57,57 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .chess-guide h1 {
-        font-size: 1.8rem;
-    }
+  .chess-guide {
+    padding: 10px;
+  }
 
-    .chess-guide h2 {
-        font-size: 1.2rem;
-    }
+  .chess-guide h1 {
+    font-size: 1.8rem;
+  }
 
-    .chess-guide section {
-        padding: 20px;
-    }
+  .chess-guide h2 {
+    font-size: 1.2rem;
+  }
 
-    .chess-guide p,
-    .chess-guide li {
-        font-size: 0.95rem;
-    }
+  .chess-guide section {
+    padding: 20px;
+    margin-bottom: 12px;
+  }
 
-    .chess-guide {
-        padding: 10px; /* Reduce padding for smaller screens */
-    }
+  .chess-guide p,
+  .chess-guide li {
+    font-size: 0.95rem;
+  }
 }
 
+/* Responsive for phones */
 @media (max-width: 480px) {
-    .chess-guide h1 {
-        font-size: 1.6rem;
-    }
+  .chess-guide {
+    padding: 8px;
+  }
 
-    .chess-guide h2 {
-        font-size: 1.1rem;
-    }
+  .chess-guide h1 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
 
-    .chess-guide section {
-        padding: 16px;
-    }
+  .chess-guide h2 {
+    font-size: 1.05rem;
+  }
 
-    .chess-guide p,
-    .chess-guide li {
-        font-size: 0.9rem;
-    }
+  .chess-guide section {
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
 
-    .chess-guide {
-        padding: 5px; /* Further reduce padding for very small screens */
-    }
+  .chess-guide p,
+  .chess-guide li {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .chess-guide ul {
+    padding-left: 16px;
+  }
 }

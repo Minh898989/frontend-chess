@@ -18,17 +18,18 @@
   }
   
   .home button {
-    width: 400px;
-    padding: 15px 20px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 30px;
-    background: #ff6b6b;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.2s ease, background 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
+  width: 100%;
+  max-width: 400px;
+  padding: 15px 20px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 30px;
+  background: #ff6b6b;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
   
   .home button:hover {
     background: #ff8787;
@@ -211,4 +212,48 @@
 .modal-content button:hover {
   background: #00e676;
   transform: scale(1.05);
+}
+@media (max-width: 600px) {
+  .user-top-right {
+    width: auto;
+    right: 10px;
+    left: 10px;
+    top: 10px;
+    font-size: 13px;
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .user-top-right .username {
+    font-size: 14px;
+  }
+
+  .user-top-right button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Responsive cải tiến cho modal */
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .modal-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .modal-content button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
 }

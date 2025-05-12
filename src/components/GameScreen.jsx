@@ -253,7 +253,7 @@ function GameScreen() {
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
-          boardWidth={600}
+          boardWidth={550}
           arePiecesDraggable={!game.game_over()}
         />
       </div>
