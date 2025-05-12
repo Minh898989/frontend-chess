@@ -32,10 +32,10 @@ function HomeScreen() {
   }, [showProfileModal, user?.userid]);
   useEffect(() => {
   if (user?.avatar) {
-    const savedUrl = `https://backend-chess-fjr7.onrender.com${user.avatar}`;
-    setAvatarUrl(savedUrl);
+    setAvatarUrl(user.avatar); // Không cần thêm domain
   }
-}, [user.avatar]);
+}, [user?.avatar]);
+
 
 
   
@@ -62,11 +62,10 @@ function HomeScreen() {
     axios
       .post(`https://backend-chess-fjr7.onrender.com/api/users/upload-avatar/${user.userid}`, formData)
       .then((res) => {
-        const uploadedUrl = `https://backend-chess-fjr7.onrender.com${res.data.avatar}`;
+        const uploadedUrl = res.data.avatar; // Đã là URL Cloudinary đầy đủ
         setAvatarUrl(uploadedUrl);
 
-        // Cập nhật localStorage nếu cần
-        const updatedUser = { ...user, avatar: res.data.avatar };
+        const updatedUser = { ...user, avatar: uploadedUrl };
         localStorage.setItem("user", JSON.stringify(updatedUser));
       })
       .catch((err) => console.error("Lỗi upload avatar:", err));
