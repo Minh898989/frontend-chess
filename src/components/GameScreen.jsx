@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
@@ -12,6 +12,9 @@ function GameScreen() {
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
+  const boardContainerRef = useRef(null);
+  const [boardWidth, setBoardWidth] = useState(550);
+  
 
   const isAI = mode !== "2players";
   const user = JSON.parse(localStorage.getItem("user"));
@@ -184,6 +187,7 @@ function GameScreen() {
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
+  
 
   const handleResign = (color) => {
     setIsGameOver(true);
@@ -229,6 +233,18 @@ function GameScreen() {
       </span>
     ));
   };
+  useEffect(() => {
+    const handleResize = () => {
+      if (boardContainerRef.current) {
+        const size = boardContainerRef.current.offsetWidth;
+        setBoardWidth(Math.min(size, 550));
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
 
   const getModeName = () => {
     switch (mode) {
@@ -253,7 +269,7 @@ function GameScreen() {
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
-          boardWidth={550}
+          boardWidth={boardWidth}
           arePiecesDraggable={!game.game_over()}
         />
       </div>
