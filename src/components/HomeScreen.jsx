@@ -111,13 +111,16 @@ function HomeScreen() {
         </div>
       )}
 
-      <div className="extra-buttons">
-        <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng</button>
-      </div>
-      <div className="extra-buttons">
-        <button onClick={goToGuide}>📖 Hướng dẫn chơi</button>
-      </div>
-
+      {!showModes && (
+  <>
+    <div className="extra-buttons">
+      <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng</button>
+    </div>
+    <div className="extra-buttons">
+      <button onClick={goToGuide}>📖 Hướng dẫn chơi</button>
+    </div>
+  </>
+)}
       {/* Modal hiển thị thông tin người dùng */}
       {showProfileModal && (
         <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
