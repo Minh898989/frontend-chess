@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/HomeScreen.css";
 
-const API_BASE = "https://backend-chess-fjr7.onrender.com/api/missions";
+const API_BASE = "https://backend-chess-fjr7.onrender.com/api/missions/user";
 
 function HomeScreen() {
   const [showModes, setShowModes] = useState(false);
