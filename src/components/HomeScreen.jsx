@@ -8,7 +8,7 @@ const API_BASE = "https://backend-chess-fjr7.onrender.com/api/missions/user";
 function HomeScreen() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userStats, setUserStats] = useState(null);
-
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -46,22 +46,47 @@ function HomeScreen() {
   const goToPlay = () => navigate("?mode=select");
   const goToAIDifficulty = () => navigate("?mode=ai");
   const resetMode = () => navigate("/");
+   const handleAvatarChange = (event) => {
+    const file = event.target.files[0];
+    if (file && user?.userid) {
+      const formData = new FormData();
+      formData.append("avatar", file);
 
+      axios
+        .post(`${API_BASE}/users/upload-avatar/${user.userid}`, formData)
+        .then((res) => {
+          const uploadedUrl = `${API_BASE}${res.data.avatar}`;
+          setAvatarUrl(uploadedUrl);
+
+          // Optional: Update local user info
+          const updatedUser = { ...user, avatar: res.data.avatar };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        })
+        .catch((err) => console.error("Lỗi upload avatar:", err));
+    }
+  };
   return (
     <div className="home">
       <div className="user-top-right">
-        <span
-          style={{ cursor: "pointer", textDecoration: "underline" }}
-          onClick={() => setShowProfileModal(true)}
-        >
-          👤 {user?.userid || "Người dùng"}
-        </span>{" "}
+        <label style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: "none" }} />
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="avatar"
+              style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+            />
+          ) : (
+            <span role="img" aria-label="user">👤</span>
+          )}
+          {user?.userid || "Người dùng"}
+        </label>{" "}
         | <button onClick={handleLogout}>Đăng xuất</button>
       </div>
 
       <h1>♟️ Game Cờ Vua</h1>
 
-      {/* Màn chọn chế độ */}
+      
       {!mode && (
         <button onClick={goToPlay}>Vào chơi</button>
       )}
@@ -100,6 +125,9 @@ function HomeScreen() {
         <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Thông tin người chơi</h2>
+            {avatarUrl && (
+              <img src={avatarUrl} alt="avatar" style={{ width: "80px", borderRadius: "50%" }} />
+            )}
             <p><strong>ID:</strong> {user?.userid}</p>
             <p><strong>Tổng điểm:</strong> {userStats?.totalPoints ?? "Đang tải..."}</p>
             <p><strong>Cấp độ:</strong> Level {userStats?.level ?? "..."}</p>
