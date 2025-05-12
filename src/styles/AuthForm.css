@@ -91,10 +91,10 @@
   .auth-title {
     text-align: center;
     font-size: 2rem;
-    
+    color: #00ffd9;
     margin-bottom: 1.5rem;
     font-weight: bold;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    text-shadow: 0 0 12px #00ffd9;
   }
   
   
