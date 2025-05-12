@@ -34,25 +34,59 @@ function GameScreen() {
     }
   }, [userId]);
 
-  const evaluateMove = (gameInstance, move) => {
-    const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+  const pieceValue = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000 };
+
+  const evaluateBoard = (gameInstance) => {
+    const board = gameInstance.board();
     let score = 0;
-    if (move.captured) {
-      score += pieceValues[move.captured.toLowerCase()] || 0;
+    board.forEach(row => {
+      row.forEach(piece => {
+        if (piece) {
+          const value = pieceValue[piece.type] || 0;
+          score += piece.color === "w" ? value : -value;
+        }
+      });
+    });
+    return score;
+  };
+
+  const minimax = (gameInstance, depth, isMaximizing, alpha, beta) => {
+    if (depth === 0 || gameInstance.game_over()) {
+      return evaluateBoard(gameInstance);
     }
 
+    const moves = gameInstance.moves({ verbose: true });
+    if (isMaximizing) {
+      let maxEval = -Infinity;
+      for (const move of moves) {
+        gameInstance.move(move);
+        const evalScore = minimax(gameInstance, depth - 1, false, alpha, beta);
+        gameInstance.undo();
+        maxEval = Math.max(maxEval, evalScore);
+        alpha = Math.max(alpha, evalScore);
+        if (beta <= alpha) break;
+      }
+      return maxEval;
+    } else {
+      let minEval = Infinity;
+      for (const move of moves) {
+        gameInstance.move(move);
+        const evalScore = minimax(gameInstance, depth - 1, true, alpha, beta);
+        gameInstance.undo();
+        minEval = Math.min(minEval, evalScore);
+        beta = Math.min(beta, evalScore);
+        if (beta <= alpha) break;
+      }
+      return minEval;
+    }
+  };
+
+  const evaluateMove = (gameInstance, move) => {
+    const values = pieceValue;
+    let score = 0;
+    if (move.captured) score += values[move.captured] || 0;
     gameInstance.move(move);
     if (gameInstance.in_check()) score += 0.5;
-
-    const opponentMoves = gameInstance.moves({ verbose: true });
-    const ourColor = move.color === "w" ? "b" : "w";
-
-    for (const opMove of opponentMoves) {
-      if (opMove.captured && opMove.to === move.to && opMove.color === ourColor) {
-        score -= pieceValues[move.piece.toLowerCase()] || 0.5;
-      }
-    }
-
     gameInstance.undo();
     return score;
   };
@@ -60,42 +94,50 @@ function GameScreen() {
   const makeAIMove = (currentGame) => {
     if (currentGame.game_over()) return;
 
-    const possibleMoves = currentGame.moves({ verbose: true });
-    if (possibleMoves.length === 0) return;
+    const moves = currentGame.moves({ verbose: true });
+    if (moves.length === 0) return;
 
-    let selectedMove;
-    const scoredMoves = [];
-
-    for (const move of possibleMoves) {
-      const score = evaluateMove(currentGame, move);
-      scoredMoves.push({ move, score });
-    }
+    let bestMove;
 
     if (mode === "easy") {
-      const safeMoves = scoredMoves.filter(m => m.score >= 0);
-      selectedMove = (safeMoves.length ? safeMoves : scoredMoves)[Math.floor(Math.random() * (safeMoves.length || scoredMoves.length))].move;
+      bestMove = moves[Math.floor(Math.random() * moves.length)];
     } else if (mode === "medium") {
-      scoredMoves.sort((a, b) => b.score - a.score);
-      selectedMove = scoredMoves[0].move;
-    } else {
-      scoredMoves.sort((a, b) => b.score - a.score);
-      selectedMove = scoredMoves[0].move;
+      let bestScore = -Infinity;
+      for (const move of moves) {
+        const score = evaluateMove(currentGame, move);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = move;
+        }
+      }
+    } else if (mode === "hard") {
+      let bestScore = -Infinity;
+      for (const move of moves) {
+        currentGame.move(move);
+        const score = minimax(currentGame, 2, false, -Infinity, Infinity);
+        currentGame.undo();
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = move;
+        }
+      }
     }
 
-    const result = currentGame.move(selectedMove);
+    if (bestMove) {
+      const result = currentGame.move(bestMove);
+      if (result?.captured) {
+        const opponent = result.color === "w" ? "b" : "w";
+        setCapturedPieces(prev => ({
+          ...prev,
+          [opponent]: [...prev[opponent], result.captured],
+        }));
+      }
 
-    if (result?.captured) {
-      const opponent = result.color === "w" ? "b" : "w";
-      setCapturedPieces((prev) => ({
-        ...prev,
-        [opponent]: [...prev[opponent], result.captured],
-      }));
+      const newGame = new Chess(currentGame.fen());
+      setGame(newGame);
+
+      if (newGame.game_over()) handleGameOver(newGame);
     }
-
-    const newGame = new Chess(currentGame.fen());
-    setGame(newGame);
-
-    if (newGame.game_over()) handleGameOver(newGame);
   };
 
   const onDrop = (sourceSquare, targetSquare) => {
@@ -106,7 +148,7 @@ function GameScreen() {
 
     if (move.captured) {
       const opponent = move.color === "w" ? "b" : "w";
-      setCapturedPieces((prev) => ({
+      setCapturedPieces(prev => ({
         ...prev,
         [opponent]: [...prev[opponent], move.captured],
       }));
@@ -126,38 +168,38 @@ function GameScreen() {
 
   const handleGameOver = (finalGame) => {
     setIsGameOver(true);
-    let winMsg = "Hòa";
+    let msg = "Hòa";
     let didPlayerWin = false;
 
     if (finalGame.in_checkmate()) {
       const turn = finalGame.turn();
       if (turn === "w") {
-        winMsg = isAI ? "Máy thắng" : "Đen thắng";
+        msg = isAI ? "Máy thắng" : "Đen thắng";
       } else {
-        winMsg = isAI ? "Bạn thắng" : "Trắng thắng";
+        msg = isAI ? "Bạn thắng" : "Trắng thắng";
         didPlayerWin = isAI;
       }
     }
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
-    setWinner(winMsg);
+    setWinner(msg);
   };
 
   const handleResign = (color) => {
     setIsGameOver(true);
     const isWhite = color === "w";
-    const winMsg = isWhite ? (isAI ? "Máy thắng" : "Đen thắng") : (isAI ? "Bạn thắng" : "Trắng thắng");
+    const msg = isWhite ? (isAI ? "Máy thắng" : "Đen thắng") : (isAI ? "Bạn thắng" : "Trắng thắng");
     const didPlayerWin = !isWhite && isAI;
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
-    setWinner(winMsg);
+    setWinner(msg);
   };
 
   useEffect(() => {
     if (isAI && game.turn() === "b" && !isGameOver) {
       setTimeout(() => makeAIMove(game), 300);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAI, game, isGameOver]);
 
   useEffect(() => {
