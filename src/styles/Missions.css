@@ -155,30 +155,52 @@
 
 @media (max-width: 600px) {
   .user-top-right {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: auto;
-    max-width: 90%;
-    padding: 8px 12px;
-    font-size: 14px;
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    font-size: 13px;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    width: auto;
   }
 
   .user-avatar {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
 
   .user-top-right button {
-    font-size: 13px;
-    padding: 6px 12px;
+    font-size: 12px;
+    padding: 5px 10px;
   }
 
   .user-top-right .username {
-    font-size: 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-top-right {
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .user-top-right button {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .user-top-right .username {
+    font-size: 12px;
   }
 }
 
