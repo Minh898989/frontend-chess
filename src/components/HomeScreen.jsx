@@ -12,12 +12,10 @@ function HomeScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const mode = searchParams.get("mode"); // null | "select" | "ai"
+  const mode = searchParams.get("mode"); 
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const avatarKey = user ? `avatar_${user.userid}` : null;
-  const [avatar, setAvatar] = useState(avatarKey ? localStorage.getItem(avatarKey) : null);
-
+  
   useEffect(() => {
     if (showProfileModal && user?.userid) {
       axios.get(`${API_BASE}/${user.userid}`)
@@ -33,19 +31,7 @@ function HomeScreen() {
     }
   }, [showProfileModal, user?.userid]);
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file && avatarKey) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result;
-        setAvatar(base64);
-        localStorage.setItem(avatarKey, base64);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+  
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/auth");
@@ -64,35 +50,13 @@ function HomeScreen() {
   return (
     <div className="home">
       <div className="user-top-right">
-        <label htmlFor="avatar-upload" style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
-          {avatar ? (
-            <img
-              src={avatar}
-              alt="avatar"
-              className="user-avatar"
-              style={{ width: 32, height: 32, borderRadius: "50%", marginRight: 8 }}
-            />
-          ) : (
-            <span style={{ fontSize: 20, marginRight: 8 }}>👤</span>
-          )}
-          <span
-            style={{ textDecoration: "underline" }}
-            onClick={() => setShowProfileModal(true)}
-          >
-            {user?.userid || "Người dùng"}
-          </span>
-        </label>
-
-        <input
-          type="file"
-          id="avatar-upload"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={handleAvatarChange}
-        />
-
-        <span style={{ marginLeft: 8 }}>|</span>
-        <button style={{ marginLeft: 8 }} onClick={handleLogout}>Đăng xuất</button>
+        <span
+          style={{ cursor: "pointer", textDecoration: "underline" }}
+          onClick={() => setShowProfileModal(true)}
+        >
+          👤 {user?.userid || "Người dùng"}
+        </span>{" "}
+        | <button onClick={handleLogout}>Đăng xuất</button>
       </div>
 
       <h1>♟️ Game Cờ Vua</h1>
