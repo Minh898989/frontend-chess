@@ -10,10 +10,12 @@ function HomeScreen() {
   const [showAIDifficulty, setShowAIDifficulty] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userStats, setUserStats] = useState(null);
-  const [avatar, setAvatar] = useState(localStorage.getItem("avatar") || null);
+  
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const avatarKey = user ? `avatar_${user.userid}` : null;
+  const [avatar, setAvatar] = useState(avatarKey ? localStorage.getItem(avatarKey) : null);
 
   useEffect(() => {
     if (showProfileModal && user?.userid) {
@@ -32,16 +34,17 @@ function HomeScreen() {
 
   const handleAvatarChange = (e) => {
   const file = e.target.files[0];
-  if (file) {
+  if (file && avatarKey) {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result;
       setAvatar(base64);
-      localStorage.setItem("avatar", base64);
+      localStorage.setItem(avatarKey, base64);
     };
-    reader.readAsDataURL(file); // Chuyển ảnh sang base64
+    reader.readAsDataURL(file);
   }
 };
+
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/auth");
