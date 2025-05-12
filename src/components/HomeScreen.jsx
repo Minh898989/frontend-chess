@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../styles/HomeScreen.css";
 
 const API_BASE = "https://backend-chess-fjr7.onrender.com/api/missions/user";
 
 function HomeScreen() {
-  const [showModes, setShowModes] = useState(false);
-  const [showAIDifficulty, setShowAIDifficulty] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userStats, setUserStats] = useState(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const mode = searchParams.get("mode"); // null | "select" | "ai"
+
   const user = JSON.parse(localStorage.getItem("user"));
   const avatarKey = user ? `avatar_${user.userid}` : null;
   const [avatar, setAvatar] = useState(avatarKey ? localStorage.getItem(avatarKey) : null);
@@ -50,11 +52,14 @@ function HomeScreen() {
   };
 
   const handleModeSelection = (selectedMode) => {
-  navigate(`/game/${selectedMode}`, { replace: true });
-};
+    navigate(`/game/${selectedMode}`, { replace: false });
+  };
 
   const goToQuests = () => navigate("/missions");
   const goToGuide = () => navigate("/guide");
+  const goToPlay = () => navigate("?mode=select");
+  const goToAIDifficulty = () => navigate("?mode=ai");
+  const resetMode = () => navigate("/");
 
   return (
     <div className="home">
@@ -92,24 +97,31 @@ function HomeScreen() {
 
       <h1>♟️ Game Cờ Vua</h1>
 
-      {!showModes ? (
-        <button onClick={() => setShowModes(true)}>Vào chơi</button>
-      ) : showAIDifficulty ? (
+      {/* Màn chọn chế độ */}
+      {!mode && (
+        <button onClick={goToPlay}>Vào chơi</button>
+      )}
+
+      {mode === "select" && (
+        <div className="mode-selection">
+          <h2>Chọn chế độ chơi:</h2>
+          <button onClick={() => handleModeSelection("2players")}>👥 Chơi 2 người</button>
+          <button onClick={goToAIDifficulty}>🤖 Chơi với máy</button>
+          <button onClick={resetMode}>⬅️ Quay lại</button>
+        </div>
+      )}
+
+      {mode === "ai" && (
         <div className="mode-selection">
           <h2>🤖 Chọn độ khó:</h2>
           <button onClick={() => handleModeSelection("easy")}>🟢 Dễ</button>
           <button onClick={() => handleModeSelection("medium")}>🟡 Trung bình</button>
           <button onClick={() => handleModeSelection("hard")}>🔴 Khó</button>
-        </div>
-      ) : (
-        <div className="mode-selection">
-          <h2>Chọn chế độ chơi:</h2>
-          <button onClick={() => handleModeSelection("2players")}>👥 Chơi 2 người</button>
-          <button onClick={() => setShowAIDifficulty(true)}>🤖 Chơi với máy</button>
+          <button onClick={goToPlay}>⬅️ Quay lại</button>
         </div>
       )}
 
-      {!showModes && (
+      {!mode && (
         <>
           <div className="extra-buttons">
             <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng</button>
