@@ -30,12 +30,12 @@ function HomeScreen() {
         });
     }
   }, [showProfileModal, user?.userid]);
-  useEffect(() => {
+  
+ useEffect(() => {
   if (user?.avatar) {
-    setAvatarUrl(user.avatar); // Không cần thêm domain
+    setAvatarUrl(user.avatar);
   }
-}, [user?.avatar]);
-
+}, [user]);
 
 
   
@@ -53,30 +53,43 @@ function HomeScreen() {
   const goToPlay = () => navigate("?mode=select");
   const goToAIDifficulty = () => navigate("?mode=ai");
   const resetMode = () => navigate("/");
+  
   const handleAvatarChange = (event) => {
-  const file = event.target.files[0];
-  if (file && user?.userid) {
-    const formData = new FormData();
-    formData.append("avatar", file);
+    const file = event.target.files[0];
+    if (file && user?.userid) {
+      const formData = new FormData();
+      formData.append("avatar", file);
 
-    axios
-      .post(`https://backend-chess-fjr7.onrender.com/api/users/upload-avatar/${user.userid}`, formData)
-      .then((res) => {
-        const uploadedUrl = res.data.avatar; // Đã là URL Cloudinary đầy đủ
-        setAvatarUrl(uploadedUrl);
+      axios
+        .post(
+          `https://backend-chess-fjr7.onrender.com/api/users/upload-avatar/${user.userid}`,
+          formData
+        )
+        .then((res) => {
+          const uploadedUrl = res.data.avatar;
+          setAvatarUrl(uploadedUrl);
 
-        const updatedUser = { ...user, avatar: uploadedUrl };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      })
-      .catch((err) => console.error("Lỗi upload avatar:", err));
-  }
-};
+          const updatedUser = { ...user, avatar: uploadedUrl };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        })
+        .catch((err) => console.error("Lỗi upload avatar:", err));
+    }
+  };
+
 
   return (
     <div className="home">
       <div className="user-top-right">
-        <label style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-          <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: "none" }} />
+        <label
+          onClick={() => setShowProfileModal(true)}
+          style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+        >
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            style={{ display: "none" }}
+          />
           {avatarUrl ? (
             <img
               src={avatarUrl}
