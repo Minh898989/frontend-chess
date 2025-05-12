@@ -3,33 +3,36 @@
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding: 50px 20px;
+  padding: 20px;
   background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  color: #fff;
+  color: #ffffff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .missions-screen h2 {
-  font-size: 2.8rem;
-  margin-bottom: 20px;
-  color: #ffe066;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  color: #00ffd9;
+  text-shadow: 0 0 12px #00ffd9;
+  text-align: center;
 }
 
 .missions-screen p {
-  font-size: 1.2rem;
+  font-size: 1rem;
   margin: 8px 0;
+  color: #cccccc;
 }
 
 .message-box {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   padding: 12px 20px;
-  border-radius: 12px;
+  border-radius: 16px;
   margin: 15px 0;
   text-align: center;
   color: #ffea00;
   font-weight: bold;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+  border: 1px solid #2e3e4e;
 }
 
 .missions-list {
@@ -38,20 +41,27 @@
   gap: 20px;
   justify-content: center;
   margin-top: 30px;
+  max-width: 1200px;
 }
 
 .mission-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(135deg, #1a1a2e, #222244);
   padding: 20px;
-  border-radius: 20px;
+  border-radius: 16px;
   width: 300px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s ease, background-color 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #2e3e4e;
+  color: #cccccc;
+}
+
+.mission-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 18px rgba(0, 255, 255, 0.12);
 }
 
 .mission-card h3 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #00ffe5;
   margin-bottom: 10px;
 }
@@ -59,6 +69,7 @@
 .mission-card p {
   margin: 5px 0;
   font-size: 1rem;
+  color: #cccccc;
 }
 
 .mission-card.claimed {
@@ -92,20 +103,43 @@
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
+  .missions-screen {
+    padding: 10px;
+  }
+
   .missions-screen h2 {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .missions-screen p {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .mission-card {
     width: 90%;
+    padding: 16px;
   }
 
   .claim-button {
     font-size: 0.95rem;
     padding: 8px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .missions-screen {
+    padding: 5px;
+  }
+
+  .missions-screen h2 {
+    font-size: 1.6rem;
+  }
+
+  .mission-card {
+    padding: 14px;
+  }
+
+  .claim-button {
+    font-size: 0.9rem;
   }
 }
