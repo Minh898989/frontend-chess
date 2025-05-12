@@ -158,31 +158,37 @@
 
 @media (max-width: 600px) {
   .user-top-right {
-    width: calc(100% - 20px);
-    right: auto;
-    left: 10px;
-    top: 10px;
-    font-size: 13px;
-    padding: 8px 12px;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto 20px auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 10px;
+    font-size: 14px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
-  }
-
-  .user-top-right .username {
-    font-size: 14px;
-  }
-
-  .user-top-right button {
-    padding: 6px 10px;
-    font-size: 13px;
+    gap: 8px;
   }
 
   .user-avatar {
     width: 28px;
     height: 28px;
   }
+
+  .user-top-right button {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .user-top-right .username {
+    font-size: 14px;
+  }
 }
+
 
 .modal-overlay {
   position: fixed;
