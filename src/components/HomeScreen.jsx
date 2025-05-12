@@ -79,30 +79,44 @@ function HomeScreen() {
 
   return (
     <div className="home">
-      <div className="user-top-right">
-        <label
-          onClick={() => setShowProfileModal(true)}
-          style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
-        >
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarChange}
-            style={{ display: "none" }}
-          />
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt="avatar"
-              style={{ width: "32px", height: "32px", borderRadius: "50%" }}
-            />
-          ) : (
-            <span role="img" aria-label="user">👤</span>
-          )}
-          {user?.userid || "Người dùng"}
-        </label>{" "}
-        | <button onClick={handleLogout}>Đăng xuất</button>
-      </div>
+      <div className="user-top-right" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+  <label
+    style={{ cursor: "pointer" }}
+  >
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleAvatarChange}
+      style={{ display: "none" }}
+    />
+    {avatarUrl ? (
+      <img
+        src={avatarUrl}
+        alt="avatar"
+        style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+        onClick={(e) => {
+          e.stopPropagation(); // Ngăn việc click lan ra ngoài
+          e.target.previousSibling.click(); // Mở chọn file
+        }}
+      />
+    ) : (
+      <span role="img" aria-label="user" onClick={(e) => {
+        e.stopPropagation();
+        e.target.previousSibling.click();
+      }}>👤</span>
+    )}
+  </label>
+
+  <span
+    onClick={() => setShowProfileModal(true)}
+    style={{ cursor: "pointer", fontWeight: "bold" }}
+  >
+    {user?.userid || "Người dùng"}
+  </span>
+
+  | <button onClick={handleLogout}>Đăng xuất</button>
+</div>
+
 
       <h1>♟️ Game Cờ Vua</h1>
 
@@ -146,7 +160,7 @@ function HomeScreen() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Thông tin người chơi</h2>
             {avatarUrl && (
-              <img src={avatarUrl} alt="avatar" style={{ width: "80px", borderRadius: "50%" }} />
+              <img src={avatarUrl} alt="avatar" style={{ width: "80px", borderRadius: "50%",height: "80px",objectFit: "cover" }} />
             )}
             <p><strong>ID:</strong> {user?.userid}</p>
             <p><strong>Tổng điểm:</strong> {userStats?.totalPoints ?? "Đang tải..."}</p>
