@@ -1,23 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
 .home {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: start;
-    min-height: 100vh;
-    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-    padding: 60px 20px;
-    color: #fff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  .home h1 {
-    font-size: 3rem;
-    margin-bottom: 30px;
-    color: #00ffd9;
-    text-shadow: 0 0 12px #00ffd9;
-  }
-  
-  .home button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  min-height: 100vh;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  padding: 60px 20px;
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.home h1 {
+  font-size: 3rem;
+  margin-bottom: 30px;
+  color: #00ffd9;
+  text-shadow: 0 0 12px #00ffd9;
+}
+
+.home button {
   width: 100%;
   max-width: 400px;
   padding: 15px 20px;
@@ -30,111 +36,114 @@
   transition: transform 0.2s ease, background 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
-  
-  .home button:hover {
-    background: #ff8787;
-    transform: scale(1.05);
+
+.home button:hover {
+  background: #ff8787;
+  transform: scale(1.05);
+}
+
+.extra-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+  .home h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
   }
+
+  .home button {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
+
   .extra-buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 16px; /* tạo khoảng cách giữa các nút */
-    flex-wrap: wrap;
+    gap: 12px;
   }
-  @media (max-width: 1024px) {
-    .home h1 {
-      font-size: 2.5rem; /* Slightly smaller heading */
-      margin-bottom: 20px;
-    }
-  
-    .home button {
-      padding: 12px 30px;
-      font-size: 1rem;
-    }
-  
-    .extra-buttons {
-      gap: 12px; /* Reduce gap between buttons */
-    }
+}
+
+@media (max-width: 768px) {
+  .home h1 {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
   }
-  
-  @media (max-width: 768px) {
-    .home h1 {
-      font-size: 2.2rem; /* Smaller font for smaller screens */
-      margin-bottom: 15px;
-    }
-  
-    .home button {
-      padding: 10px 25px;
-      font-size: 0.95rem;
-    }
-  
-    .extra-buttons {
-      flex-direction: column; /* Stack the extra buttons vertically on smaller screens */
-      gap: 10px;
-    }
+
+  .home button {
+    padding: 10px 25px;
+    font-size: 0.95rem;
   }
-  
-  
-  
-  @media (max-width: 480px) {
-    .home h1 {
-      font-size: 1.8rem; /* Even smaller heading on very small screens */
-      margin-bottom: 10px;
-    }
-  
-    .home button {
-      padding: 8px 20px;
-      font-size: 0.9rem; /* Adjust button font size */
-    }
-  
-    .extra-buttons {
-      flex-direction: column; /* Stack buttons vertically */
-      gap: 8px;
-      padding: 0 15px;
-    }
-  }
-  .user-top-right {
-    width: 200px;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    padding: 10px 16px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
+
+  .extra-buttons {
+    flex-direction: column;
     gap: 10px;
-    font-size: 15px;
-    font-weight: 500;
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
-  .user-top-right .username {
-    color: #ffe066;
-    font-weight: bold;
+}
+
+@media (max-width: 480px) {
+  .home h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
   }
-  
-  .user-top-right button {
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    padding: 6px 14px;
-    border-radius: 20px;
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  .home button {
+    max-width: 100%;
+    padding: 8px 16px;
+    font-size: 0.9rem;
   }
-  
-  .user-top-right button:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: scale(1.05);
+
+  .extra-buttons {
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 15px;
   }
-  .user-avatar {
+}
+
+.user-top-right {
+  width: 200px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 10px 16px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-top-right .username {
+  color: #ffe066;
+  font-weight: bold;
+}
+
+.user-top-right button {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.user-top-right button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.05);
+}
+
+.user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -142,11 +151,40 @@
   border: 2px solid #ccc;
   transition: border-color 0.3s;
 }
+
 .user-avatar:hover {
   border-color: #888;
 }
 
-  .modal-overlay {
+@media (max-width: 600px) {
+  .user-top-right {
+    width: calc(100% - 20px);
+    right: auto;
+    left: 10px;
+    top: 10px;
+    font-size: 13px;
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .user-top-right .username {
+    font-size: 14px;
+  }
+
+  .user-top-right button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -213,35 +251,7 @@
   background: #00e676;
   transform: scale(1.05);
 }
-@media (max-width: 600px) {
-  .user-top-right {
-    width: auto;
-    right: 10px;
-    left: 10px;
-    top: 10px;
-    font-size: 13px;
-    padding: 8px 12px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
 
-  .user-top-right .username {
-    font-size: 14px;
-  }
-
-  .user-top-right button {
-    padding: 6px 10px;
-    font-size: 13px;
-  }
-
-  .user-avatar {
-    width: 28px;
-    height: 28px;
-  }
-}
-
-/* Responsive cải tiến cho modal */
 @media (max-width: 480px) {
   .modal-content {
     padding: 20px;
