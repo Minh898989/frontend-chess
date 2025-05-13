@@ -13,8 +13,7 @@ function HomeScreen() {
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || null);
   const [userStats, setUserStats] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
+  
 
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode");
@@ -33,19 +32,7 @@ function HomeScreen() {
     }
   }, [showProfileModal, user?.userid]);
 
-  useEffect(() => {
-    if (showLeaderboardModal) {
-      axios
-        .get(`${API_BASE}/leaderboard`)
-        .then((res) => {
-  console.log("Leaderboard data:", res.data);
-  setLeaderboard(res.data.data || []);
-})
-        .catch((err) =>
-          console.error("Lỗi khi tải bảng xếp hạng:", err)
-        );
-    }
-  }, [showLeaderboardModal]);
+  
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -112,9 +99,7 @@ function HomeScreen() {
       </div>
 
       {/* Nút leaderboard */}
-      <div onClick={() => setShowLeaderboardModal(true)} style={{ cursor: "pointer", fontSize: "24px" }}>
-        🏆
-      </div>
+      
 
       <h1>♟️ Game Cờ Vua</h1>
 
@@ -178,46 +163,7 @@ function HomeScreen() {
       )}
 
       {/* Modal bảng xếp hạng */}
-      {showLeaderboardModal && (
-        <div className="modal-overlay" onClick={() => setShowLeaderboardModal(false)}>
-          <div className="modal-content leaderboard-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>🏆 Bảng xếp hạng</h2>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ backgroundColor: "#444", color: "white" }}>
-                  <th>Hạng</th>
-                  <th>Người chơi</th>
-                  <th>Điểm</th>
-                  <th>Level</th>
-                  <th>Avatar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((user, index) => (
-                  <tr key={user.id}>
-                    <td>{index + 1}</td>
-                    <td>{user.userid}</td>
-                    <td>{user.total_points}</td>
-                    <td>{user.level}</td>
-                    <td>
-                      {user.avatar ? (
-                        <img
-                          src={user.avatar}
-                          alt="avatar"
-                          style={{ width: "32px", height: "32px", borderRadius: "50%" }}
-                        />
-                      ) : "👤"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <button onClick={() => setShowLeaderboardModal(false)} style={{ marginTop: "12px" }}>
-              Đóng
-            </button>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }
