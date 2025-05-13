@@ -37,7 +37,10 @@ function HomeScreen() {
     if (showLeaderboardModal) {
       axios
         .get(`${API_BASE}/leaderboard`)
-        .then((res) => setLeaderboard(res.data.data || []))
+        .then((res) => {
+  console.log("Leaderboard data:", res.data);
+  setLeaderboard(res.data.data || []);
+})
         .catch((err) =>
           console.error("Lỗi khi tải bảng xếp hạng:", err)
         );
