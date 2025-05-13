@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
+;
 import Chess from "chess.js";
 import axios from "axios";
 import "../styles/GameScreen.css";
@@ -23,6 +24,7 @@ function GameScreen() {
 
   const getTotalCaptured = useCallback(() => capturedPieces.w.length + capturedPieces.b.length, [capturedPieces]);
   const getMinutesPlayed = useCallback(() => Math.floor((15 * 60 - timeLeft) / 60), [timeLeft]);
+  
 
   const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
     if (!userId) return;
@@ -250,6 +252,12 @@ function GameScreen() {
   window.addEventListener("resize", handleResize);
   return () => window.removeEventListener("resize", handleResize);
 }, []);
+  const getTimerClass = () => {
+  if (timeLeft <= 30) return "timer critical";
+  if (timeLeft <= 60) return "timer warning";
+  return "timer";
+};
+
 
 
   const getModeName = () => {
@@ -280,9 +288,10 @@ function GameScreen() {
         />
       </div>
 
-      <div className="timer">
+      <div className={getTimerClass()}>
         <p>⏳ Thời gian còn lại: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}</p>
       </div>
+
 
       {!isGameOver && (
         <div className="resign-button">

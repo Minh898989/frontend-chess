@@ -44,11 +44,35 @@ h1 {
 }
 
 .timer {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   margin: 10px 0;
-  color: #00ffe5;
-  text-shadow: 0 0 6px #00ffe5;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.timer.warning {
+  color: #ffcc00; /* vàng */
+  animation: pulse 1s infinite;
+}
+
+.timer.critical {
+  color: red;
+  animation: flash 0.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 
 .resign-button {
   margin-top: 20px;
