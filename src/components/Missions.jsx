@@ -3,6 +3,8 @@ import axios from "axios";
 import "../styles/Missions.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import confetti from "canvas-confetti"; // Thêm dòng này ở đầu file
+
 
 const Mission = () => {
   const [missions, setMissions] = useState([]);
@@ -51,6 +53,12 @@ const Mission = () => {
       );
 
       toast.success(response.data.message);
+
+      confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
 
       // ✅ Cập nhật trạng thái của mission đã nhận
       setMissions((prevMissions) =>
