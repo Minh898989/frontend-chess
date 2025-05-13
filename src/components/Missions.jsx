@@ -8,7 +8,7 @@ const Mission = () => {
   const [error, setError] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const userid = user ? user.userid : null;  // Lấy userid từ localStorage
+  const userid = user ? user.userid : null; 
 
   useEffect(() => {
     if (!userid) {

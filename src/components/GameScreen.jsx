@@ -13,7 +13,7 @@ function GameScreen() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
-  const [boardWidth, setBoardWidth] = useState(400);
+  const [boardWidth, setBoardWidth] = useState(450);
   
 
   const isAI = mode !== "2players";
