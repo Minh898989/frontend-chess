@@ -270,20 +270,20 @@
   }
 }
 .back-button {
-  all: unset;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color:  #0b1e25;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 16px;
-  cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  transition: background-color 0.2s;
+  
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  background-color:  #0b1e25 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  z-index: 100 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+  transition: background-color 0.2s !important;
 }
 .back-button:hover {
-  background-color: #0b1e25;
+  background-color: #0b1e25 !important;
 }
