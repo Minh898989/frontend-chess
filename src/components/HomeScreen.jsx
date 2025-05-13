@@ -130,7 +130,7 @@ function HomeScreen() {
           <h2>Chọn chế độ chơi:</h2>
           <button onClick={() => handleModeSelection("2players")}>👥 Chơi 2 người</button>
           <button onClick={goToAIDifficulty}>🤖 Chơi với máy</button>
-          <button className="back-button" onClick={resetMode}>⬅️ Quay lại</button>
+          <button onClick={resetMode}>⬅️ Quay lại</button>
         </div>
       )}
 
@@ -140,7 +140,7 @@ function HomeScreen() {
           <button onClick={() => handleModeSelection("easy")}>🟢 Dễ</button>
           <button onClick={() => handleModeSelection("medium")}>🟡 Trung bình</button>
           <button onClick={() => handleModeSelection("hard")}>🔴 Khó</button>
-          <button className="back-button" onClick={goToPlay}>⬅️ Quay lại</button>
+          <button onClick={goToPlay}>⬅️ Quay lại</button>
         </div>
       )}
 
