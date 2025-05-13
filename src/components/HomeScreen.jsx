@@ -79,20 +79,30 @@ function HomeScreen() {
   };
 
   const openLeaderboardModal = () => {
-    setShowLeaderboardModal(true);
-    setLoadingLeaderboard(true);
-    setErrorLeaderboard("");
-    axios
-      .get(`${API_BASE}/leaderboard`)
-      .then((res) => {
-        setLeaderboard(res.data || []);
-        setLoadingLeaderboard(false);
-      })
-      .catch((err) => {
-        setErrorLeaderboard("Không thể tải bảng xếp hạng.");
-        setLoadingLeaderboard(false);
-      });
-  };
+  setShowLeaderboardModal(true);
+  setLoadingLeaderboard(true);
+  setErrorLeaderboard("");
+
+  axios
+    .get(`${API_BASE}/leaderboard`)
+    .then((res) => {
+      const rawData = res.data?.data || [];
+      const transformedData = rawData.map((user) => ({
+        userid: user.userid,
+        username: user.userid, // nếu có username riêng thì sửa lại ở đây
+        totalPoints: user.total_points,
+        level: user.level,
+        avatar: user.avatar,
+      }));
+      setLeaderboard(transformedData);
+      setLoadingLeaderboard(false);
+    })
+    .catch((err) => {
+      setErrorLeaderboard("Không thể tải bảng xếp hạng.");
+      setLoadingLeaderboard(false);
+    });
+};
+
 
   return (
     <div className="home">
