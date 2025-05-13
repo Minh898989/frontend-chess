@@ -1,114 +1,149 @@
-/* Giao diện chính màn hình game */
+/* GameScreen.css */
+
 .game-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 15px;
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  padding: 60px 20px 40px;
   min-height: 100vh;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #fff;
+  position: relative;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #00ffd9;
+  text-shadow: 0 0 10px #00ffd9;
+  margin-bottom: 20px;
   text-align: center;
 }
 
-/* Tiêu đề chính */
-.game-screen h1 {
-  font-size: 2rem;
-  margin-bottom: 24px;
+.board-wrapper {
+  margin: 20px 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
-/* Nút chung */
-button {
-  font-size: 1rem;
-  padding: 10px 20px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-/* Nút đầu hàng */
-.resign-button button {
-  background-color: #ff6b6b;
-  color: white;
-  margin-top: 16px;
-}
-
-/* Phần hiển thị quân cờ bị ăn */
 .captured-pieces {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
-  font-size: 36px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 600px;
+  padding: 10px 0;
+  font-size: 1.5rem;
 }
 
 .captured-piece {
-  margin: 4px;
+  margin: 0 4px;
+  filter: drop-shadow(0 0 2px #fff);
 }
 
-/* Bàn cờ */
-.board-wrapper {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 20px;
-}
-
-.react-chessboard {
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Bộ đếm thời gian */
 .timer {
-  margin-top: 10px;
-  font-size: 1.1rem;
-  color: #f1f1f1;
+  font-size: 1.3rem;
+  margin: 10px 0;
+  color: #00ffe5;
+  text-shadow: 0 0 6px #00ffe5;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .game-screen h1 {
-    font-size: 1.5rem;
+.resign-button {
+  margin-top: 20px;
+}
+
+.resign-button button {
+  background-color: #ff6b6b;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s, transform 0.2s;
+}
+
+.resign-button button:hover {
+  background-color: #ff8787;
+  transform: scale(1.05);
+}
+
+.resign-button button:active {
+  transform: scale(0.95);
+}
+
+p {
+  margin: 10px 0;
+}
+
+.winner-message {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00ff88;
+  text-shadow: 0 0 10px #00ff88;
+  margin-top: 20px;
+}
+
+/* Responsive Design */
+
+@media (max-width: 1024px) {
+  .game-screen {
+    padding: 50px 15px 30px;
+  }
+
+  h1 {
+    font-size: 2.2rem;
   }
 
   .captured-pieces {
-    font-size: 28px;
-    gap: 16px;
+    font-size: 1.3rem;
+    padding: 6px 0;
   }
 
-  .board-wrapper {
-    max-width: 410px;
+  .timer {
+    font-size: 1.2rem;
   }
 }
 
-@media (max-width: 480px) {
-  .game-screen {
-    padding: 20px 10px;
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
   }
 
-  .game-screen h1 {
-    font-size: 1.3rem;
-  }
-
-  button {
-    font-size: 0.9rem;
-    padding: 8px 16px;
+  .resign-button button {
+    padding: 10px 20px;
+    font-size: 0.95rem;
   }
 
   .captured-pieces {
     flex-direction: column;
     align-items: center;
-    font-size: 24px;
+    gap: 6px;
   }
 
-  .board-wrapper {
-    max-width: 280px;
+  .timer {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .resign-button button {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  .captured-pieces {
+    font-size: 1.1rem;
+  }
+
+  .timer {
+    font-size: 1rem;
   }
 }
