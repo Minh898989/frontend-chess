@@ -13,21 +13,11 @@ function HomeScreen() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode"); 
-  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
+  
 
   
   const user = JSON.parse(localStorage.getItem("user"));
-  const fetchLeaderboard = () => {
-  axios.get("https://backend-chess-fjr7.onrender.com/api/leaderboard")
-    .then((res) => {
-      setLeaderboard(res.data || []);
-      setShowLeaderboardModal(true);
-    })
-    .catch((err) => {
-      console.error("Lỗi khi tải bảng xếp hạng:", err);
-    });
-};
+  
 
 
 
@@ -131,7 +121,9 @@ function HomeScreen() {
   </span>
 
   | <button onClick={handleLogout}>Đăng xuất</button>
+  
 </div>
+
    
 
       <h1>♟️ Game Cờ Vua</h1>
@@ -185,6 +177,7 @@ function HomeScreen() {
           </div>
         </div>
       )}
+ 
       
     </div>
   );
