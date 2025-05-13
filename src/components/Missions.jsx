@@ -68,8 +68,13 @@ const Mission = () => {
 
   return (
     <div className="missions-screen">
+      <button className="back-button" onClick={() => window.history.back()}>
+          ⬅ Quay lại
+      </button>
       <h2>Your Missions</h2>
       <p>Total Points: {totalPoints}</p>
+      
+
       <div className="missions-list">
         {missions.map((mission) => (
           <div
