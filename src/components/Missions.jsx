@@ -16,18 +16,21 @@ const Mission = () => {
   useEffect(() => {
     if (!userid) {
       setError("Không tìm thấy người dùng.");
+      setLoading(false);
       return;
     }
 
     const fetchMissions = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
+        const response = await axios.get(
+          `https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`
+        );
         setMissions(response.data.missions);
         setTotalPoints(response.data.totalPoints);
-        setLoading(false);
       } catch (err) {
         setError("Không thể tải nhiệm vụ.");
+      } finally {
         setLoading(false);
       }
     };
@@ -39,28 +42,35 @@ const Mission = () => {
     if (!userid) return;
 
     try {
-      const response = await axios.post("https://backend-chess-fjr7.onrender.com/api/missions/claim", {
-        userid,
-        missionId,
-      });
+      const response = await axios.post(
+        "https://backend-chess-fjr7.onrender.com/api/missions/claim",
+        {
+          userid,
+          missionId,
+        }
+      );
 
       toast.success(response.data.message);
-      refreshMissions();
-    } catch (err) {
-      toast.error("Lỗi khi nhận thưởng: " + (err.response?.data?.error || err.message));
-    }
-  };
 
-  const refreshMissions = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
-      setMissions(response.data.missions);
-      setTotalPoints(response.data.totalPoints);
-      setLoading(false);
+      // ✅ Cập nhật trạng thái của mission đã nhận
+      setMissions((prevMissions) =>
+        prevMissions.map((mission) =>
+          mission.id === missionId
+            ? { ...mission, isClaimedToday: true }
+            : mission
+        )
+      );
+
+      // ✅ Nếu API trả về điểm mới, cập nhật
+      if (response.data.newTotalPoints !== undefined) {
+        setTotalPoints(response.data.newTotalPoints);
+      }
+
     } catch (err) {
-      setError("Không thể làm mới nhiệm vụ.");
-      setLoading(false);
+      toast.error(
+        "Lỗi khi nhận thưởng: " +
+          (err.response?.data?.error || err.message)
+      );
     }
   };
 
@@ -74,25 +84,42 @@ const Mission = () => {
       </button>
 
       <h2>Nhiệm vụ của bạn</h2>
-      <p className="total-points">Tổng điểm: <strong>{totalPoints}</strong></p>
+      <p className="total-points">
+        Tổng điểm: <strong>{totalPoints}</strong>
+      </p>
 
       <div className="missions-list">
         {missions.map((mission) => (
           <div
             key={mission.id}
-            className={`mission-card ${mission.isClaimedToday || mission.isCompleted ? "claimed" : ""}`}
+            className={`mission-card ${
+              mission.isClaimedToday || mission.isCompleted ? "claimed" : ""
+            }`}
           >
             <h3>{mission.name}</h3>
             <p>{mission.description}</p>
+            <p>{mission.reward_points}</p>
             <p>
               Trạng thái:{" "}
-              <span className={mission.isCompleted ? "status-completed" : "status-incomplete"}>
+              <span
+                className={
+                  mission.isCompleted
+                    ? "status-completed"
+                    : "status-incomplete"
+                }
+              >
                 {mission.isCompleted ? "✅ Hoàn thành" : "❌ Chưa hoàn thành"}
               </span>
             </p>
             <p>
               Nhận thưởng:{" "}
-              <span className={mission.isClaimedToday ? "status-claimed" : "status-unclaimed"}>
+              <span
+                className={
+                  mission.isClaimedToday
+                    ? "status-claimed"
+                    : "status-unclaimed"
+                }
+              >
                 {mission.isClaimedToday ? "🎁 Đã nhận" : "🕐 Chưa nhận"}
               </span>
             </p>
