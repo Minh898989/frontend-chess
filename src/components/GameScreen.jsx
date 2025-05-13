@@ -14,7 +14,7 @@ function GameScreen() {
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(() =>
-  window.innerWidth < 768 ? 4110 : 600
+  window.innerWidth < 768 ? 410 : 600
 );
 
   
