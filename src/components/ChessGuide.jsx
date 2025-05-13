@@ -4,6 +4,9 @@ import '../styles/ChessGuide.css';
 const ChessGuide = () => {
   return (
     <div className="chess-guide">
+      <button className="back-button" onClick={() => window.history.back()}>
+          ⬅ Quay lại
+      </button>
       <h1>Hướng Dẫn Chơi Cờ Vua</h1>
       <section>
         <h2>1. Giới thiệu</h2>

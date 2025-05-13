@@ -140,7 +140,7 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #142a34;
+  background-color:  #0b1e25;
   border: none;
   border-radius: 8px;
   padding: 6px 10px;
@@ -151,7 +151,7 @@
   transition: background-color 0.2s;
 }
 .back-button:hover {
-  background-color:#0f2027;
+  background-color: #0b1e25;
 }
 
 
