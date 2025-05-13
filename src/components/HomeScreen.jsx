@@ -89,7 +89,7 @@ function HomeScreen() {
       const rawData = res.data?.data || [];
       const transformedData = rawData.map((user) => ({
         userid: user.userid,
-        username: user.userid, // nếu có username riêng thì sửa lại ở đây
+        username: user.userid, 
         totalPoints: user.total_points,
         level: user.level,
         avatar: user.avatar,
@@ -231,7 +231,7 @@ function HomeScreen() {
                     <tr key={user.userid}>
                       <td>{index + 1}</td>
                       <td>{user.userid || user.useri}</td>
-                      <td>{user.total_points}</td>
+                      <td>{user.totalPoints}</td> 
                       <td>{user.level}</td>
                     </tr>
                   ))}
