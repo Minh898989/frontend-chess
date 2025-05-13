@@ -1,10 +1,13 @@
+// 1. Thư viện bên ngoài
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
-;
 import Chess from "chess.js";
 import axios from "axios";
+
+// 2. File nội bộ (CSS hoặc components của bạn)
 import "../styles/GameScreen.css";
+
 
 function GameScreen() {
   const { mode } = useParams();
