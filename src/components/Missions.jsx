@@ -55,10 +55,16 @@ const Mission = () => {
       toast.success(response.data.message);
 
       confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
+        particleCount: 200,    
+        spread: 100,         
+        startVelocity: 45,      
+        gravity: 0.8,           
+        scalar: 1.2,            
+        ticks: 200,         
+        origin: { y: 0.6 },     
+        colors: ['#00C9A7', '#FFD93D', '#FF6B6B', '#6A67CE', '#FFC75F'], 
+      });
+
 
       // ✅ Cập nhật trạng thái của mission đã nhận
       setMissions((prevMissions) =>
