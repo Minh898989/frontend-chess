@@ -220,8 +220,8 @@ function HomeScreen() {
                   {leaderboard.map((user, index) => (
                     <tr key={user.userid}>
                       <td>{index + 1}</td>
-                      <td>{user.username || user.userid}</td>
-                      <td>{user.totalPoints}</td>
+                      <td>{user.userid || user.useri}</td>
+                      <td>{user.total_points}</td>
                       <td>{user.level}</td>
                     </tr>
                   ))}
