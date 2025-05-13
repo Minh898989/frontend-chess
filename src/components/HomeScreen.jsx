@@ -13,15 +13,17 @@ function HomeScreen() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode"); 
-  
-
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
   
   const user = JSON.parse(localStorage.getItem("user"));
-  
-
-
-
-  
+   useEffect(() => {
+  if (showLeaderboardModal) {
+    axios.get("https://backend-chess-fjr7.onrender.com/api/leaderboard")
+      .then((res) => setLeaderboard(res.data.data || []))
+      .catch((err) => console.error("Lỗi khi tải bảng xếp hạng:", err));
+  }
+}, [showLeaderboardModal]);
   useEffect(() => {
     if (showProfileModal && user?.userid) {
       axios.get(`${API_BASE}/${user.userid}`)
@@ -123,6 +125,10 @@ function HomeScreen() {
   | <button onClick={handleLogout}>Đăng xuất</button>
   
 </div>
+<div onClick={() => setShowLeaderboardModal(true)} style={{ cursor: "pointer", fontSize: "24px" }}>
+    🏆
+  </div>
+   
 
    
 
@@ -177,6 +183,42 @@ function HomeScreen() {
           </div>
         </div>
       )}
+      {showLeaderboardModal && (
+  <div className="modal-overlay" onClick={() => setShowLeaderboardModal(false)}>
+    <div className="modal-content leaderboard-modal" onClick={(e) => e.stopPropagation()}>
+      <h2>🏆 Bảng xếp hạng</h2>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ backgroundColor: "#444", color: "white" }}>
+            <th>Hạng</th>
+            <th>Người chơi</th>
+            <th>Điểm</th>
+            <th>Level</th>
+            <th>Avatar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leaderboard.map((user, index) => (
+            <tr key={user.id}>
+              <td>{index + 1}</td>
+              <td>{user.userid}</td>
+              <td>{user.total_points}</td>
+              <td>{user.level}</td>
+              <td>
+                {user.avatar ? (
+                  <img src={user.avatar} alt="avatar" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
+                ) : "👤"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={() => setShowLeaderboardModal(false)} style={{ marginTop: "12px" }}>
+        Đóng
+      </button>
+    </div>
+  </div>
+)}
  
       
     </div>
