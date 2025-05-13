@@ -13,7 +13,10 @@ function GameScreen() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
-  const [boardWidth, setBoardWidth] = useState(450);
+  const [boardWidth, setBoardWidth] = useState(() =>
+  window.innerWidth < 768 ? 420 : 600
+);
+
   
 
   const isAI = mode !== "2players";
@@ -234,16 +237,22 @@ function GameScreen() {
     ));
   };
   useEffect(() => {
-    const handleResize = () => {
-      if (boardContainerRef.current) {
-        const size = boardContainerRef.current.offsetWidth;
-        setBoardWidth(Math.min(size, 550));
+  const handleResize = () => {
+    if (boardContainerRef.current) {
+      const containerSize = boardContainerRef.current.offsetWidth;
+      if (window.innerWidth < 768) {
+        setBoardWidth(Math.min(containerSize, 420));
+      } else {
+        setBoardWidth(Math.min(containerSize, 600));
       }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    }
+  };
+
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
 
 
   const getModeName = () => {
