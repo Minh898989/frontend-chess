@@ -60,6 +60,7 @@ function HomeScreen() {
   const resetMode = () => navigate("/");
 
   const openProfileModal = () => {
+    if (showLeaderboardModal) return;
     setShowProfileModal(true);
     setLoadingStats(true);
     setErrorStats("");
@@ -79,6 +80,7 @@ function HomeScreen() {
   };
 
   const openLeaderboardModal = () => {
+  if (showProfileModal) return;
   setShowLeaderboardModal(true);
   setLoadingLeaderboard(true);
   setErrorLeaderboard("");
