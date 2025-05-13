@@ -219,20 +219,6 @@
   text-align: center;
   animation: zoomIn 0.4s ease-out;
 }
-.modal-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-top: 12px;
-}
-
-.modal-content th, .modal-content td {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-}
-
-.modal-content tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
 
 
 @keyframes fadeIn {
