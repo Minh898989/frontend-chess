@@ -58,11 +58,11 @@
 
 /* Bố cục bàn cờ */
 .board-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 20px 0;
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
 }
+
 
 /* Bàn cờ */
 .react-chessboard {
