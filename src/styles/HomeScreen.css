@@ -103,10 +103,12 @@
 }
 
 .user-top-right {
-  width: 300px;
-  position: absolute;
+  position: fixed; /* Đảm bảo luôn ở trên màn hình */
   top: 20px;
   right: 20px;
+  z-index: 9999; /* Đặt cao để tránh bị che */
+  width: auto;
+  max-width: 90%;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   padding: 10px 16px;
@@ -139,7 +141,7 @@
 }
 
 .user-top-right button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   transform: scale(1.05);
 }
 
@@ -156,13 +158,11 @@
   border-color: #888;
 }
 
+/* Responsive */
 @media (max-width: 600px) {
   .user-top-right {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: auto;
-    max-width: 90%;
+    top: 12px;
+    right: 12px;
     padding: 8px 12px;
     font-size: 14px;
     flex-direction: row;
