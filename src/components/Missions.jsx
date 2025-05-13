@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Missions.css";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 const Mission = () => {
   const [missions, setMissions] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -42,7 +44,8 @@ const Mission = () => {
         missionId: missionId,
       });
 
-      alert(response.data.message);
+      toast.success(response.data.message);
+
       // Refresh missions after claim
       const fetchMissions = async () => {
         try {
@@ -59,7 +62,8 @@ const Mission = () => {
 
       fetchMissions();
     } catch (err) {
-      alert("Error claiming mission: " + err.response?.data?.error || err.message);
+      toast.error("Lỗi khi nhận thưởng: " + (err.response?.data?.error || err.message));
+
     }
   };
 
@@ -83,8 +87,18 @@ const Mission = () => {
           >
             <h3>{mission.name}</h3>
             <p>{mission.description}</p>
-            <p>{mission.isCompleted ? "Completed" : "Not completed"}</p>
-            <p>{mission.isClaimedToday ? "Already claimed today" : "Not claimed yet"}</p>
+            <p>
+               Trạng thái:&nbsp;
+               <span style={{ color: mission.isCompleted ? "#00ff88" : "#ff6b6b" }}>
+               {mission.isCompleted ? "✅ Hoàn thành" : "❌ Chưa hoàn thành"}
+               </span>
+            </p>
+            <p>
+              Nhận thưởng:&nbsp;
+              <span style={{ color: mission.isClaimedToday ? "#00ff88" : "#ffaa00" }}>
+              {mission.isClaimedToday ? "🎁 Đã nhận" : "🕐 Chưa nhận"}
+              </span>
+            </p>
             <button
               onClick={() => handleClaimMission(mission.id)}
               className="claim-button"
