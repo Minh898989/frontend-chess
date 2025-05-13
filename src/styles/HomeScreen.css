@@ -270,6 +270,7 @@
   }
 }
 .back-button {
+  all: unset;
   position: absolute;
   top: 10px;
   left: 10px;
