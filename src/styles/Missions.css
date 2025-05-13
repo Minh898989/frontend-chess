@@ -140,10 +140,10 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #0f2027;
+  background-color: #142a34;
   border: none;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   font-size: 16px;
   cursor: pointer;
   z-index: 100;
