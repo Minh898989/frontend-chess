@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Missions.css";
 import { toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
+
 const Mission = () => {
   const [missions, setMissions] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -10,15 +11,14 @@ const Mission = () => {
   const [error, setError] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const userid = user ? user.userid : null; 
+  const userid = user?.userid;
 
   useEffect(() => {
     if (!userid) {
-      setError("User not found.");
+      setError("Không tìm thấy người dùng.");
       return;
     }
 
-    // Lấy thông tin nhiệm vụ từ API
     const fetchMissions = async () => {
       try {
         setLoading(true);
@@ -27,7 +27,7 @@ const Mission = () => {
         setTotalPoints(response.data.totalPoints);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch missions");
+        setError("Không thể tải nhiệm vụ.");
         setLoading(false);
       }
     };
@@ -40,44 +40,41 @@ const Mission = () => {
 
     try {
       const response = await axios.post("https://backend-chess-fjr7.onrender.com/api/missions/claim", {
-        userid: userid,
-        missionId: missionId,
+        userid,
+        missionId,
       });
 
       toast.success(response.data.message);
-
-      // Refresh missions after claim
-      const fetchMissions = async () => {
-        try {
-          setLoading(true);
-          const response = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
-          setMissions(response.data.missions);
-          setTotalPoints(response.data.totalPoints);
-          setLoading(false);
-        } catch (err) {
-          setError("Failed to fetch missions");
-          setLoading(false);
-        }
-      };
-
-      fetchMissions();
+      refreshMissions();
     } catch (err) {
       toast.error("Lỗi khi nhận thưởng: " + (err.response?.data?.error || err.message));
-
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  const refreshMissions = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`);
+      setMissions(response.data.missions);
+      setTotalPoints(response.data.totalPoints);
+      setLoading(false);
+    } catch (err) {
+      setError("Không thể làm mới nhiệm vụ.");
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="status-message">Đang tải nhiệm vụ...</div>;
+  if (error) return <div className="status-message error">{error}</div>;
 
   return (
     <div className="missions-screen">
       <button className="back-button" onClick={() => window.history.back()}>
-          ⬅ Quay lại
+        ⬅ Quay lại
       </button>
-      <h2>Your Missions</h2>
-      <p>Total Points: {totalPoints}</p>
-      
+
+      <h2>Nhiệm vụ của bạn</h2>
+      <p className="total-points">Tổng điểm: <strong>{totalPoints}</strong></p>
 
       <div className="missions-list">
         {missions.map((mission) => (
@@ -88,15 +85,15 @@ const Mission = () => {
             <h3>{mission.name}</h3>
             <p>{mission.description}</p>
             <p>
-               Trạng thái:&nbsp;
-               <span style={{ color: mission.isCompleted ? "#00ff88" : "#ff6b6b" }}>
-               {mission.isCompleted ? "✅ Hoàn thành" : "❌ Chưa hoàn thành"}
-               </span>
+              Trạng thái:{" "}
+              <span className={mission.isCompleted ? "status-completed" : "status-incomplete"}>
+                {mission.isCompleted ? "✅ Hoàn thành" : "❌ Chưa hoàn thành"}
+              </span>
             </p>
             <p>
-              Nhận thưởng:&nbsp;
-              <span style={{ color: mission.isClaimedToday ? "#00ff88" : "#ffaa00" }}>
-              {mission.isClaimedToday ? "🎁 Đã nhận" : "🕐 Chưa nhận"}
+              Nhận thưởng:{" "}
+              <span className={mission.isClaimedToday ? "status-claimed" : "status-unclaimed"}>
+                {mission.isClaimedToday ? "🎁 Đã nhận" : "🕐 Chưa nhận"}
               </span>
             </p>
             <button
@@ -104,7 +101,7 @@ const Mission = () => {
               className="claim-button"
               disabled={mission.isClaimedToday || !mission.isCompleted}
             >
-              Claim Reward
+              Nhận thưởng
             </button>
           </div>
         ))}

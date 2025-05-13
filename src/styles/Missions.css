@@ -2,25 +2,44 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: start;
+  padding: 60px 20px 40px;
   min-height: 100vh;
   background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  padding: 60px 20px;
-  color: #fff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  position: relative;
   max-width: 100vw;
   overflow-x: hidden;
 }
 
-.missions-screen h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  color: #00ffd9;
-  text-shadow: 0 0 10px #00ffd9;
+.back-button {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background-color: #0b1e25;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.3s;
 }
 
-.missions-screen p {
-  font-size: 1.2rem;
+.back-button:hover {
+  background-color: #122f3a;
+}
+
+h2 {
+  font-size: 2.5rem;
+  color: #00ffd9;
+  text-shadow: 0 0 10px #00ffd9;
+  margin-bottom: 10px;
+}
+
+.total-points {
+  font-size: 1.3rem;
   margin-bottom: 30px;
 }
 
@@ -29,8 +48,8 @@
   flex-wrap: wrap;
   gap: 20px;
   justify-content: center;
-  width: 100%;
   max-width: 1200px;
+  width: 100%;
 }
 
 .mission-card {
@@ -38,11 +57,10 @@
   border-radius: 20px;
   padding: 20px;
   width: 300px;
-  color: #ffffff;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  transition: transform 0.3s ease;
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
 }
 
 .mission-card:hover {
@@ -51,15 +69,31 @@
 
 .mission-card h3 {
   font-size: 1.4rem;
-  margin-bottom: 10px;
   color: #00ffe5;
   text-shadow: 0 0 8px #00ffe5;
+  margin-bottom: 8px;
 }
 
 .mission-card p {
-  margin: 6px 0;
   font-size: 1rem;
+  margin: 6px 0;
   color: #e0e0e0;
+}
+
+.status-completed {
+  color: #00ff88;
+}
+
+.status-incomplete {
+  color: #ff6b6b;
+}
+
+.status-claimed {
+  color: #00ff88;
+}
+
+.status-unclaimed {
+  color: #ffaa00;
 }
 
 .claim-button {
@@ -93,11 +127,20 @@
   box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
 }
 
-@media (max-width: 1024px) {
-  .missions-screen h2 {
-    font-size: 2.2rem;
-  }
+/* Trạng thái và lỗi */
+.status-message {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-top: 80px;
+  text-align: center;
+}
 
+.status-message.error {
+  color: #ff4d4f;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
   .mission-card {
     width: 100%;
     max-width: 400px;
@@ -105,7 +148,7 @@
 }
 
 @media (max-width: 768px) {
-  .missions-screen h2 {
+  h2 {
     font-size: 2rem;
   }
 
@@ -115,8 +158,8 @@
   }
 
   .claim-button {
-    padding: 10px 14px;
     font-size: 0.95rem;
+    padding: 10px 14px;
   }
 }
 
@@ -125,7 +168,7 @@
     padding: 40px 15px;
   }
 
-  .missions-screen h2 {
+  h2 {
     font-size: 1.8rem;
   }
 
@@ -134,24 +177,3 @@
     padding: 10px 12px;
   }
 }
-
-
-.back-button {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color:  #0b1e25;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 16px;
-  cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  transition: background-color 0.2s;
-}
-.back-button:hover {
-  background-color: #0b1e25;
-}
-
-
