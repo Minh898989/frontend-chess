@@ -1,113 +1,129 @@
 import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
 import axios from 'axios';
+import io from 'socket.io-client';
+import "../styles/TwoPlayer.css";
 
+// Cấu hình địa chỉ backend và khởi tạo socket
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 const socket = io(API_BASE);
 
-const ChessTest = () => {
+function RoomManager() {
+  const [hostUserId, setHostUserId] = useState('');
+  const [guestUserId, setGuestUserId] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [myMove, setMyMove] = useState('');
-  const [opponentMove, setOpponentMove] = useState('');
-  const [userId] = useState(() => Math.floor(Math.random() * 10000));
+  const [roomInfo, setRoomInfo] = useState(null);
+  const [message, setMessage] = useState('');
 
-  const handleCreateRoom = async () => {
-    try {
-      const res = await axios.post(`${API_BASE}/api/rooms/create`, {
-        host_userid: userId,
-      });
-      setRoomCode(res.data.room.room_code);
-      socket.emit('joinRoom', res.data.room.room_code);
-    } catch (err) {
-      console.error('❌ Create room failed:', err);
-    }
-  };
-
-  const handleJoinRoom = async () => {
-    try {
-      await axios.post(`${API_BASE}/api/rooms/join`, {
-        room_code: roomCode,
-        guest_userid: userId,
-      });
-      socket.emit('joinRoom', roomCode);
-    } catch (err) {
-      console.error('❌ Join room failed:', err);
-    }
-  };
-
-  const sendMove = () => {
-    if (!roomCode || !myMove) return;
-    socket.emit('move', { roomCode, move: myMove });
-    setMyMove('');
-  };
-
+  // Lấy userid từ localStorage
   useEffect(() => {
-    socket.on('move', (move) => {
-      setOpponentMove(move);
-    });
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData?.userid) {
+      setHostUserId(userData.userid);
+      setGuestUserId(userData.userid);
+    }
+  }, []);
 
-    socket.on('opponentResigned', (user) => {
-      alert(`Opponent ${user} resigned!`);
+  // Lắng nghe sự kiện socket khi có người tham gia phòng
+  useEffect(() => {
+    socket.on('room-joined', (data) => {
+      setMessage(`🔔 ${data.guest_userid} đã tham gia phòng ${data.room_code}`);
+      setRoomInfo(data.room);
     });
 
     return () => {
-      socket.off('move');
-      socket.off('opponentResigned');
+      socket.off('room-joined');
     };
-  }, [roomCode]);
+  }, []);
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-4">♟️ Chess Room</h1>
-        <p className="text-sm text-center text-gray-500 mb-6">User ID: <span className="font-medium">{userId}</span></p>
+  // Gọi API tạo phòng
+  const createRoom = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/api/rooms/create`, {
+        host_userid: hostUserId,
+      });
 
-        <div className="space-y-4">
-          <button
-            onClick={handleCreateRoom}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            Create Room
-          </button>
+      const room = res.data.room;
+      setRoomInfo(room);
+      setRoomCode(room.room_code);
+      setMessage(`✅ Phòng được tạo với mã: ${room.room_code}`);
+    } catch (err) {
+      console.error(err);
+      setMessage('❌ Lỗi tạo phòng');
+    }
+  };
 
-          <div className="flex gap-2">
-            <input
-              className="flex-1 border border-gray-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter Room Code"
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value)}
-            />
-            <button
-              onClick={handleJoinRoom}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-            >
-              Join
-            </button>
-          </div>
+  // Gọi API tham gia phòng và phát sự kiện socket
+  const joinRoom = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/api/rooms/join`, {
+        room_code: parseInt(roomCode),
+        guest_userid: guestUserId,
+      });
 
-          <div className="flex gap-2">
-            <input
-              className="flex-1 border border-gray-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Enter your move"
-              value={myMove}
-              onChange={(e) => setMyMove(e.target.value)}
-            />
-            <button
-              onClick={sendMove}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              Send
-            </button>
-          </div>
+      const room = res.data.room;
+      setRoomInfo(room);
+      setMessage(`✅ Đã tham gia phòng ${room.room_code}`);
 
-          <div className="mt-4 text-center text-gray-700">
-            <p className="font-medium">Opponent's last move:</p>
-            <p className="text-lg text-red-500">{opponentMove || 'No move yet'}</p>
-          </div>
+      // Phát socket để thông báo cho người khác
+      socket.emit('join-room', {
+        room_code: room.room_code,
+        guest_userid: guestUserId,
+        room: room,
+      });
+    } catch (err) {
+      console.error(err);
+      setMessage('❌ Lỗi tham gia phòng');
+    }
+  };
+
+ return (
+  <div className="room-container">
+    <h2>♟️ Quản lý Phòng Cờ</h2>
+
+    <div className="section">
+      <h3>🔹 Tạo phòng mới</h3>
+      <input
+        type="text"
+        placeholder="Host User ID"
+        value={hostUserId}
+        disabled
+      />
+      <button onClick={createRoom} style={{ marginLeft: 10 }}>Tạo phòng</button>
+    </div>
+
+    <div className="section">
+      <h3>🔸 Tham gia phòng</h3>
+      <input
+        type="text"
+        placeholder="Room Code"
+        value={roomCode}
+        onChange={(e) => setRoomCode(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Guest User ID"
+        value={guestUserId}
+        disabled
+        style={{ marginLeft: 10 }}
+      />
+      <button onClick={joinRoom} style={{ marginLeft: 10 }}>Tham gia</button>
+    </div>
+
+    {message && (
+      <div className="message">{message}</div>
+    )}
+
+    {roomInfo && (
+      <div>
+        <h3>📄 Thông tin phòng</h3>
+        <div className="room-info">
+          {JSON.stringify(roomInfo, null, 2)}
         </div>
       </div>
-    </div>
-  );
-};
+    )}
+  </div>
+);
 
-export default ChessTest;
+}
+
+export default RoomManager;
