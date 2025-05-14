@@ -1,82 +1,93 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api/rooms'; // Thay đổi nếu dùng server khác
+const API_BASE = 'https://backend-chess-fjr7.onrender.com';
+const socket = io(API_BASE);
 
-const RoomTest = () => {
-  const [hostUserId, setHostUserId] = useState('');
-  const [guestUserId, setGuestUserId] = useState('');
+const ChessTest = () => {
   const [roomCode, setRoomCode] = useState('');
-  const [createdRoom, setCreatedRoom] = useState(null);
-  const [joinResult, setJoinResult] = useState(null);
+  const [myMove, setMyMove] = useState('');
+  const [opponentMove, setOpponentMove] = useState('');
+  const [userId] = useState(() => Math.floor(Math.random() * 10000)); // Không cần setUserId
 
-  const createRoom = async () => {
+  const handleCreateRoom = async () => {
     try {
-      const res = await axios.post(`${API_BASE}/create`, { host_userid: hostUserId });
-      setCreatedRoom(res.data.room);
-      setRoomCode(res.data.room.room_code); // set code to use for join
-    } catch (err) {
-      console.error('Create Room Error:', err.response?.data || err.message);
-    }
-  };
-
-  const joinRoom = async () => {
-    try {
-      const res = await axios.post(`${API_BASE}/join`, {
-        room_code: roomCode,
-        guest_userid: guestUserId,
+      const res = await axios.post(`${API_BASE}/api/rooms/create`, {
+        host_userid: userId,
       });
-      setJoinResult(res.data.room);
+      setRoomCode(res.data.room.room_code);
+      socket.emit('joinRoom', res.data.room.room_code);
+      console.log('🟢 Created and joined room:', res.data.room.room_code);
     } catch (err) {
-      console.error('Join Room Error:', err.response?.data || err.message);
+      console.error('❌ Create room failed:', err);
     }
   };
+
+  const handleJoinRoom = async () => {
+    try {
+      await axios.post(`${API_BASE}/api/rooms/join`, {
+        room_code: roomCode,
+        guest_userid: userId,
+      });
+      socket.emit('joinRoom', roomCode);
+      console.log('🟢 Joined existing room:', roomCode);
+    } catch (err) {
+      console.error('❌ Join room failed:', err);
+    }
+  };
+
+  const sendMove = () => {
+    if (!roomCode || !myMove) return;
+    socket.emit('move', { roomCode, move: myMove });
+    setMyMove('');
+  };
+
+  useEffect(() => {
+    socket.on('move', (move) => {
+      console.log('♟️ Opponent moved:', move);
+      setOpponentMove(move);
+    });
+
+    socket.on('opponentResigned', (user) => {
+      alert(`Opponent ${user} resigned!`);
+    });
+
+    return () => {
+      socket.off('move');
+      socket.off('opponentResigned');
+    };
+  }, [roomCode]);
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>🎮 Room Test</h2>
-
-      <div style={{ marginBottom: 20 }}>
-        <h3>Create Room</h3>
-        <input
-          type="text"
-          placeholder="Host User ID"
-          value={hostUserId}
-          onChange={(e) => setHostUserId(e.target.value)}
-        />
-        <button onClick={createRoom}>Create</button>
-        {createdRoom && (
-          <div>
-            <p>✅ Room Created: {createdRoom.room_code}</p>
-            <pre>{JSON.stringify(createdRoom, null, 2)}</pre>
-          </div>
-        )}
-      </div>
+      <h1>♟️ Chess Room Test</h1>
+      <p>My user ID: {userId}</p>
 
       <div>
-        <h3>Join Room</h3>
+        <button onClick={handleCreateRoom}>Create Room</button>
         <input
-          type="text"
-          placeholder="Guest User ID"
-          value={guestUserId}
-          onChange={(e) => setGuestUserId(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Room Code"
+          placeholder="Enter Room Code"
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value)}
         />
-        <button onClick={joinRoom}>Join</button>
-        {joinResult && (
-          <div>
-            <p>✅ Joined Room:</p>
-            <pre>{JSON.stringify(joinResult, null, 2)}</pre>
-          </div>
-        )}
+        <button onClick={handleJoinRoom}>Join Room</button>
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        <input
+          placeholder="Enter your move"
+          value={myMove}
+          onChange={(e) => setMyMove(e.target.value)}
+        />
+        <button onClick={sendMove}>Send Move</button>
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        <p>Opponent's last move: {opponentMove}</p>
       </div>
     </div>
   );
 };
 
-export default RoomTest;
+export default ChessTest;
