@@ -1,102 +1,82 @@
-import { useEffect, useState } from "react";
-import { Chessboard } from "react-chessboard";
-import Chess from "chess.js";
-import io from "socket.io-client";
-import "../styles/TwoPlayer.css";
+import React, { useState } from 'react';
+import axios from 'axios';
 
-const socket = io();
+const API_BASE = 'http://localhost:5000/api/rooms'; // Thay đổi nếu dùng server khác
 
-export default function TwoPlayer() {
-  const [game, setGame] = useState(new Chess());
-  const [isMyTurn, setIsMyTurn] = useState(false);
-  const [roomId, setRoomId] = useState("");
-  const [isCreator, setIsCreator] = useState(false);
-  const [inputRoomId, setInputRoomId] = useState("");
-  const [gameStarted, setGameStarted] = useState(false);
+const RoomTest = () => {
+  const [hostUserId, setHostUserId] = useState('');
+  const [guestUserId, setGuestUserId] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+  const [createdRoom, setCreatedRoom] = useState(null);
+  const [joinResult, setJoinResult] = useState(null);
 
-  useEffect(() => {
-    if (!roomId) return;
-
-    socket.emit(isCreator ? "createRoom" : "joinRoom", roomId);
-
-    socket.on("startGame", ({ firstTurn }) => {
-      const myColor = isCreator ? "white" : "black";
-      setIsMyTurn(firstTurn === myColor);
-      setGameStarted(true);
-    });
-
-    socket.on("opponentMove", (move) => {
-      const updatedGame = new Chess(game.fen());
-      updatedGame.move(move);
-      setGame(updatedGame);
-      setIsMyTurn(true);
-    });
-
-    return () => {
-      socket.off("startGame");
-      socket.off("opponentMove");
-    };
-  }, [roomId, isCreator, game]);
-
-  const makeMove = (from, to) => {
-    if (!isMyTurn) return false;
-
-    const updatedGame = new Chess(game.fen());
-    const move = updatedGame.move({ from, to, promotion: "q" });
-
-    if (move) {
-      setGame(updatedGame);
-      socket.emit("move", { roomId, move });
-      setIsMyTurn(false);
-      return true;
-    }
-
-    return false;
-  };
-
-  const handleCreateRoom = () => {
-    const newRoomId = Math.random().toString(36).substring(2, 8);
-    setRoomId(newRoomId);
-    setIsCreator(true);
-  };
-
-  const handleJoinRoom = () => {
-    if (inputRoomId.trim()) {
-      setRoomId(inputRoomId.trim());
-      setIsCreator(false);
+  const createRoom = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/create`, { host_userid: hostUserId });
+      setCreatedRoom(res.data.room);
+      setRoomCode(res.data.room.room_code); // set code to use for join
+    } catch (err) {
+      console.error('Create Room Error:', err.response?.data || err.message);
     }
   };
 
-  if (!roomId) {
-    return (
-      <div className="chess-game-container">
-        <div className="chess-modal-content">
-          <h2>Chơi với người khác</h2>
-          <button className="chess-btn chess-btn-create" onClick={handleCreateRoom}>
-            Tạo phòng mới
-          </button>
-          <input
-            type="text"
-            placeholder="Nhập mã phòng để tham gia"
-            value={inputRoomId}
-            onChange={(e) => setInputRoomId(e.target.value)}
-            className="chess-input-room"
-          />
-          <button className="chess-btn chess-btn-join" onClick={handleJoinRoom}>
-            Tham gia phòng
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const joinRoom = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/join`, {
+        room_code: roomCode,
+        guest_userid: guestUserId,
+      });
+      setJoinResult(res.data.room);
+    } catch (err) {
+      console.error('Join Room Error:', err.response?.data || err.message);
+    }
+  };
 
   return (
-    <div className="chess-game-container">
-      <h2 className="chess-room-id">Phòng: {roomId}</h2>
-      <div className="chess-board-wrapper">
-        <Chessboard position={game.fen()} onPieceDrop={makeMove} />
+    <div style={{ padding: 20 }}>
+      <h2>🎮 Room Test</h2>
+
+      <div style={{ marginBottom: 20 }}>
+        <h3>Create Room</h3>
+        <input
+          type="text"
+          placeholder="Host User ID"
+          value={hostUserId}
+          onChange={(e) => setHostUserId(e.target.value)}
+        />
+        <button onClick={createRoom}>Create</button>
+        {createdRoom && (
+          <div>
+            <p>✅ Room Created: {createdRoom.room_code}</p>
+            <pre>{JSON.stringify(createdRoom, null, 2)}</pre>
+          </div>
+        )}
       </div>
-      {!gameStarted && <p>Đang chờ người chơi khác tham gia...</p>}
+
+      <div>
+        <h3>Join Room</h3>
+        <input
+          type="text"
+          placeholder="Guest User ID"
+          value={guestUserId}
+          onChange={(e) => setGuestUserId(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Room Code"
+          value={roomCode}
+          onChange={(e) => setRoomCode(e.target.value)}
+        />
+        <button onClick={joinRoom}>Join</button>
+        {joinResult && (
+          <div>
+            <p>✅ Joined Room:</p>
+            <pre>{JSON.stringify(joinResult, null, 2)}</pre>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default RoomTest;
