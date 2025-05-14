@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Chessboard } from "react-chessboard";
-import Chess from "chess.js"; // KHÔNG dùng { Chess }
+import Chess from "chess.js";
 import io from "socket.io-client";
 import "../styles/ChessGame.css";
 
-const socket = io(); // Kết nối socket
+const socket = io();
 
 export default function ChessGame() {
   const [game, setGame] = useState(new Chess());
@@ -14,7 +14,6 @@ export default function ChessGame() {
   const [showModal, setShowModal] = useState(true);
   const [inputRoomId, setInputRoomId] = useState("");
 
-  // Xử lý socket
   useEffect(() => {
     if (!roomId) return;
 
@@ -38,7 +37,6 @@ export default function ChessGame() {
     };
   }, [roomId, isCreator, game]);
 
-  // Xử lý nước đi
   const makeMove = (from, to) => {
     if (!isMyTurn) return false;
 
@@ -55,7 +53,6 @@ export default function ChessGame() {
     return false;
   };
 
-  // Tạo phòng
   const handleCreateRoom = () => {
     const newRoomId = Math.random().toString(36).substring(2, 8);
     setRoomId(newRoomId);
@@ -63,7 +60,6 @@ export default function ChessGame() {
     setShowModal(false);
   };
 
-  // Tham gia phòng
   const handleJoinRoom = () => {
     if (inputRoomId.trim()) {
       setRoomId(inputRoomId.trim());
@@ -73,12 +69,12 @@ export default function ChessGame() {
   };
 
   return (
-    <div className="chess-containerr">
+    <div className="chess-game-container">
       {showModal && (
-        <div className="modal-overlayy">
-          <div className="modal-contentt">
+        <div className="chess-modal-overlay">
+          <div className="chess-modal-content">
             <h2>Chơi với người khác</h2>
-            <button className="button create" onClick={handleCreateRoom}>
+            <button className="chess-btn chess-btn-create" onClick={handleCreateRoom}>
               Tạo phòng mới
             </button>
             <input
@@ -86,9 +82,9 @@ export default function ChessGame() {
               placeholder="Nhập mã phòng để tham gia"
               value={inputRoomId}
               onChange={(e) => setInputRoomId(e.target.value)}
-              className="input-room"
+              className="chess-input-room"
             />
-            <button className="button join" onClick={handleJoinRoom}>
+            <button className="chess-btn chess-btn-join" onClick={handleJoinRoom}>
               Tham gia phòng
             </button>
           </div>
@@ -97,8 +93,8 @@ export default function ChessGame() {
 
       {!showModal && roomId && (
         <>
-          <h2 className="room-id">Phòng: {roomId}</h2>
-          <div className="chessboard-wrapperr">
+          <h2 className="chess-room-id">Phòng: {roomId}</h2>
+          <div className="chess-board-wrapper">
             <Chessboard position={game.fen()} onPieceDrop={makeMove} />
           </div>
         </>
