@@ -18,7 +18,7 @@ function GameScreen() {
   window.innerWidth < 768 ? 390 : 550
 );
 
-  const isAI = mode !== "2players";
+  const isAI = true; 
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
@@ -261,7 +261,7 @@ function GameScreen() {
 
   const getModeName = () => {
     switch (mode) {
-      case "2players": return "👥 Chế độ 2 người";
+      
       case "easy": return "🟢 Máy dễ";
       case "medium": return "🟡 Máy trung bình";
       case "hard": return "🔴 Máy khó";
