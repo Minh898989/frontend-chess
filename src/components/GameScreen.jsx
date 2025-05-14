@@ -106,28 +106,31 @@ function GameScreen() {
     let bestMove;
 
     if (mode === "easy") {
-      bestMove = moves[Math.floor(Math.random() * moves.length)];
-    } else if (mode === "medium") {
-      let bestScore = -Infinity;
-      for (const move of moves) {
-        const score = evaluateMove(currentGame, move);
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = move;
-        }
-      }
-    } else if (mode === "hard") {
-      let bestScore = -Infinity;
-      for (const move of moves) {
-        currentGame.move(move);
-        const score = minimax(currentGame, 2, false, -Infinity, Infinity);
-        currentGame.undo();
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = move;
-        }
-      }
+  bestMove = moves[Math.floor(Math.random() * moves.length)];
+} else if (mode === "medium") {
+  let bestScore = -Infinity;
+  for (const move of moves) {
+    const score = evaluateMove(currentGame, move) + Math.random() * 0.3; // Thêm randomness nhẹ
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
     }
+  }
+} else if (mode === "hard") {
+  let bestScore = -Infinity;
+  let depth = 3; 
+
+  for (const move of moves) {
+    currentGame.move(move);
+    const score = minimax(currentGame, depth, false, -Infinity, Infinity);
+    currentGame.undo();
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+}
+
 
     if (bestMove) {
       const result = currentGame.move(bestMove);
@@ -203,8 +206,6 @@ function GameScreen() {
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
-
-  
 
   useEffect(() => {
     if (isGameOver) return;
