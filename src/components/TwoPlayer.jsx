@@ -93,13 +93,10 @@ export default function TwoPlayer() {
   return (
     <div className="chess-game-container">
       <h2 className="chess-room-id">Phòng: {roomId}</h2>
-      {gameStarted ? (
-        <div className="chess-board-wrapper">
-          <Chessboard position={game.fen()} onPieceDrop={makeMove} />
-        </div>
-      ) : (
-        <p>Đang chờ người chơi khác tham gia...</p>
-      )}
+      <div className="chess-board-wrapper">
+        <Chessboard position={game.fen()} onPieceDrop={makeMove} />
+      </div>
+      {!gameStarted && <p>Đang chờ người chơi khác tham gia...</p>}
     </div>
   );
 }
