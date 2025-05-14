@@ -18,20 +18,25 @@ export default function ChessGame() {
   useEffect(() => {
     if (!roomId) return;
 
+    // Emit createRoom hoặc joinRoom khi có roomId
     socket.emit(isCreator ? "createRoom" : "joinRoom", roomId);
 
+    // Lắng nghe sự kiện bắt đầu ván cờ từ server
     socket.on("startGame", ({ firstTurn }) => {
       setIsMyTurn(firstTurn === (isCreator ? "white" : "black"));
     });
 
+    // Lắng nghe nước đi từ đối thủ
     socket.on("opponentMove", (move) => {
       game.move(move);
       setGame(new Chess(game.fen()));
       setIsMyTurn(true);
     });
 
-    return () => socket.disconnect();
-  }, [game, isCreator, roomId]);
+    return () => {
+      socket.disconnect();
+    };
+  }, [roomId, isCreator, game]);
 
   // Xử lý nước đi
   const makeMove = (from, to) => {
@@ -48,7 +53,7 @@ export default function ChessGame() {
 
   // Tạo phòng mới
   const handleCreateRoom = () => {
-    const newRoomId = Math.random().toString(36).substring(2, 8);
+    const newRoomId = Math.random().toString(36).substring(2, 8); // Tạo mã phòng ngẫu nhiên
     setRoomId(newRoomId);
     setIsCreator(true);
     setShowModal(false);
