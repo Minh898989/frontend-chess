@@ -112,10 +112,8 @@ const Mission = () => {
           >
             <h3>{mission.name}</h3>
             <p>{mission.description}</p>
-            <p>
-              <p>Điểm thưởng</p>
-              {mission.reward_points}
-            </p>
+            <p>Điểm thưởng: {mission.reward_points}</p>
+
             <p>
               Trạng thái:{" "}
               <span
