@@ -73,10 +73,10 @@ export default function ChessGame() {
   };
 
   return (
-    <div className="chess-container">
+    <div className="chess-containerr">
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlayy">
+          <div className="modal-contentt">
             <h2>Chơi với người khác</h2>
             <button className="button create" onClick={handleCreateRoom}>
               Tạo phòng mới
@@ -98,7 +98,7 @@ export default function ChessGame() {
       {!showModal && roomId && (
         <>
           <h2 className="room-id">Phòng: {roomId}</h2>
-          <div className="chessboard-wrapper">
+          <div className="chessboard-wrapperr">
             <Chessboard position={game.fen()} onPieceDrop={makeMove} />
           </div>
         </>
