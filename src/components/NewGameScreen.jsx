@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Chessboard } from "react-chessboard";
-import { Chess } from "chess.js";
+import Chess from "chess.js"; // KHÔNG dùng { Chess }
 import io from "socket.io-client";
 import "../styles/ChessGame.css";
 
