@@ -1,9 +1,10 @@
-import Chess from "chess.js";
-import { Chessboard } from "react-chessboard";
 import { useEffect, useState } from "react";
+import { Chessboard } from "react-chessboard";
+import Chess from "chess.js";
 import io from "socket.io-client";
+import "./ChessGame.css"; // Import file CSS riêng
 
-const socket = io(); // Không cần localhost nếu đã triển khai trên cùng host
+const socket = io(); // Kết nối socket
 
 export default function ChessGame() {
   const [game, setGame] = useState(new Chess());
@@ -13,6 +14,7 @@ export default function ChessGame() {
   const [showModal, setShowModal] = useState(true);
   const [inputRoomId, setInputRoomId] = useState("");
 
+  // Xử lý socket khi tham gia hoặc tạo phòng
   useEffect(() => {
     if (!roomId) return;
 
@@ -31,6 +33,7 @@ export default function ChessGame() {
     return () => socket.disconnect();
   }, [game, isCreator, roomId]);
 
+  // Xử lý nước đi
   const makeMove = (from, to) => {
     if (!isMyTurn) return false;
     const move = game.move({ from, to, promotion: "q" });
@@ -43,6 +46,7 @@ export default function ChessGame() {
     return false;
   };
 
+  // Tạo phòng mới
   const handleCreateRoom = () => {
     const newRoomId = Math.random().toString(36).substring(2, 8);
     setRoomId(newRoomId);
@@ -50,6 +54,7 @@ export default function ChessGame() {
     setShowModal(false);
   };
 
+  // Tham gia phòng
   const handleJoinRoom = () => {
     if (inputRoomId.trim()) {
       setRoomId(inputRoomId.trim());
@@ -59,15 +64,13 @@ export default function ChessGame() {
   };
 
   return (
-    <div>
+    <div className="chess-container">
+      {/* Modal tạo/tham gia phòng */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-md w-80">
-            <h2 className="text-lg font-bold mb-4">Chơi với người khác</h2>
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded w-full mb-3"
-              onClick={handleCreateRoom}
-            >
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Chơi với người khác</h2>
+            <button className="button create" onClick={handleCreateRoom}>
               Tạo phòng mới
             </button>
             <input
@@ -75,22 +78,22 @@ export default function ChessGame() {
               placeholder="Nhập mã phòng để tham gia"
               value={inputRoomId}
               onChange={(e) => setInputRoomId(e.target.value)}
-              className="border px-3 py-2 w-full mb-3"
+              className="input-room"
             />
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
-              onClick={handleJoinRoom}
-            >
+            <button className="button join" onClick={handleJoinRoom}>
               Tham gia phòng
             </button>
           </div>
         </div>
       )}
 
+      {/* Bàn cờ */}
       {roomId && (
         <>
-          <h2 className="text-center text-xl font-semibold mb-4">Phòng: {roomId}</h2>
-          <Chessboard position={game.fen()} onPieceDrop={makeMove} />
+          <h2 className="room-id">Phòng: {roomId}</h2>
+          <div className="chessboard-wrapper">
+            <Chessboard position={game.fen()} onPieceDrop={makeMove} />
+          </div>
         </>
       )}
     </div>
