@@ -14,68 +14,60 @@ function GameScreen() {
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(() =>
-    window.innerWidth < 768 ? 390 : 550
-  );
+  window.innerWidth < 768 ? 390 : 550
+);
 
   const isAI = true;
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
-  const getTotalCaptured = useCallback(
-    () => capturedPieces.w.length + capturedPieces.b.length,
-    [capturedPieces]
-  );
-  const getMinutesPlayed = useCallback(
-    () => Math.floor((15 * 60 - timeLeft) / 60),
-    [timeLeft]
-  );
+  const getTotalCaptured = useCallback(() => capturedPieces.w.length + capturedPieces.b.length, [capturedPieces]);
+  const getMinutesPlayed = useCallback(() => Math.floor((15 * 60 - timeLeft) / 60), [timeLeft]);
+  
 
-  const updateLocalStats = useCallback(
-    async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-      if (!userId) return;
-      try {
-        await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
-          userid: userId,
-          didWin: didPlayerWin,
-          minutesPlayed,
-          capturedCount,
-        });
-      } catch (error) {
-        console.error("Lỗi cập nhật thống kê:", error);
-      }
-    },
-    [userId]
-  );
+  const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+    if (!userId) return;
+    try {
+      await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
+        userid: userId,
+        didWin: didPlayerWin,
+        minutesPlayed,
+        capturedCount,
+      });
+    } catch (error) {
+      console.error("Lỗi cập nhật thống kê:", error);
+    }
+  }, [userId]);
 
   const pieceValue = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000 };
 
   const evaluateBoard = (gameInstance) => {
-    const board = gameInstance.board();
-    let score = 0;
-    board.forEach((row, i) => {
-      row.forEach((piece, j) => {
-        if (piece) {
-          const value = pieceValue[piece.type] || 0;
-          let pieceScore = piece.color === "w" ? value : -value;
-          if ((i === 3 || i === 4) && (j === 3 || j === 4)) {
-            pieceScore *= 1.1;
-          }
-          score += pieceScore;
+  const board = gameInstance.board();
+  let score = 0;
+  board.forEach((row, i) => {
+    row.forEach((piece, j) => {
+      if (piece) {
+        const value = pieceValue[piece.type] || 0;
+        let pieceScore = piece.color === "w" ? value : -value;
+
+        // Ưu tiên kiểm soát trung tâm
+        if ((i === 3 || i === 4) && (j === 3 || j === 4)) {
+          pieceScore *= 1.1; // tăng 10%
         }
-      });
+
+        score += pieceScore;
+      }
     });
-    return score;
-  };
+  });
+  return score;
+};
 
   const minimax = (gameInstance, depth, isMaximizing, alpha, beta) => {
     if (depth === 0 || gameInstance.game_over()) {
-      if (gameInstance.in_checkmate()) return isMaximizing ? -9999 : 9999;
-      if (gameInstance.in_draw()) return 0;
       return evaluateBoard(gameInstance);
     }
 
     const moves = gameInstance.moves({ verbose: true });
-
     if (isMaximizing) {
       let maxEval = -Infinity;
       for (const move of moves) {
@@ -102,15 +94,12 @@ function GameScreen() {
   };
 
   const evaluateMove = (gameInstance, move) => {
+    const values = pieceValue;
     let score = 0;
-    if (move.captured) score += pieceValue[move.captured] || 0;
-
+    if (move.captured) score += values[move.captured] || 0;
     gameInstance.move(move);
-    if (gameInstance.in_check()) score += 0.75;
-    if (["d4", "e4", "d5", "e5"].includes(move.to)) score += 0.25;
-    score += gameInstance.moves().length * 0.01;
+    if (gameInstance.in_check()) score += 0.5;
     gameInstance.undo();
-
     return score;
   };
 
@@ -123,39 +112,40 @@ function GameScreen() {
     let bestMove;
 
     if (mode === "easy") {
+  
       const safeMoves = moves.filter(move => {
-        currentGame.move(move);
-        const inCheck = currentGame.in_check();
-        currentGame.undo();
-        return !inCheck;
-      });
-      bestMove = safeMoves.length > 0
-        ? safeMoves[Math.floor(Math.random() * safeMoves.length)]
-        : moves[Math.floor(Math.random() * moves.length)];
-
-    } else if (mode === "medium") {
-      let bestScore = -Infinity;
-      for (const move of moves) {
-        const score = evaluateMove(currentGame, move) + Math.random() * 0.3;
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = move;
-        }
-      }
-
-    } else if (mode === "hard") {
-      let bestScore = -Infinity;
-      const depth = 4;
-      for (const move of moves) {
-        currentGame.move(move);
-        const score = minimax(currentGame, depth - 1, false, -Infinity, Infinity);
-        currentGame.undo();
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = move;
-        }
-      }
+    currentGame.move(move);
+    const inCheck = currentGame.in_check();
+    currentGame.undo();
+    return !inCheck;
+  });
+  bestMove = safeMoves.length > 0
+    ? safeMoves[Math.floor(Math.random() * safeMoves.length)]
+    : moves[Math.floor(Math.random() * moves.length)];
+} else if (mode === "medium") {
+  let bestScore = -Infinity;
+  for (const move of moves) {
+    const score = evaluateMove(currentGame, move) + Math.random() * 0.3; // Thêm randomness nhẹ
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
     }
+  }
+} else if (mode === "hard") {
+  let bestScore = -Infinity;
+  let depth = 3; 
+
+  for (const move of moves) {
+    currentGame.move(move);
+    const score = minimax(currentGame, depth, false, -Infinity, Infinity);
+    currentGame.undo();
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+}
+
 
     if (bestMove) {
       const result = currentGame.move(bestMove);
@@ -192,10 +182,12 @@ function GameScreen() {
     setGame(newGame);
 
     if (newGame.game_over()) {
-      handleGameOver(newGame);
-    } else if (isAI && newGame.turn() === "b") {
-      setTimeout(() => makeAIMove(newGame), 300);
-    }
+  handleGameOver(newGame);
+} else if (isAI && newGame.turn() === "b") {
+  // ✅ CHỈ GỌI AI move nếu mới xong lượt trắng và còn sống
+  setTimeout(() => makeAIMove(newGame), 300);
+}
+
 
     return true;
   };
@@ -218,6 +210,7 @@ function GameScreen() {
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
+  
 
   const handleResign = (color) => {
     setIsGameOver(true);
@@ -233,7 +226,7 @@ function GameScreen() {
     if (isGameOver) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
           setIsGameOver(true);
@@ -248,38 +241,6 @@ function GameScreen() {
     return () => clearInterval(timer);
   }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (boardContainerRef.current) {
-        const containerSize = boardContainerRef.current.offsetWidth;
-        if (window.innerWidth < 768) {
-          setBoardWidth(Math.min(containerSize, 390));
-        } else {
-          setBoardWidth(Math.min(containerSize, 550));
-        }
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const getTimerClass = () => {
-    if (timeLeft <= 30) return "timer critical";
-    if (timeLeft <= 60) return "timer warning";
-    return "timer";
-  };
-
-  const getModeName = () => {
-    switch (mode) {
-      case "easy": return "🟢 Máy dễ";
-      case "medium": return "🟡 Máy trung bình";
-      case "hard": return "🔴 Máy khó";
-      default: return "🎮 Cờ vua";
-    }
-  };
-
   const renderCapturedPieces = (color) => {
     const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
     return capturedPieces[color].map((type, idx) => (
@@ -287,6 +248,37 @@ function GameScreen() {
         {color === "w" ? icons[type] : icons[type].toLowerCase()}
       </span>
     ));
+  };
+  useEffect(() => {
+  const handleResize = () => {
+    if (boardContainerRef.current) {
+      const containerSize = boardContainerRef.current.offsetWidth;
+      if (window.innerWidth < 768) {
+        setBoardWidth(Math.min(containerSize, 390));
+      } else {
+        setBoardWidth(Math.min(containerSize, 550));
+      }
+    }
+  };
+
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+  const getTimerClass = () => {
+  if (timeLeft <= 30) return "timer critical";
+  if (timeLeft <= 60) return "timer warning";
+  return "timer";
+};
+
+  const getModeName = () => {
+    switch (mode) {
+      
+      case "easy": return "🟢 Máy dễ";
+      case "medium": return "🟡 Máy trung bình";
+      case "hard": return "🔴 Máy khó";
+      default: return "🎮 Cờ vua";
+    }
   };
 
   return (
@@ -298,7 +290,7 @@ function GameScreen() {
         <div>{renderCapturedPieces("b")}</div>
       </div>
 
-      <div className="board-wrapper" ref={boardContainerRef}>
+      <div className="board-wrapper">
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
