@@ -75,7 +75,7 @@ const Mission = () => {
         )
       );
 
-      // ✅ Nếu API trả về điểm mới, cập nhật
+      
       if (response.data.newTotalPoints !== undefined) {
         setTotalPoints(response.data.newTotalPoints);
       }
@@ -112,7 +112,10 @@ const Mission = () => {
           >
             <h3>{mission.name}</h3>
             <p>{mission.description}</p>
-            <p>{mission.reward_points}</p>
+            <p>
+              <p>Điểm thưởng</p>
+              {mission.reward_points}
+            </p>
             <p>
               Trạng thái:{" "}
               <span

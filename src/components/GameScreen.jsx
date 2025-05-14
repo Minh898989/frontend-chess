@@ -1,13 +1,9 @@
-// 1. Thư viện bên ngoài
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
 import axios from "axios";
-
-// 2. File nội bộ (CSS hoặc components của bạn)
 import "../styles/GameScreen.css";
-
 
 function GameScreen() {
   const { mode } = useParams();
@@ -18,16 +14,15 @@ function GameScreen() {
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(() =>
-  window.innerWidth < 768 ? 410 : 600
-);
+    window.innerWidth < 768 ? 410 : 600
+  );
 
-  const isAI = mode !== "2players";
+   // Luôn chơi với máy
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
   const getTotalCaptured = useCallback(() => capturedPieces.w.length + capturedPieces.b.length, [capturedPieces]);
   const getMinutesPlayed = useCallback(() => Math.floor((15 * 60 - timeLeft) / 60), [timeLeft]);
-  
 
   const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
     if (!userId) return;
@@ -168,7 +163,7 @@ function GameScreen() {
 
     if (newGame.game_over()) {
       handleGameOver(newGame);
-    } else if (isAI && newGame.turn() === "b") {
+    } else if (newGame.turn() === "b") {
       setTimeout(() => makeAIMove(newGame), 300);
     }
 
@@ -183,34 +178,33 @@ function GameScreen() {
     if (finalGame.in_checkmate()) {
       const turn = finalGame.turn();
       if (turn === "w") {
-        msg = isAI ? "Máy thắng" : "Đen thắng";
+        msg = "Máy thắng";
       } else {
-        msg = isAI ? "Bạn thắng" : "Trắng thắng";
-        didPlayerWin = isAI;
+        msg = "Bạn thắng";
+        didPlayerWin = true;
       }
     }
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
-  
 
   const handleResign = (color) => {
     setIsGameOver(true);
     const isWhite = color === "w";
-    const msg = isWhite ? (isAI ? "Máy thắng" : "Đen thắng") : (isAI ? "Bạn thắng" : "Trắng thắng");
-    const didPlayerWin = !isWhite && isAI;
+    const msg = isWhite ? "Máy thắng" : "Bạn thắng";
+    const didPlayerWin = !isWhite;
 
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
 
   useEffect(() => {
-    if (isAI && game.turn() === "b" && !isGameOver) {
+    if (game.turn() === "b" && !isGameOver) {
       setTimeout(() => makeAIMove(game), 300);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAI, game, isGameOver]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game, isGameOver]);
 
   useEffect(() => {
     if (isGameOver) return;
@@ -239,33 +233,32 @@ function GameScreen() {
       </span>
     ));
   };
+
   useEffect(() => {
-  const handleResize = () => {
-    if (boardContainerRef.current) {
-      const containerSize = boardContainerRef.current.offsetWidth;
-      if (window.innerWidth < 768) {
-        setBoardWidth(Math.min(containerSize, 410));
-      } else {
-        setBoardWidth(Math.min(containerSize, 600));
+    const handleResize = () => {
+      if (boardContainerRef.current) {
+        const containerSize = boardContainerRef.current.offsetWidth;
+        if (window.innerWidth < 768) {
+          setBoardWidth(Math.min(containerSize, 410));
+        } else {
+          setBoardWidth(Math.min(containerSize, 600));
+        }
       }
-    }
-  };
+    };
 
-  handleResize();
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const getTimerClass = () => {
-  if (timeLeft <= 30) return "timer critical";
-  if (timeLeft <= 60) return "timer warning";
-  return "timer";
-};
-
-
+    if (timeLeft <= 30) return "timer critical";
+    if (timeLeft <= 60) return "timer warning";
+    return "timer";
+  };
 
   const getModeName = () => {
     switch (mode) {
-      case "2players": return "👥 Chế độ 2 người";
       case "easy": return "🟢 Máy dễ";
       case "medium": return "🟡 Máy trung bình";
       case "hard": return "🔴 Máy khó";
@@ -282,7 +275,7 @@ function GameScreen() {
         <div>{renderCapturedPieces("b")}</div>
       </div>
 
-      <div className="board-wrapper">
+      <div className="board-wrapper" ref={boardContainerRef}>
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
@@ -294,7 +287,6 @@ function GameScreen() {
       <div className={getTimerClass()}>
         <p>⏳ Thời gian còn lại: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}</p>
       </div>
-
 
       {!isGameOver && (
         <div className="resign-button">
@@ -308,5 +300,3 @@ function GameScreen() {
 }
 
 export default GameScreen;
-
-
