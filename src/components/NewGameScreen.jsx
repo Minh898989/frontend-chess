@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Chessboard } from "react-chessboard";
 import Chess from "chess.js";
 import io from "socket.io-client";
-import "./ChessGame.css"; // Import file CSS riêng
+import "../styles/ChessGame.css"; // Import file CSS riêng
 
 const socket = io(); // Kết nối socket
 
