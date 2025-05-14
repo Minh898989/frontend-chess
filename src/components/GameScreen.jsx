@@ -261,7 +261,7 @@ function GameScreen() {
 
   const getModeName = () => {
     switch (mode) {
-      
+      case "2players": return "👥 Chế độ 2 người";
       case "easy": return "🟢 Máy dễ";
       case "medium": return "🟡 Máy trung bình";
       case "hard": return "🔴 Máy khó";
