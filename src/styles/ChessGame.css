@@ -1,28 +1,32 @@
-/* Container toàn bộ giao diện */
 .chess-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  padding: 60px 20px 40px;
   min-height: 100vh;
-  background: radial-gradient(circle at center, #0f2027, #203a43, #2c5364);
-  color: #00ffe1;
-  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* Bàn cờ */
-.chessboard-wrapper {
-  width: 100%;
-  max-width: 500px;
-  height: auto;
-  margin-top: 20px;
-}
-
-/* ID phòng */
 .room-id {
-  font-size: 20px;
-  margin-bottom: 10px;
-  text-align: center;
+  font-size: 1.8rem;
+  color: #00ffd9;
+  text-shadow: 0 0 10px #00ffd9;
+  margin-bottom: 20px;
+}
+
+.chessboard-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Modal */
@@ -32,58 +36,120 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(15, 32, 39, 0.95);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
+  align-items: center;
+  z-index: 999;
 }
 
 .modal-content {
-  background-color: #1e1e2f;
-  padding: 30px 40px;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 40px 30px;
   text-align: center;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  width: 90%;
+  max-width: 400px;
 }
 
 .modal-content h2 {
+  font-size: 2rem;
   margin-bottom: 20px;
-  color: #00ffe1;
+  color: #00ffd9;
+  text-shadow: 0 0 10px #00ffd9;
 }
 
-/* Input + Buttons */
-.input-room {
-  width: 100%;
-  padding: 10px;
-  margin: 12px 0;
-  border-radius: 8px;
-  border: 1px solid #00ffe1;
-  background-color: #2a2a3f;
-  color: #fff;
-  font-size: 16px;
-}
-
+/* Buttons */
 .button {
-  padding: 10px 20px;
-  margin: 8px;
+  display: inline-block;
+  margin: 10px 0;
+  padding: 12px 20px;
+  font-size: 1rem;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 30px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  color: white;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, background 0.3s ease;
 }
 
 .button.create {
-  background-color: #00bcd4;
-  color: #fff;
+  background-color: #00b894;
+}
+
+.button.create:hover {
+  background-color: #00d6ad;
+  transform: scale(1.05);
 }
 
 .button.join {
-  background-color: #4caf50;
-  color: #fff;
+  background-color: #0984e3;
 }
 
-.button:hover {
-  opacity: 0.85;
+.button.join:hover {
+  background-color: #3498db;
+  transform: scale(1.05);
+}
+
+/* Input */
+.input-room {
+  margin: 10px 0;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 12px;
+  border: none;
+  width: 100%;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .room-id {
+    font-size: 1.5rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1.6rem;
+  }
+
+  .button {
+    font-size: 0.95rem;
+    padding: 10px 16px;
+  }
+
+  .input-room {
+    font-size: 0.95rem;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chess-container {
+    padding: 40px 15px;
+  }
+
+  .room-id {
+    font-size: 1.3rem;
+  }
+
+  .modal-content {
+    padding: 30px 20px;
+  }
+
+  .button {
+    font-size: 0.9rem;
+    padding: 8px 14px;
+  }
+
+  .input-room {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
 }
