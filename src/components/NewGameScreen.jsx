@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Chessboard } from "react-chessboard";
-import Chess from "chess.js";
+import { Chess } from "chess.js";
 import io from "socket.io-client";
-import "../styles/ChessGame.css"; // Import file CSS riêng
+import "../styles/ChessGame.css";
 
 const socket = io(); // Kết nối socket
 
@@ -14,46 +14,50 @@ export default function ChessGame() {
   const [showModal, setShowModal] = useState(true);
   const [inputRoomId, setInputRoomId] = useState("");
 
-  // Xử lý socket khi tham gia hoặc tạo phòng
+  // Xử lý socket
   useEffect(() => {
     if (!roomId) return;
 
-    // Emit createRoom hoặc joinRoom khi có roomId
     socket.emit(isCreator ? "createRoom" : "joinRoom", roomId);
 
-    // Lắng nghe sự kiện bắt đầu ván cờ từ server
     socket.on("startGame", ({ firstTurn }) => {
-      setIsMyTurn(firstTurn === (isCreator ? "white" : "black"));
+      const myColor = isCreator ? "white" : "black";
+      setIsMyTurn(firstTurn === myColor);
     });
 
-    // Lắng nghe nước đi từ đối thủ
     socket.on("opponentMove", (move) => {
-      game.move(move);
-      setGame(new Chess(game.fen()));
+      const updatedGame = new Chess(game.fen());
+      updatedGame.move(move);
+      setGame(updatedGame);
       setIsMyTurn(true);
     });
 
     return () => {
-      socket.disconnect();
+      socket.off("startGame");
+      socket.off("opponentMove");
     };
   }, [roomId, isCreator, game]);
 
   // Xử lý nước đi
   const makeMove = (from, to) => {
     if (!isMyTurn) return false;
-    const move = game.move({ from, to, promotion: "q" });
+
+    const updatedGame = new Chess(game.fen());
+    const move = updatedGame.move({ from, to, promotion: "q" });
+
     if (move) {
-      setGame(new Chess(game.fen()));
+      setGame(updatedGame);
       socket.emit("move", { roomId, move });
       setIsMyTurn(false);
       return true;
     }
+
     return false;
   };
 
-  // Tạo phòng mới
+  // Tạo phòng
   const handleCreateRoom = () => {
-    const newRoomId = Math.random().toString(36).substring(2, 8); // Tạo mã phòng ngẫu nhiên
+    const newRoomId = Math.random().toString(36).substring(2, 8);
     setRoomId(newRoomId);
     setIsCreator(true);
     setShowModal(false);
@@ -70,7 +74,6 @@ export default function ChessGame() {
 
   return (
     <div className="chess-container">
-      {/* Modal tạo/tham gia phòng */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -92,8 +95,7 @@ export default function ChessGame() {
         </div>
       )}
 
-      {/* Bàn cờ */}
-      {roomId && (
+      {!showModal && roomId && (
         <>
           <h2 className="room-id">Phòng: {roomId}</h2>
           <div className="chessboard-wrapper">
