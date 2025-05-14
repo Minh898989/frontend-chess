@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
@@ -15,59 +14,65 @@ function GameScreen() {
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
   const [boardWidth, setBoardWidth] = useState(() =>
-  window.innerWidth < 768 ? 390 : 550
-);
+    window.innerWidth < 768 ? 390 : 550
+  );
 
-  const isAI = true; 
+  const isAI = true;
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userid;
 
-  const getTotalCaptured = useCallback(() => capturedPieces.w.length + capturedPieces.b.length, [capturedPieces]);
-  const getMinutesPlayed = useCallback(() => Math.floor((15 * 60 - timeLeft) / 60), [timeLeft]);
-  
-
-  const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
-    if (!userId) return;
-    try {
-      await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
-        userid: userId,
-        didWin: didPlayerWin,
-        minutesPlayed,
-        capturedCount,
-      });
-    } catch (error) {
-      console.error("Lỗi cập nhật thống kê:", error);
-    }
-  }, [userId]);
-
   const pieceValue = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000 };
 
-  const evaluateBoard = (gameInstance) => {
-    const board = gameInstance.board();
+  const getTotalCaptured = useCallback(
+    () => capturedPieces.w.length + capturedPieces.b.length,
+    [capturedPieces]
+  );
+  const getMinutesPlayed = useCallback(
+    () => Math.floor((15 * 60 - timeLeft) / 60),
+    [timeLeft]
+  );
+
+  const updateLocalStats = useCallback(
+    async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
+      if (!userId) return;
+      try {
+        await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
+          userid: userId,
+          didWin: didPlayerWin,
+          minutesPlayed,
+          capturedCount,
+        });
+      } catch (error) {
+        console.error("Lỗi cập nhật thống kê:", error);
+      }
+    },
+    [userId]
+  );
+
+  const evaluateBoard = (g) => {
+    const board = g.board();
     let score = 0;
-    board.forEach(row => {
-      row.forEach(piece => {
+    for (let row of board) {
+      for (let piece of row) {
         if (piece) {
           const value = pieceValue[piece.type] || 0;
           score += piece.color === "w" ? value : -value;
         }
-      });
-    });
+      }
+    }
     return score;
   };
 
-  const minimax = (gameInstance, depth, isMaximizing, alpha, beta) => {
-    if (depth === 0 || gameInstance.game_over()) {
-      return evaluateBoard(gameInstance);
-    }
+  const minimax = (g, depth, isMax, alpha, beta) => {
+    if (depth === 0 || g.game_over()) return evaluateBoard(g);
+    const moves = g.moves({ verbose: true });
 
-    const moves = gameInstance.moves({ verbose: true });
-    if (isMaximizing) {
+    if (isMax) {
       let maxEval = -Infinity;
-      for (const move of moves) {
-        gameInstance.move(move);
-        const evalScore = minimax(gameInstance, depth - 1, false, alpha, beta);
-        gameInstance.undo();
+      for (let move of moves) {
+        g.move(move);
+        const evalScore = minimax(g, depth - 1, false, alpha, beta);
+        g.undo();
         maxEval = Math.max(maxEval, evalScore);
         alpha = Math.max(alpha, evalScore);
         if (beta <= alpha) break;
@@ -75,10 +80,10 @@ function GameScreen() {
       return maxEval;
     } else {
       let minEval = Infinity;
-      for (const move of moves) {
-        gameInstance.move(move);
-        const evalScore = minimax(gameInstance, depth - 1, true, alpha, beta);
-        gameInstance.undo();
+      for (let move of moves) {
+        g.move(move);
+        const evalScore = minimax(g, depth - 1, true, alpha, beta);
+        g.undo();
         minEval = Math.min(minEval, evalScore);
         beta = Math.min(beta, evalScore);
         if (beta <= alpha) break;
@@ -87,13 +92,12 @@ function GameScreen() {
     }
   };
 
-  const evaluateMove = (gameInstance, move) => {
-    const values = pieceValue;
+  const evaluateMove = (g, move) => {
     let score = 0;
-    if (move.captured) score += values[move.captured] || 0;
-    gameInstance.move(move);
-    if (gameInstance.in_check()) score += 0.5;
-    gameInstance.undo();
+    if (move.captured) score += pieceValue[move.captured] || 0;
+    g.move(move);
+    if (g.in_check()) score += 0.5;
+    g.undo();
     return score;
   };
 
@@ -101,15 +105,13 @@ function GameScreen() {
     if (currentGame.game_over()) return;
 
     const moves = currentGame.moves({ verbose: true });
-    if (moves.length === 0) return;
-
     let bestMove;
 
     if (mode === "easy") {
       bestMove = moves[Math.floor(Math.random() * moves.length)];
     } else if (mode === "medium") {
       let bestScore = -Infinity;
-      for (const move of moves) {
+      for (let move of moves) {
         const score = evaluateMove(currentGame, move);
         if (score > bestScore) {
           bestScore = score;
@@ -118,7 +120,7 @@ function GameScreen() {
       }
     } else if (mode === "hard") {
       let bestScore = -Infinity;
-      for (const move of moves) {
+      for (let move of moves) {
         currentGame.move(move);
         const score = minimax(currentGame, 2, false, -Infinity, Infinity);
         currentGame.undo();
@@ -133,43 +135,17 @@ function GameScreen() {
       const result = currentGame.move(bestMove);
       if (result?.captured) {
         const opponent = result.color === "w" ? "b" : "w";
-        setCapturedPieces(prev => ({
+        setCapturedPieces((prev) => ({
           ...prev,
           [opponent]: [...prev[opponent], result.captured],
         }));
       }
+      setGame(new Chess(currentGame.fen()));
 
-      const newGame = new Chess(currentGame.fen());
-      setGame(newGame);
-
-      if (newGame.game_over()) handleGameOver(newGame);
+      if (currentGame.game_over()) {
+        handleGameOver(currentGame);
+      }
     }
-  };
-
-  const onDrop = (sourceSquare, targetSquare) => {
-    if (isGameOver) return false;
-
-    const move = game.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
-    if (!move) return false;
-
-    if (move.captured) {
-      const opponent = move.color === "w" ? "b" : "w";
-      setCapturedPieces(prev => ({
-        ...prev,
-        [opponent]: [...prev[opponent], move.captured],
-      }));
-    }
-
-    const newGame = new Chess(game.fen());
-    setGame(newGame);
-
-    if (newGame.game_over()) {
-      handleGameOver(newGame);
-    } else if (isAI && newGame.turn() === "b") {
-      setTimeout(() => makeAIMove(newGame), 300);
-    }
-
-    return true;
   };
 
   const handleGameOver = (finalGame) => {
@@ -190,7 +166,6 @@ function GameScreen() {
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
-  
 
   const handleResign = (color) => {
     setIsGameOver(true);
@@ -202,16 +177,45 @@ function GameScreen() {
     setWinner(msg);
   };
 
+  const onDrop = (sourceSquare, targetSquare) => {
+    if (isGameOver) return false;
+
+    const newGame = new Chess(game.fen());
+    const move = newGame.move({
+      from: sourceSquare,
+      to: targetSquare,
+      promotion: "q",
+    });
+
+    if (!move) return false;
+
+    if (move.captured) {
+      const opponent = move.color === "w" ? "b" : "w";
+      setCapturedPieces((prev) => ({
+        ...prev,
+        [opponent]: [...prev[opponent], move.captured],
+      }));
+    }
+
+    setGame(newGame);
+
+    if (newGame.game_over()) {
+      handleGameOver(newGame);
+    } else if (isAI && newGame.turn() === "b") {
+      setTimeout(() => makeAIMove(new Chess(newGame.fen())), 300);
+    }
+
+    return true;
+  };
+
   useEffect(() => {
     if (isAI && game.turn() === "b" && !isGameOver) {
-      setTimeout(() => makeAIMove(game), 300);
+      setTimeout(() => makeAIMove(new Chess(game.fen())), 300);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAI, game, isGameOver]);
 
   useEffect(() => {
     if (isGameOver) return;
-
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -224,9 +228,20 @@ function GameScreen() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (boardContainerRef.current) {
+        const containerSize = boardContainerRef.current.offsetWidth;
+        setBoardWidth(window.innerWidth < 768 ? Math.min(containerSize, 390) : Math.min(containerSize, 550));
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const renderCapturedPieces = (color) => {
     const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
@@ -236,32 +251,15 @@ function GameScreen() {
       </span>
     ));
   };
-  useEffect(() => {
-  const handleResize = () => {
-    if (boardContainerRef.current) {
-      const containerSize = boardContainerRef.current.offsetWidth;
-      if (window.innerWidth < 768) {
-        setBoardWidth(Math.min(containerSize, 390));
-      } else {
-        setBoardWidth(Math.min(containerSize, 550));
-      }
-    }
-  };
 
-  handleResize();
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
   const getTimerClass = () => {
-  if (timeLeft <= 30) return "timer critical";
-  if (timeLeft <= 60) return "timer warning";
-  return "timer";
-};
-
+    if (timeLeft <= 30) return "timer critical";
+    if (timeLeft <= 60) return "timer warning";
+    return "timer";
+  };
 
   const getModeName = () => {
     switch (mode) {
-      
       case "easy": return "🟢 Máy dễ";
       case "medium": return "🟡 Máy trung bình";
       case "hard": return "🔴 Máy khó";
@@ -278,7 +276,7 @@ function GameScreen() {
         <div>{renderCapturedPieces("b")}</div>
       </div>
 
-      <div className="board-wrapper">
+      <div className="board-wrapper" ref={boardContainerRef}>
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
@@ -289,7 +287,10 @@ function GameScreen() {
       </div>
 
       <div className={getTimerClass()}>
-        <p>⏳ Thời gian còn lại: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}</p>
+        <p>
+          ⏳ Thời gian còn lại: {Math.floor(timeLeft / 60)}:
+          {(timeLeft % 60).toString().padStart(2, "0")}
+        </p>
       </div>
 
       {!isGameOver && (
@@ -304,6 +305,3 @@ function GameScreen() {
 }
 
 export default GameScreen;
-
-
-
