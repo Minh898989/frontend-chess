@@ -23,6 +23,8 @@ function HomeScreen() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [errorLeaderboard, setErrorLeaderboard] = useState("");
+  
+
 
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode");
@@ -33,8 +35,13 @@ function HomeScreen() {
   };
 
   const handleModeSelection = (selectedMode) => {
+  if (selectedMode === "2players") {
+    navigate("/newgame"); // 👉 chuyển đến trang mới
+  } else {
     navigate(`/game/${selectedMode}`);
-  };
+  }
+};
+
 
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
