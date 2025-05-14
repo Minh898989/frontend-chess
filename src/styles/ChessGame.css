@@ -19,8 +19,14 @@
 }
 
 .chessboard-wrapper {
-  width: 500px;
-  height: 500px;
+  width: 550px;
+  height: 550px;
+}
+@media (max-width: 768px) {
+  .chessboard-wrapper {
+    width: 390px;
+    height: 390px;
+  }
 }
 /* Modal */
 .modal-overlay {
