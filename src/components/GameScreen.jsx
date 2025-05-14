@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
@@ -7,14 +8,15 @@ import "../styles/GameScreen.css";
 
 function GameScreen() {
   const { mode } = useParams();
-  const gameRef = useRef(new Chess());
-  const [, setGame] = useState(gameRef.current);
+  const [game, setGame] = useState(new Chess());
   const [capturedPieces, setCapturedPieces] = useState({ w: [], b: [] });
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
   const boardContainerRef = useRef(null);
-  const [boardWidth, setBoardWidth] = useState(window.innerWidth < 768 ? 410 : 600);
+  const [boardWidth, setBoardWidth] = useState(() =>
+  window.innerWidth < 768 ? 390 : 550
+);
 
   const isAI = mode !== "2players";
   const user = JSON.parse(localStorage.getItem("user"));
@@ -22,6 +24,7 @@ function GameScreen() {
 
   const getTotalCaptured = useCallback(() => capturedPieces.w.length + capturedPieces.b.length, [capturedPieces]);
   const getMinutesPlayed = useCallback(() => Math.floor((15 * 60 - timeLeft) / 60), [timeLeft]);
+  
 
   const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
     if (!userId) return;
@@ -39,8 +42,8 @@ function GameScreen() {
 
   const pieceValue = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 1000 };
 
-  const evaluateBoard = (g) => {
-    const board = g.board();
+  const evaluateBoard = (gameInstance) => {
+    const board = gameInstance.board();
     let score = 0;
     board.forEach(row => {
       row.forEach(piece => {
@@ -53,16 +56,18 @@ function GameScreen() {
     return score;
   };
 
-  const minimax = (g, depth, isMaximizing, alpha, beta) => {
-    if (depth === 0 || g.game_over()) return evaluateBoard(g);
+  const minimax = (gameInstance, depth, isMaximizing, alpha, beta) => {
+    if (depth === 0 || gameInstance.game_over()) {
+      return evaluateBoard(gameInstance);
+    }
 
-    const moves = g.moves({ verbose: true });
+    const moves = gameInstance.moves({ verbose: true });
     if (isMaximizing) {
       let maxEval = -Infinity;
       for (const move of moves) {
-        g.move(move);
-        const evalScore = minimax(g, depth - 1, false, alpha, beta);
-        g.undo();
+        gameInstance.move(move);
+        const evalScore = minimax(gameInstance, depth - 1, false, alpha, beta);
+        gameInstance.undo();
         maxEval = Math.max(maxEval, evalScore);
         alpha = Math.max(alpha, evalScore);
         if (beta <= alpha) break;
@@ -71,9 +76,9 @@ function GameScreen() {
     } else {
       let minEval = Infinity;
       for (const move of moves) {
-        g.move(move);
-        const evalScore = minimax(g, depth - 1, true, alpha, beta);
-        g.undo();
+        gameInstance.move(move);
+        const evalScore = minimax(gameInstance, depth - 1, true, alpha, beta);
+        gameInstance.undo();
         minEval = Math.min(minEval, evalScore);
         beta = Math.min(beta, evalScore);
         if (beta <= alpha) break;
@@ -82,19 +87,20 @@ function GameScreen() {
     }
   };
 
-  const evaluateMove = (g, move) => {
+  const evaluateMove = (gameInstance, move) => {
+    const values = pieceValue;
     let score = 0;
-    if (move.captured) score += pieceValue[move.captured] || 0;
-    g.move(move);
-    if (g.in_check()) score += 0.5;
-    g.undo();
+    if (move.captured) score += values[move.captured] || 0;
+    gameInstance.move(move);
+    if (gameInstance.in_check()) score += 0.5;
+    gameInstance.undo();
     return score;
   };
 
-  const makeAIMove = (g) => {
-    if (g.game_over()) return;
+  const makeAIMove = (currentGame) => {
+    if (currentGame.game_over()) return;
 
-    const moves = g.moves({ verbose: true });
+    const moves = currentGame.moves({ verbose: true });
     if (moves.length === 0) return;
 
     let bestMove;
@@ -104,7 +110,7 @@ function GameScreen() {
     } else if (mode === "medium") {
       let bestScore = -Infinity;
       for (const move of moves) {
-        const score = evaluateMove(g, move);
+        const score = evaluateMove(currentGame, move);
         if (score > bestScore) {
           bestScore = score;
           bestMove = move;
@@ -113,9 +119,9 @@ function GameScreen() {
     } else if (mode === "hard") {
       let bestScore = -Infinity;
       for (const move of moves) {
-        g.move(move);
-        const score = minimax(g, 2, false, -Infinity, Infinity);
-        g.undo();
+        currentGame.move(move);
+        const score = minimax(currentGame, 2, false, -Infinity, Infinity);
+        currentGame.undo();
         if (score > bestScore) {
           bestScore = score;
           bestMove = move;
@@ -124,7 +130,7 @@ function GameScreen() {
     }
 
     if (bestMove) {
-      const result = g.move(bestMove);
+      const result = currentGame.move(bestMove);
       if (result?.captured) {
         const opponent = result.color === "w" ? "b" : "w";
         setCapturedPieces(prev => ({
@@ -133,16 +139,17 @@ function GameScreen() {
         }));
       }
 
-      setGame({ ...g });
+      const newGame = new Chess(currentGame.fen());
+      setGame(newGame);
 
-      if (g.game_over()) handleGameOver(g);
+      if (newGame.game_over()) handleGameOver(newGame);
     }
   };
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (isGameOver) return false;
 
-    const move = gameRef.current.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
+    const move = game.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
     if (!move) return false;
 
     if (move.captured) {
@@ -153,12 +160,13 @@ function GameScreen() {
       }));
     }
 
-    setGame({ ...gameRef.current });
+    const newGame = new Chess(game.fen());
+    setGame(newGame);
 
-    if (gameRef.current.game_over()) {
-      handleGameOver(gameRef.current);
-    } else if (isAI && gameRef.current.turn() === "b") {
-      setTimeout(() => makeAIMove(gameRef.current), 300);
+    if (newGame.game_over()) {
+      handleGameOver(newGame);
+    } else if (isAI && newGame.turn() === "b") {
+      setTimeout(() => makeAIMove(newGame), 300);
     }
 
     return true;
@@ -182,6 +190,7 @@ function GameScreen() {
     updateLocalStats(didPlayerWin, getMinutesPlayed(), getTotalCaptured());
     setWinner(msg);
   };
+  
 
   const handleResign = (color) => {
     setIsGameOver(true);
@@ -194,17 +203,17 @@ function GameScreen() {
   };
 
   useEffect(() => {
-    if (isAI && gameRef.current.turn() === "b" && !isGameOver) {
-      setTimeout(() => makeAIMove(gameRef.current), 300);
+    if (isAI && game.turn() === "b" && !isGameOver) {
+      setTimeout(() => makeAIMove(game), 300);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAI, isGameOver]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAI, game, isGameOver]);
 
   useEffect(() => {
     if (isGameOver) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
           setIsGameOver(true);
@@ -219,30 +228,36 @@ function GameScreen() {
     return () => clearInterval(timer);
   }, [isGameOver, getMinutesPlayed, getTotalCaptured, updateLocalStats]);
 
-  useEffect(() => {
-    const updateWidth = () => {
-      if (boardContainerRef.current) {
-        const size = boardContainerRef.current.offsetWidth;
-        const newWidth = window.innerWidth < 768 ? Math.min(size, 410) : Math.min(size, 600);
-        setBoardWidth(newWidth);
-      }
-    };
-
-    const debounced = () => {
-      clearTimeout(window.resizeTimeout);
-      window.resizeTimeout = setTimeout(updateWidth, 200);
-    };
-
-    updateWidth();
-    window.addEventListener("resize", debounced);
-    return () => window.removeEventListener("resize", debounced);
-  }, []);
-
-  const getTimerClass = () => {
-    if (timeLeft <= 30) return "timer critical";
-    if (timeLeft <= 60) return "timer warning";
-    return "timer";
+  const renderCapturedPieces = (color) => {
+    const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
+    return capturedPieces[color].map((type, idx) => (
+      <span key={idx} className="captured-piece">
+        {color === "w" ? icons[type] : icons[type].toLowerCase()}
+      </span>
+    ));
   };
+  useEffect(() => {
+  const handleResize = () => {
+    if (boardContainerRef.current) {
+      const containerSize = boardContainerRef.current.offsetWidth;
+      if (window.innerWidth < 768) {
+        setBoardWidth(Math.min(containerSize, 390));
+      } else {
+        setBoardWidth(Math.min(containerSize, 550));
+      }
+    }
+  };
+
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+  const getTimerClass = () => {
+  if (timeLeft <= 30) return "timer critical";
+  if (timeLeft <= 60) return "timer warning";
+  return "timer";
+};
+
 
   const getModeName = () => {
     switch (mode) {
@@ -254,15 +269,6 @@ function GameScreen() {
     }
   };
 
-  const renderCapturedPieces = (color) => {
-    const icons = { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕" };
-    return capturedPieces[color].map((type, idx) => (
-      <span key={idx} className="captured-piece">
-        {color === "w" ? icons[type] : icons[type].toLowerCase()}
-      </span>
-    ));
-  };
-
   return (
     <div className="game-screen">
       <h1>{getModeName()}</h1>
@@ -272,13 +278,12 @@ function GameScreen() {
         <div>{renderCapturedPieces("b")}</div>
       </div>
 
-      <div className="board-wrapper" ref={boardContainerRef}>
+      <div className="board-wrapper">
         <Chessboard
-          position={gameRef.current.fen()}
+          position={game.fen()}
           onPieceDrop={onDrop}
           boardWidth={boardWidth}
-          arePiecesDraggable={!gameRef.current.game_over()}
-          animationDuration={150}
+          arePiecesDraggable={!game.game_over()}
         />
       </div>
 
@@ -288,7 +293,7 @@ function GameScreen() {
 
       {!isGameOver && (
         <div className="resign-button">
-          <button onClick={() => handleResign(gameRef.current.turn())}>Đầu hàng</button>
+          <button onClick={() => handleResign(game.turn())}>Đầu hàng</button>
         </div>
       )}
 
@@ -298,3 +303,6 @@ function GameScreen() {
 }
 
 export default GameScreen;
+
+
+
