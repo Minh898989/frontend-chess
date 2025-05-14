@@ -6,7 +6,7 @@ import Missions from "./components/Missions";
 import ChessGuide from './components/ChessGuide';
 import AuthForm from './components/AuthForm';
 import PrivateRoute from './components/PrivateRoute';
-import ChessGame from './components/ChessGame'; 
+
 
 function App() {
   return (
@@ -36,11 +36,7 @@ function App() {
               <ChessGuide />
             </PrivateRoute>
           } />
-          <Route path="/newgame" element={
-  <PrivateRoute>
-    <ChessGame />
-  </PrivateRoute>
-} />
+          
         </Routes>
       </div>
     </Router>
