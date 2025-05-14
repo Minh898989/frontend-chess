@@ -284,6 +284,7 @@ function GameScreen() {
           onPieceDrop={onDrop}
           boardWidth={boardWidth}
           arePiecesDraggable={!game.game_over()}
+          animationDuration={150}
         />
       </div>
 
