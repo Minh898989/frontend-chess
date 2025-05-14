@@ -164,10 +164,12 @@ function GameScreen() {
     setGame(newGame);
 
     if (newGame.game_over()) {
-      handleGameOver(newGame);
-    } else if (isAI && newGame.turn() === "b") {
-      setTimeout(() => makeAIMove(newGame), 300);
-    }
+  handleGameOver(newGame);
+} else if (isAI && newGame.turn() === "b") {
+  // ✅ CHỈ GỌI AI move nếu mới xong lượt trắng và còn sống
+  setTimeout(() => makeAIMove(newGame), 300);
+}
+
 
     return true;
   };
@@ -202,12 +204,7 @@ function GameScreen() {
     setWinner(msg);
   };
 
-  useEffect(() => {
-    if (isAI && game.turn() === "b" && !isGameOver) {
-      setTimeout(() => makeAIMove(game), 300);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAI, game, isGameOver]);
+  
 
   useEffect(() => {
     if (isGameOver) return;

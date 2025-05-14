@@ -5,7 +5,7 @@ const ChessGuide = () => {
   return (
     <div className="chess-guide">
       <button className="back-button" onClick={() => window.history.back()}>
-          ⬅ Quay lại
+          ⬅ Back
       </button>
       <h1>Hướng Dẫn Chơi Cờ Vua</h1>
       <section>

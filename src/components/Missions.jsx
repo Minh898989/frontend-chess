@@ -94,7 +94,7 @@ const Mission = () => {
   return (
     <div className="missions-screen">
       <button className="back-button" onClick={() => window.history.back()}>
-        ⬅ Quay lại
+        ⬅ Back
       </button>
 
       <h2>Nhiệm vụ của bạn</h2>
@@ -113,7 +113,6 @@ const Mission = () => {
             <h3>{mission.name}</h3>
             <p>{mission.description}</p>
             <p>Điểm thưởng: {mission.reward_points}</p>
-
             <p>
               Trạng thái:{" "}
               <span
