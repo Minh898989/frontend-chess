@@ -11,9 +11,15 @@ const GameScreen = () => {
   const { roomCode } = useParams();
   const socketRef = useRef(null);
   const [game, setGame] = useState(() => new Chess());
+  const gameRef = useRef(game); // ref để giữ bản mới nhất của game
   const [fen, setFen] = useState('start');
   const [playerColor, setPlayerColor] = useState('white');
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
+
+  // Luôn cập nhật ref khi game thay đổi
+  useEffect(() => {
+    gameRef.current = game;
+  }, [game]);
 
   useEffect(() => {
     const socket = io(API_BASE, { transports: ['websocket'] });
@@ -29,14 +35,12 @@ const GameScreen = () => {
     });
 
     socket.on('move', ({ move }) => {
-    setGame((prevGame) => {
-    const newGame = new Chess(prevGame.fen());
-    newGame.move(move);
-    setFen(newGame.fen());
-    return newGame;
-  });
-});
-
+      console.log('📥 Received move from opponent:', move);
+      const newGame = new Chess(gameRef.current.fen());
+      newGame.move(move);
+      setGame(newGame);
+      setFen(newGame.fen());
+    });
 
     socket.on('opponentResigned', (user) => {
       setStatus(`🏆 Opponent (${user}) resigned. You win!`);
@@ -48,33 +52,33 @@ const GameScreen = () => {
   }, [roomCode]);
 
   const onDrop = (sourceSquare, targetSquare) => {
-  const newGame = new Chess(game.fen());
+    const newGame = new Chess(game.fen());
 
-  // Không cho đi nếu không phải lượt của người chơi
-  if (newGame.turn() !== playerColor[0]) return false;
+    // Không cho đi nếu không phải lượt của người chơi
+    if (newGame.turn() !== playerColor[0] || game.game_over()) return false;
 
-  const move = {
-    from: sourceSquare,
-    to: targetSquare,
-    promotion: 'q',
-  };
+    const move = {
+      from: sourceSquare,
+      to: targetSquare,
+      promotion: 'q',
+    };
 
-  const result = newGame.move(move);
+    const result = newGame.move(move);
 
-  if (result) {
-    setGame(newGame);
-    setFen(newGame.fen());
+    if (result) {
+      setGame(newGame);
+      setFen(newGame.fen());
 
-    socketRef.current.emit('move', { roomCode, move });
+      socketRef.current.emit('move', { roomCode, move });
 
-    if (newGame.game_over()) {
-      setStatus('🏁 Game over');
+      if (newGame.game_over()) {
+        setStatus('🏁 Game over');
+      }
+      return true;
     }
-    return true;
-  }
 
-  return false;
-};
+    return false;
+  };
 
   const handleResign = () => {
     socketRef.current.emit('resign', {
@@ -93,15 +97,14 @@ const GameScreen = () => {
       </div>
       <div className="board-container">
         <Chessboard
-  position={fen}
-  onPieceDrop={onDrop}
-  boardOrientation={playerColor}
-  arePiecesDraggable={game.turn() === playerColor[0] && !game.game_over()}
-  boardWidth={Math.min(window.innerWidth * 0.9, 500)}
-  customDarkSquareStyle={{ backgroundColor: '#334155' }}
-  customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
-/>
-
+          position={fen}
+          onPieceDrop={onDrop}
+          boardOrientation={playerColor}
+          arePiecesDraggable={game.turn() === playerColor[0] && !game.game_over()}
+          boardWidth={Math.min(window.innerWidth * 0.9, 500)}
+          customDarkSquareStyle={{ backgroundColor: '#334155' }}
+          customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
+        />
       </div>
       <button className="resign-button" onClick={handleResign}>
         🏳️ Resign
