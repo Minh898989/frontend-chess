@@ -11,16 +11,17 @@ const GameScreen = () => {
   const { roomCode } = useParams();
   const socketRef = useRef(null);
   const [game, setGame] = useState(() => new Chess());
-  const gameRef = useRef(game); // ref để giữ bản mới nhất của game
+  const gameRef = useRef(game); // giữ bản mới nhất
   const [fen, setFen] = useState('start');
-  const [playerColor, setPlayerColor] = useState('white');
+  const [playerColor, setPlayerColor] = useState(null);
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
 
-  // Luôn cập nhật ref khi game thay đổi
+  // Cập nhật ref game
   useEffect(() => {
     gameRef.current = game;
   }, [game]);
 
+  // Kết nối socket
   useEffect(() => {
     const socket = io(API_BASE, { transports: ['websocket'] });
     socketRef.current = socket;
@@ -28,20 +29,23 @@ const GameScreen = () => {
     socket.emit('joinRoom', roomCode);
 
     socket.on('startGame', ({ color }) => {
-      if (color) {
-        setPlayerColor(color);
-        setStatus('🎮 Game started');
-      }
+      console.log(`🎯 You are assigned: ${color}`);
+      setPlayerColor(color);
+      setStatus('🎮 Game started');
+    });
+
+    socket.on('roomFull', () => {
+      setStatus('❌ Room is full. Please try another room.');
+      alert('Room is full. Cannot join this room.');
     });
 
     socket.on('move', ({ move, fen }) => {
-  console.log('📥 Received move from opponent:', move);
-  const newGame = new Chess(fen); // ✅ tái tạo từ fen
-  setGame(newGame);
-  gameRef.current = newGame;
-  setFen(fen);
-});
-
+      console.log('📥 Received move from opponent:', move);
+      const newGame = new Chess(fen);
+      setGame(newGame);
+      gameRef.current = newGame;
+      setFen(fen);
+    });
 
     socket.on('opponentResigned', (user) => {
       setStatus(`🏆 Opponent (${user}) resigned. You win!`);
@@ -53,11 +57,12 @@ const GameScreen = () => {
   }, [roomCode]);
 
   const onDrop = (sourceSquare, targetSquare) => {
+    if (!playerColor) return false;
+
     const newGame = new Chess(game.fen());
 
-    // Không cho đi nếu không phải lượt của người chơi
+    // Kiểm tra đúng lượt
     if (newGame.turn() !== playerColor[0] || newGame.game_over()) return false;
-
 
     const move = {
       from: sourceSquare,
@@ -71,11 +76,14 @@ const GameScreen = () => {
       setGame(newGame);
       setFen(newGame.fen());
 
-      socketRef.current.emit('move', { roomCode, move,fen: newGame.fen() });
+      if (socketRef.current) {
+        socketRef.current.emit('move', { roomCode, move, fen: newGame.fen() });
+      }
 
       if (newGame.game_over()) {
         setStatus('🏁 Game over');
       }
+
       return true;
     }
 
@@ -83,10 +91,12 @@ const GameScreen = () => {
   };
 
   const handleResign = () => {
-    socketRef.current.emit('resign', {
-      roomCode,
-      user: playerColor,
-    });
+    if (socketRef.current && playerColor) {
+      socketRef.current.emit('resign', {
+        roomCode,
+        user: playerColor,
+      });
+    }
     setStatus('🏳️ You resigned');
   };
 
@@ -94,15 +104,15 @@ const GameScreen = () => {
     <div className="chess-wrapper">
       <h2 className="room-title">♟️ Online Chess - Room {roomCode}</h2>
       <div className="chess-status">
-        <span><strong>You:</strong> {playerColor.toUpperCase()}</span>
+        <span><strong>You:</strong> {playerColor ? playerColor.toUpperCase() : '—'}</span>
         <span><strong>Status:</strong> {status}</span>
       </div>
       <div className="board-container">
         <Chessboard
           position={fen}
           onPieceDrop={onDrop}
-          boardOrientation={playerColor}
-          arePiecesDraggable={gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
+          boardOrientation={playerColor || 'white'}
+          arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
           customDarkSquareStyle={{ backgroundColor: '#334155' }}
           customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
