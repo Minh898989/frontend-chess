@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
+import "../styles/TwoPlayer.css"; // Nếu không cần, có thể xoá
 
-const socket = io('http://localhost:5000'); // đổi nếu deploy backend
 
-function App() {
-  const [hostUserId, setHostUserId] = useState('');
-  const [guestUserId, setGuestUserId] = useState('');
+const API_BASE = 'https://backend-chess-fjr7.onrender.com';
+const socket = io(API_BASE, { transports: ['websocket'] }); // giúp tránh polling lỗi
+
+const RoomManager = () => {
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const userid = storedUser?.userid || '';
+
   const [roomCode, setRoomCode] = useState('');
-  const [roomData, setRoomData] = useState(null);
-  const [log, setLog] = useState([]);
+  const [room, setRoom] = useState(null);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
+    // Lắng nghe khi trạng thái phòng được cập nhật từ server (qua socket)
     socket.on('roomUpdated', (updatedRoom) => {
-      setLog((prev) => [...prev, `📢 Room updated: ${JSON.stringify(updatedRoom)}`]);
-      setRoomData(updatedRoom);
+      setRoom(updatedRoom);
+      setMessage(`🔁 Room updated: ${updatedRoom.status}`);
     });
 
     return () => {
@@ -24,80 +29,76 @@ function App() {
 
   const createRoom = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/api/rooms/create', {
-        host_userid: hostUserId,
+      const res = await axios.post(`${API_BASE}/api/rooms/create`, {
+        host_userid: userid,
       });
-      const room = res.data.room;
-      setRoomCode(room.room_code);
-      setRoomData(room);
-      socket.emit('joinRoom', room.room_code);
-      setLog((prev) => [...prev, `✅ Room created: ${room.room_code}`]);
+
+      const createdRoom = res.data.room;
+      setRoom(createdRoom);
+      setRoomCode(createdRoom.room_code);
+      setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
+      socket.emit('joinRoom', String(createdRoom.room_code)); // Host tự join vào room socket
     } catch (err) {
       console.error(err);
-      setLog((prev) => [...prev, `❌ Create error: ${err.message}`]);
+      setMessage('❌ Failed to create room');
     }
   };
 
   const joinRoom = async () => {
+    if (!roomCode || isNaN(roomCode)) {
+      setMessage('⚠️ Invalid room code');
+      return;
+    }
+
     try {
-      const res = await axios.post('http://localhost:5000/api/rooms/join', {
-        guest_userid: guestUserId,
-        room_code: roomCode,
+      const res = await axios.post(`${API_BASE}/api/rooms/join`, {
+        room_code: parseInt(roomCode),
+        guest_userid: userid,
       });
-      const room = res.data.room;
-      setRoomData(room);
-      socket.emit('joinRoom', roomCode);
-      setLog((prev) => [...prev, `👤 Joined room: ${roomCode}`]);
+
+      const joinedRoom = res.data.room;
+      setRoom(joinedRoom);
+      setMessage(`✅ Joined room ${roomCode}`);
+      socket.emit('joinRoom', String(roomCode));
     } catch (err) {
       console.error(err);
-      setLog((prev) => [...prev, `❌ Join error: ${err.response?.data?.error || err.message}`]);
+      const errMsg = err?.response?.data?.error || '❌ Failed to join room';
+      setMessage(errMsg);
     }
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-      <h1>🎮 Test Tạo/Tham Gia Phòng</h1>
+    <div className="room-manager">
+      <h2>♟️ Room Manager</h2>
 
-      <div>
-        <h3>Tạo phòng</h3>
-        <input
-          placeholder="Host User ID"
-          value={hostUserId}
-          onChange={(e) => setHostUserId(e.target.value)}
-        />
-        <button onClick={createRoom}>Tạo phòng</button>
-      </div>
+      <div className="userid">Your ID: <strong>{userid}</strong></div>
 
-      <div style={{ marginTop: 20 }}>
-        <h3>Tham gia phòng</h3>
+      <div className="controls">
+        <button onClick={createRoom}>🆕 Create Room</button>
+
         <input
-          placeholder="Guest User ID"
-          value={guestUserId}
-          onChange={(e) => setGuestUserId(e.target.value)}
-        />
-        <input
-          placeholder="Room Code"
+          type="text"
+          placeholder="Enter room code"
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value)}
         />
-        <button onClick={joinRoom}>Tham gia</button>
+        <button onClick={joinRoom}>🔗 Join Room</button>
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        <h3>Thông tin phòng:</h3>
-        <pre>{JSON.stringify(roomData, null, 2)}</pre>
-      </div>
+      {message && <div className="message">{message}</div>}
 
-      <div style={{ marginTop: 20 }}>
-        <h3>Log:</h3>
-        <ul>
-          {log.map((entry, idx) => (
-            <li key={idx}>{entry}</li>
-          ))}
-        </ul>
-      </div>
+      {room && (
+        <div className="room-info">
+          <h3>📋 Room Info</h3>
+          <p><strong>Room ID:</strong> {room.id}</p>
+          <p><strong>Room Code:</strong> {room.room_code}</p>
+          <p><strong>Host:</strong> {room.host_userid}</p>
+          <p><strong>Guest:</strong> {room.guest_userid || '🕓 Waiting...'}</p>
+          <p><strong>Status:</strong> {room.status}</p>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-export default App;
+export default RoomManager;
