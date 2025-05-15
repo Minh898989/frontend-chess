@@ -116,11 +116,16 @@ const GameScreen = () => {
           boardOrientation={playerColor || 'white'}
           arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
-          customDarkSquareStyle={{ backgroundColor: '#334155' }}
-          customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
+          customDarkSquareStyle={{ backgroundColor: '#b58863' }}
+          customLightSquareStyle={{ backgroundColor: '#f0d9b5' }}
+          boardStyle={{
+    borderRadius: '10px',
+    boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)'
+  }}
+
         />
       </div>
-      <button className="resign-button" onClick={handleResign}>
+      <button className="resignn-button" onClick={handleResign}>
         🏳️ Resign
       </button>
     </div>
