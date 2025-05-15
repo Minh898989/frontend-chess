@@ -47,19 +47,17 @@ const GameScreen = () => {
       alert('Room is full. Cannot join this room.');
     });
 
-    socket.on('move', ({ move }) => {
-      const game = new Chess(gameRef.current.fen());
-      const result = game.move(move);
-      if (result) {
-        updateCapturedPieces(gameRef.current, game);
-        gameRef.current = game;
-        setFen(game.fen());
+    socket.on('move', ({ move, fen, color }) => {
+  const newGame = new Chess(fen);
+  updateCapturedPieces(gameRef.current, newGame, color); // truyền thêm màu người vừa đi
+  gameRef.current = newGame;
+  setFen(fen);
 
-        if (game.game_over()) {
-          setStatus('🏁 Game over');
-        }
-      }
-    });
+  if (newGame.game_over()) {
+    setStatus('🏁 Game over');
+  }
+});
+
 
     socket.on('opponentResigned', ({ winner, loser }) => {
       if (winner && loser) {
@@ -74,34 +72,42 @@ const GameScreen = () => {
     };
   }, [roomCode]);
 
-  const updateCapturedPieces = (prevGame, newGame) => {
-    const prevPieces = prevGame.board().flat().filter(Boolean);
-    const newPieces = newGame.board().flat().filter(Boolean);
+  const updateCapturedPieces = (prevGame, newGame, capturedByColor) => {
+  const opponentColor = capturedByColor === 'w' ? 'b' : 'w';
 
-    const prevCount = {};
-    const newCount = {};
+  const prevPieces = prevGame.board().flat().filter(Boolean);
+  const newPieces = newGame.board().flat().filter(Boolean);
 
-    for (const p of prevPieces) {
-      const key = p.color + p.type;
-      prevCount[key] = (prevCount[key] || 0) + 1;
-    }
-    for (const p of newPieces) {
-      const key = p.color + p.type;
-      newCount[key] = (newCount[key] || 0) + 1;
-    }
+  const prevCount = {};
+  const newCount = {};
 
-    for (const key in prevCount) {
-      const diff = (prevCount[key] || 0) - (newCount[key] || 0);
-      if (diff > 0) {
-        const color = key[0];
-        const type = key[1];
-        for (let i = 0; i < diff; i++) {
-          if (color === 'w') setCapturedWhite(prev => [...prev, type]);
-          else setCapturedBlack(prev => [...prev, type]);
+  for (const p of prevPieces) {
+    const key = p.color + p.type;
+    prevCount[key] = (prevCount[key] || 0) + 1;
+  }
+  for (const p of newPieces) {
+    const key = p.color + p.type;
+    newCount[key] = (newCount[key] || 0) + 1;
+  }
+
+  for (const key in prevCount) {
+    const color = key[0];
+    const type = key[1];
+    const diff = (prevCount[key] || 0) - (newCount[key] || 0);
+
+    // Chỉ xét quân của bên đối thủ bị mất
+    if (color === opponentColor && diff > 0) {
+      for (let i = 0; i < diff; i++) {
+        if (color === 'w') {
+          setCapturedWhite(prev => [...prev, type]);
+        } else {
+          setCapturedBlack(prev => [...prev, type]);
         }
       }
     }
-  };
+  }
+};
+
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (!playerColor) return false;
@@ -113,7 +119,8 @@ const GameScreen = () => {
     const result = game.move(move);
 
     if (result) {
-      updateCapturedPieces(gameRef.current, game);
+      const capturedBy = game.turn() === 'w' ? 'b' : 'w'; 
+      updateCapturedPieces(gameRef.current, game,capturedBy);
       gameRef.current = game;
       setFen(game.fen());
 
