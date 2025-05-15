@@ -3,7 +3,7 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
-import "../styles/Game.css";
+
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 
