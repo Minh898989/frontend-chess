@@ -1,64 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import "../styles/Room.css";
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
-const socket = io(API_BASE, { transports: ['websocket'] });
 
 const RoomManager = () => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const userid = storedUser?.userid || '';
- 
   const [roomCode, setRoomCode] = useState('');
   const [room, setRoom] = useState(null);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  
+  // Dùng useRef để socket chỉ khởi tạo 1 lần
+  const socketRef = useRef(null);
 
   useEffect(() => {
-  // Host hoặc Guest đều lắng nghe khi phòng được cập nhật
-  socket.on('roomUpdated', (updatedRoom) => {
-    console.log('🔄 Room updated via socket:', updatedRoom);
-    setRoom(updatedRoom); // cập nhật lại UI
-  });
-  socket.on('startGame', (roomData) => {
+    // Khởi tạo socket chỉ một lần
+    socketRef.current = io(API_BASE, { transports: ['websocket'] });
+
+    // Lắng nghe sự kiện từ server
+    socketRef.current.on('roomUpdated', (updatedRoom) => {
+      console.log('🔄 Room updated via socket:', updatedRoom);
+      setRoom(updatedRoom);
+    });
+
+    socketRef.current.on('startGame', (roomData) => {
       console.log('🎮 Game started! Navigating to game page...');
       navigate(`/chess/${roomData.room_code}`);
     });
-    
 
-  // Cleanup để tránh lắng nghe trùng lặp
-  return () => {
-    socket.off('roomUpdated');
-    socket.off('startGame');
-  };
-}, [navigate]);
+    // Cleanup
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [navigate]);
 
-
-
-  // Hàm để join room qua socket, đảm bảo socket đã connect
   const joinRoomSocket = (code) => {
     console.log(`🔌 Joining socket room: ${code}`);
-  socket.emit('joinRoom', String(code));
-};
-
-
+    socketRef.current.emit('joinRoom', String(code));
+  };
 
   const createRoom = async () => {
     try {
       const res = await axios.post(`${API_BASE}/api/rooms/create`, {
         host_userid: userid,
       });
-const createdRoom = res.data.room;
-joinRoomSocket(createdRoom.room_code); // ← GỌI TRƯỚC
 
-setRoom(createdRoom);
-setRoomCode(createdRoom.room_code);
-setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
-// Host join room socket khi tạo phòng
+      const createdRoom = res.data.room;
+      setRoom(createdRoom);
+      setRoomCode(createdRoom.room_code);
+      setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
+
+      // Đảm bảo join sau khi state được cập nhật
+      setTimeout(() => joinRoomSocket(createdRoom.room_code), 0);
     } catch (err) {
       console.error(err);
       setMessage('❌ Failed to create room');
@@ -81,19 +78,22 @@ setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
       setRoom(joinedRoom);
       setMessage(`✅ Joined room ${roomCode}`);
 
-      joinRoomSocket(roomCode); // Guest join room socket khi tham gia
+      // Đảm bảo join sau khi state được cập nhật
+      setTimeout(() => joinRoomSocket(roomCode), 0);
     } catch (err) {
       console.error(err);
       const errMsg = err?.response?.data?.error || '❌ Failed to join room';
       setMessage(errMsg);
     }
   };
-  
+
   return (
     <div className="room-manager">
       <h2>♟️ Room Manager</h2>
 
-      <div className="userid">Your ID: <strong>{userid}</strong></div>
+      <div className="userid">
+        Your ID: <strong>{userid}</strong>
+      </div>
 
       <div className="controls">
         <button onClick={createRoom}>🆕 Create Room</button>
