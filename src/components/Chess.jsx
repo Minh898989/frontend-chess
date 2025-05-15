@@ -30,6 +30,7 @@ const GameScreen = () => {
 
     socket.on('startGame', ({ color }) => {
       console.log(`🎯 You are assigned: ${color}`);
+      console.log(`🔧 Socket ID: ${socket.id}`);
       setPlayerColor(color);
       setStatus('🎮 Game started');
     });
@@ -60,6 +61,7 @@ const GameScreen = () => {
     if (!playerColor) return false;
 
     const newGame = new Chess(game.fen());
+    console.log(`🚫 Turn: ${newGame.turn()}, Player: ${playerColor}`);
 
     // Kiểm tra đúng lượt
     if (newGame.turn() !== playerColor[0] || newGame.game_over()) return false;
