@@ -15,10 +15,18 @@ const RoomManager = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-  if (room?.room_code) {
-    socket.emit('joinRoom', String(room.room_code));
-  }
-}, [room?.room_code]);
+  // Host hoặc Guest đều lắng nghe khi phòng được cập nhật
+  socket.on('roomUpdated', (updatedRoom) => {
+    console.log('🔄 Room updated via socket:', updatedRoom);
+    setRoom(updatedRoom); // cập nhật lại UI
+  });
+
+  // Cleanup để tránh lắng nghe trùng lặp
+  return () => {
+    socket.off('roomUpdated');
+  };
+}, []);
+
 
 
   // Hàm để join room qua socket, đảm bảo socket đã connect
