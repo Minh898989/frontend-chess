@@ -66,8 +66,8 @@ const GameScreen = () => {
       setFen(fen);
     });
 
-    socket.on('opponentResigned', (user) => {
-      setStatus(`🏆 Opponent (${user}) resigned. You win!`);
+    socket.on('opponentResigned', (userid) => {
+      setStatus(`🏆 Opponent (${userid}) resigned. You win!`);
     });
 
     return () => {
@@ -142,12 +142,14 @@ const GameScreen = () => {
 
   const handleResign = () => {
     if (socketRef.current && playerColor) {
+      const userid = playerColor === 'white' ? room.host_userid : room.guest_userid;
       socketRef.current.emit('resign', {
         roomCode,
-        user: playerColor,
+        user:userid || playerColor,
       });
+      setStatus(`🏳️ You (${userid}) resigned`);
     }
-    setStatus('🏳️ You resigned');
+    
   };
   const pieceUnicode = {
     p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
