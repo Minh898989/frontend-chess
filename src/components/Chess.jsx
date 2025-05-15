@@ -23,11 +23,11 @@ const GameScreen = () => {
     socket.emit('joinRoom', roomCode);
 
     // Nhận thông báo bắt đầu game
-    socket.on('startGame', () => {
-      const color = socket.id.endsWith('1') ? 'white' : 'black';
+    socket.on('startGame', ({ color }) => {
       setPlayerColor(color);
       setStatus('🎮 Game started');
     });
+
 
     // Nhận nước đi từ đối thủ
     socket.on('move', (move) => {
