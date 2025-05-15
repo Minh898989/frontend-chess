@@ -26,7 +26,7 @@ const RoomManager = () => {
   });
   socket.on('startGame', (roomData) => {
       console.log('🎮 Game started! Navigating to game page...');
-      navigate(`/game/${roomData.room_code}`);
+      navigate(`/chess/${roomData.room_code}`);
     });
     
 
