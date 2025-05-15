@@ -125,11 +125,11 @@ const GameScreen = () => {
     <div className="player-panel">
       <div className="player-card host">
         <span>👑 <strong>{room.host_userid}</strong></span>
-        <span className="label">White</span>
+        
       </div>
       <div className="player-card guest">
         <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-        <span className="label">Black</span>
+        
       </div>
     </div>
   )}
