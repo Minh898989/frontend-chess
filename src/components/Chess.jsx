@@ -118,43 +118,39 @@ const GameScreen = () => {
   };
 
   return (
-    <div className="chess-wrapper">
-      <h2 className="room-title">♟️ Online Chess - Room {roomCode}</h2>
-      <div className="chess-status">
-        {room && (
-        <div className="players-info">
-          <div className="player-box host">
-            <span className="label">👑 Host:</span>
-            <span className="username">{room.host_userid}</span>
-          </div>
-          <div className="player-box guest">
-            <span className="label">🧑‍💼 Guest:</span>
-            <span className="username">{room.guest_userid || '🕓 Waiting...'}</span>
-          </div>
-        </div>
-      )}
-        <span><strong>Status:</strong> {status}</span>
-      </div>
-      <div className="board-container">
-        <Chessboard
-          position={fen}
-          onPieceDrop={onDrop}
-          boardOrientation={playerColor || 'white'}
-          arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
-          boardWidth={Math.min(window.innerWidth * 0.9, 500)}
-          customDarkSquareStyle={{ backgroundColor: '#b58863' }}
-          customLightSquareStyle={{ backgroundColor: '#f0d9b5' }}
-          boardStyle={{
-            borderRadius: '10px',
-            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)'
-          }}
+    <div className="game-container">
+  <h2 className="game-title">♟️ Online Chess - Room {roomCode}</h2>
 
-        />
+  {room && (
+    <div className="player-panel">
+      <div className="player-card host">
+        <span>👑 <strong>{room.host_userid}</strong></span>
+        <span className="label">White</span>
       </div>
-      <button className="resignn-button" onClick={handleResign}>
-        🏳️ Resign
-      </button>
+      <div className="player-card guest">
+        <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
+        <span className="label">Black</span>
+      </div>
     </div>
+  )}
+
+  <div className="status-bar">
+    <span>{status}</span>
+  </div>
+
+  <div className="board-section">
+    <Chessboard
+      position={fen}
+      onPieceDrop={onDrop}
+      boardOrientation={playerColor || 'white'}
+      arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
+      boardWidth={Math.min(window.innerWidth * 0.9, 500)}
+    />
+  </div>
+
+  <button className="btn-resign" onClick={handleResign}>🏳️ Resign</button>
+</div>
+
   );
 };
 
