@@ -1,87 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import '../styles/TwoPlayer.css';
+import '../styles/Twoplayer.css';
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 const socket = io(API_BASE);
 
 const RoomManager = () => {
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const userid = storedUser?.userid || '';
+
   const [roomCode, setRoomCode] = useState('');
-  const [roomInfo, setRoomInfo] = useState(null);
+  const [room, setRoom] = useState(null);
   const [message, setMessage] = useState('');
 
-  const user = JSON.parse(localStorage.getItem('user'));
-  const userid = user?.userid || '';
+  useEffect(() => {
+    // Lắng nghe khi trạng thái phòng được cập nhật từ server
+    socket.on('roomUpdated', (updatedRoom) => {
+      setRoom(updatedRoom);
+    });
 
-  const handleCreateRoom = async () => {
+    return () => {
+      socket.off('roomUpdated');
+    };
+  }, []);
+
+  const createRoom = async () => {
     try {
       const res = await axios.post(`${API_BASE}/api/rooms/create`, {
         host_userid: userid,
       });
-      setRoomInfo(res.data.room);
+      setRoom(res.data.room);
       setRoomCode(res.data.room.room_code);
-      setMessage('✅ Phòng đã tạo, chờ người chơi tham gia...');
-      socket.emit('joinRoom', res.data.room.room_code);
+      setMessage(`Room created. Share code: ${res.data.room.room_code}`);
+      socket.emit('joinRoom', String(res.data.room.room_code)); // Host join room
     } catch (err) {
-      setMessage('❌ Lỗi khi tạo phòng.');
+      console.error(err);
+      setMessage('Failed to create room');
     }
   };
 
-  const handleJoinRoom = async () => {
+  const joinRoom = async () => {
     try {
       const res = await axios.post(`${API_BASE}/api/rooms/join`, {
         room_code: parseInt(roomCode),
         guest_userid: userid,
       });
-      setRoomInfo(res.data.room);
-      setMessage('✅ Tham gia phòng thành công. Bắt đầu chơi!');
-      socket.emit('joinRoom', roomCode);
+      setRoom(res.data.room);
+      setMessage(`Joined room ${roomCode}`);
+      socket.emit('joinRoom', String(roomCode)); // Guest join room
     } catch (err) {
-      setMessage('❌ Không thể tham gia phòng. Kiểm tra mã phòng hoặc trạng thái.');
+      console.error(err);
+      setMessage('Failed to join room');
     }
   };
 
-  useEffect(() => {
-    if (!roomCode) return;
-    socket.emit('joinRoom', roomCode);
-
-    socket.on('roomUpdated', (updatedRoom) => {
-      if (updatedRoom.room_code.toString() === roomCode.toString()) {
-        setRoomInfo(updatedRoom);
-        setMessage('👤 Người chơi đã tham gia. Bắt đầu chơi!');
-      }
-    });
-
-    return () => socket.off('roomUpdated');
-  }, [roomCode]);
-
   return (
     <div className="room-manager">
-      <h2>🧩 Quản lý Phòng Chơi</h2>
-      <p className="userid">👤 User: <strong>{userid}</strong></p>
+      <h2>Room Manager</h2>
+      <div className="userid">Your ID: <strong>{userid}</strong></div>
 
       <div className="controls">
-        <button onClick={handleCreateRoom}>➕ Tạo phòng</button>
+        <button onClick={createRoom}>Create Room</button>
 
         <input
           type="text"
-          placeholder="Nhập mã phòng..."
+          placeholder="Enter room code"
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value)}
         />
-        <button onClick={handleJoinRoom}>🔑 Tham gia phòng</button>
+        <button onClick={joinRoom}>Join Room</button>
       </div>
 
-      {message && <div className="message">📢 {message}</div>}
+      {message && <div className="message">{message}</div>}
 
-      {roomInfo && (
+      {room && (
         <div className="room-info">
-          <p><strong>ID phòng:</strong> {roomInfo.id}</p>
-          <p><strong>Mã phòng:</strong> {roomInfo.room_code}</p>
-          <p><strong>Host:</strong> {roomInfo.host_userid}</p>
-          <p><strong>Guest:</strong> {roomInfo.guest_userid || '⏳ Đang chờ...'}</p>
-          <p><strong>Trạng thái:</strong> {roomInfo.status}</p>
+          <p><strong>Room ID:</strong> {room.id}</p>
+          <p><strong>Room Code:</strong> {room.room_code}</p>
+          <p><strong>Host:</strong> {room.host_userid}</p>
+          <p><strong>Guest:</strong> {room.guest_userid || 'Waiting...'}</p>
+          <p><strong>Status:</strong> {room.status}</p>
         </div>
       )}
     </div>
