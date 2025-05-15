@@ -1,129 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import io from 'socket.io-client';
-import "../styles/TwoPlayer.css";
+import axios from 'axios';
+import './styles/TwoPlayer.css';
 
-// Cấu hình địa chỉ backend và khởi tạo socket
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 const socket = io(API_BASE);
 
-function RoomManager() {
-  const [hostUserId, setHostUserId] = useState('');
-  const [guestUserId, setGuestUserId] = useState('');
+const RoomManager = () => {
   const [roomCode, setRoomCode] = useState('');
   const [roomInfo, setRoomInfo] = useState(null);
   const [message, setMessage] = useState('');
 
-  // Lấy userid từ localStorage
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
-    if (userData?.userid) {
-      setHostUserId(userData.userid);
-      setGuestUserId(userData.userid);
-    }
-  }, []);
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userid = user?.userid || '';
 
-  // Lắng nghe sự kiện socket khi có người tham gia phòng
-  useEffect(() => {
-    socket.on('room-joined', (data) => {
-      setMessage(`🔔 ${data.guest_userid} đã tham gia phòng ${data.room_code}`);
-      setRoomInfo(data.room);
-    });
-
-    return () => {
-      socket.off('room-joined');
-    };
-  }, []);
-
-  // Gọi API tạo phòng
-  const createRoom = async () => {
+  const handleCreateRoom = async () => {
     try {
       const res = await axios.post(`${API_BASE}/api/rooms/create`, {
-        host_userid: hostUserId,
+        host_userid: userid,
       });
-
-      const room = res.data.room;
-      setRoomInfo(room);
-      setRoomCode(room.room_code);
-      setMessage(`✅ Phòng được tạo với mã: ${room.room_code}`);
+      setRoomInfo(res.data.room);
+      setRoomCode(res.data.room.room_code);
+      setMessage('✅ Phòng đã tạo, chờ người chơi tham gia...');
+      socket.emit('joinRoom', res.data.room.room_code);
     } catch (err) {
-      console.error(err);
-      setMessage('❌ Lỗi tạo phòng');
+      setMessage('❌ Lỗi khi tạo phòng.');
     }
   };
 
-  // Gọi API tham gia phòng và phát sự kiện socket
-  const joinRoom = async () => {
+  const handleJoinRoom = async () => {
     try {
       const res = await axios.post(`${API_BASE}/api/rooms/join`, {
         room_code: parseInt(roomCode),
-        guest_userid: guestUserId,
+        guest_userid: userid,
       });
-
-      const room = res.data.room;
-      setRoomInfo(room);
-      setMessage(`✅ Đã tham gia phòng ${room.room_code}`);
-
-      // Phát socket để thông báo cho người khác
-      socket.emit('join-room', {
-        room_code: room.room_code,
-        guest_userid: guestUserId,
-        room: room,
-      });
+      setRoomInfo(res.data.room);
+      setMessage('✅ Tham gia phòng thành công. Bắt đầu chơi!');
+      socket.emit('joinRoom', roomCode);
     } catch (err) {
-      console.error(err);
-      setMessage('❌ Lỗi tham gia phòng');
+      setMessage('❌ Không thể tham gia phòng. Kiểm tra mã phòng hoặc trạng thái.');
     }
   };
 
- return (
-  <div className="room-container">
-    <h2>♟️ Quản lý Phòng Cờ</h2>
+  useEffect(() => {
+    if (!roomCode) return;
+    socket.emit('joinRoom', roomCode);
 
-    <div className="section">
-      <h3>🔹 Tạo phòng mới</h3>
-      <input
-        type="text"
-        placeholder="Host User ID"
-        value={hostUserId}
-        disabled
-      />
-      <button onClick={createRoom} style={{ marginLeft: 10 }}>Tạo phòng</button>
-    </div>
+    socket.on('roomUpdated', (updatedRoom) => {
+      if (updatedRoom.room_code.toString() === roomCode.toString()) {
+        setRoomInfo(updatedRoom);
+        setMessage('👤 Người chơi đã tham gia. Bắt đầu chơi!');
+      }
+    });
 
-    <div className="section">
-      <h3>🔸 Tham gia phòng</h3>
-      <input
-        type="text"
-        placeholder="Room Code"
-        value={roomCode}
-        onChange={(e) => setRoomCode(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Guest User ID"
-        value={guestUserId}
-        disabled
-        style={{ marginLeft: 10 }}
-      />
-      <button onClick={joinRoom} style={{ marginLeft: 10 }}>Tham gia</button>
-    </div>
+    return () => socket.off('roomUpdated');
+  }, [roomCode]);
 
-    {message && (
-      <div className="message">{message}</div>
-    )}
+  return (
+    <div className="room-manager">
+      <h2>🧩 Quản lý Phòng Chơi</h2>
+      <p className="userid">👤 User: <strong>{userid}</strong></p>
 
-    {roomInfo && (
-      <div>
-        <h3>📄 Thông tin phòng</h3>
-        <div className="room-info">
-          {JSON.stringify(roomInfo, null, 2)}
-        </div>
+      <div className="controls">
+        <button onClick={handleCreateRoom}>➕ Tạo phòng</button>
+
+        <input
+          type="text"
+          placeholder="Nhập mã phòng..."
+          value={roomCode}
+          onChange={(e) => setRoomCode(e.target.value)}
+        />
+        <button onClick={handleJoinRoom}>🔑 Tham gia phòng</button>
       </div>
-    )}
-  </div>
-);
 
-}
+      {message && <div className="message">📢 {message}</div>}
+
+      {roomInfo && (
+        <div className="room-info">
+          <p><strong>ID phòng:</strong> {roomInfo.id}</p>
+          <p><strong>Mã phòng:</strong> {roomInfo.room_code}</p>
+          <p><strong>Host:</strong> {roomInfo.host_userid}</p>
+          <p><strong>Guest:</strong> {roomInfo.guest_userid || '⏳ Đang chờ...'}</p>
+          <p><strong>Trạng thái:</strong> {roomInfo.status}</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default RoomManager;
