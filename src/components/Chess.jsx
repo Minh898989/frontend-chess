@@ -66,9 +66,11 @@ const GameScreen = () => {
       setFen(fen);
     });
 
-    socket.on('opponentResigned', (userid) => {
-      setStatus(`🏆 Opponent (${userid}) resigned. You win!`);
-    });
+    socket.on('opponentResigned', (user) => {
+  const username = typeof user === 'object' ? user.userid : user;
+  setStatus(`🏆 Opponent (${username}) resigned. You win!`);
+});
+
 
     return () => {
       socket.disconnect();
