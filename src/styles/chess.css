@@ -6,11 +6,18 @@ body {
   text-align: center;
 }
 
+
 .game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
   padding: 2rem 1rem;
   max-width: 600px;
   margin: 0 auto;
 }
+
 
 .game-title {
   font-size: 1.8rem;
