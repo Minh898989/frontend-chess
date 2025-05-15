@@ -12,23 +12,20 @@ const GameScreen = () => {
   const { roomCode } = useParams();
   const socketRef = useRef(null);
   const gameRef = useRef(new Chess());
-  const startTimeRef = useRef(null);
-
   const [fen, setFen] = useState('start');
   const [playerColor, setPlayerColor] = useState(null);
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
   const [room, setRoom] = useState(null);
   const [capturedWhite, setCapturedWhite] = useState([]);
   const [capturedBlack, setCapturedBlack] = useState([]);
+  const startTimeRef = useRef(null);
 
-  // Fetch room info once on load
   useEffect(() => {
     axios.get(`${API_BASE}/api/rooms/${roomCode}`)
       .then(res => setRoom(res.data.room))
       .catch(console.error);
   }, [roomCode]);
 
-  // Setup socket connection
   useEffect(() => {
     const socket = io(API_BASE, { transports: ['websocket'] });
     socketRef.current = socket;
@@ -50,7 +47,19 @@ const GameScreen = () => {
       alert('Room is full. Cannot join this room.');
     });
 
-    socket.on('move', ({ move }) => handleOpponentMove(move));
+    socket.on('move', ({ move }) => {
+      const game = new Chess(gameRef.current.fen());
+      const result = game.move(move);
+      if (result) {
+        updateCapturedPieces(gameRef.current, game);
+        gameRef.current = game;
+        setFen(game.fen());
+
+        if (game.game_over()) {
+          setStatus('🏁 Game over');
+        }
+      }
+    });
 
     socket.on('opponentResigned', ({ winner, loser }) => {
       if (winner && loser) {
@@ -63,36 +72,23 @@ const GameScreen = () => {
     return () => {
       socket.disconnect();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode]);
-
-  const handleOpponentMove = (move) => {
-    const game = new Chess(gameRef.current.fen());
-    const result = game.move(move);
-    if (result) {
-      updateCapturedPieces(gameRef.current, game);
-      gameRef.current = game;
-      setFen(game.fen());
-
-      if (game.game_over()) {
-        setStatus('🏁 Game over');
-      }
-    }
-  };
 
   const updateCapturedPieces = (prevGame, newGame) => {
     const prevPieces = prevGame.board().flat().filter(Boolean);
     const newPieces = newGame.board().flat().filter(Boolean);
 
-    const countPieces = (pieces) =>
-      pieces.reduce((acc, p) => {
-        const key = p.color + p.type;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {});
+    const prevCount = {};
+    const newCount = {};
 
-    const prevCount = countPieces(prevPieces);
-    const newCount = countPieces(newPieces);
+    for (const p of prevPieces) {
+      const key = p.color + p.type;
+      prevCount[key] = (prevCount[key] || 0) + 1;
+    }
+    for (const p of newPieces) {
+      const key = p.color + p.type;
+      newCount[key] = (newCount[key] || 0) + 1;
+    }
 
     for (const key in prevCount) {
       const diff = (prevCount[key] || 0) - (newCount[key] || 0);
@@ -121,12 +117,13 @@ const GameScreen = () => {
       gameRef.current = game;
       setFen(game.fen());
 
-      socketRef.current?.emit('move', { roomCode, move });
+      if (socketRef.current) {
+        socketRef.current.emit('move', { roomCode, move });
+      }
 
       if (game.game_over()) setStatus('🏁 Game over');
       return true;
     }
-
     return false;
   };
 
@@ -136,9 +133,10 @@ const GameScreen = () => {
     const currentUserid = user.userid;
     if (!currentUserid) return;
 
-    const { host_userid, guest_userid } = room;
-    const winnerId = currentUserid === host_userid ? guest_userid : host_userid;
-    const loserId = currentUserid;
+    const hostId = room.host_userid;
+    const guestId = room.guest_userid;
+    let winnerId = currentUserid === hostId ? guestId : hostId;
+    let loserId = currentUserid;
 
     if (!winnerId || !loserId) {
       setStatus('❌ Cannot determine winner.');
@@ -146,8 +144,8 @@ const GameScreen = () => {
     }
 
     const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
-    const winnerCaptured = winnerId === host_userid ? capturedWhite.length : capturedBlack.length;
-    const loserCaptured = loserId === host_userid ? capturedWhite.length : capturedBlack.length;
+    const winnerCaptured = winnerId === hostId ? capturedWhite.length : capturedBlack.length;
+    const loserCaptured = loserId === hostId ? capturedWhite.length : capturedBlack.length;
 
     socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
 
@@ -206,11 +204,7 @@ const GameScreen = () => {
           position={fen}
           onPieceDrop={onDrop}
           boardOrientation={playerColor || 'white'}
-          arePiecesDraggable={
-            playerColor &&
-            gameRef.current.turn() === playerColor[0] &&
-            !gameRef.current.game_over()
-          }
+          arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
         />
       </div>
