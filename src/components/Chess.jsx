@@ -34,13 +34,14 @@ const GameScreen = () => {
       }
     });
 
-    socket.on('move', ({ move }) => {
-      console.log('📥 Received move from opponent:', move);
-      const newGame = new Chess(gameRef.current.fen());
-      newGame.move(move);
-      setGame(newGame);
-      setFen(newGame.fen());
-    });
+    socket.on('move', ({ move, fen }) => {
+  console.log('📥 Received move from opponent:', move);
+  const newGame = new Chess(fen); // ✅ tái tạo từ fen
+  setGame(newGame);
+  gameRef.current = newGame;
+  setFen(fen);
+});
+
 
     socket.on('opponentResigned', (user) => {
       setStatus(`🏆 Opponent (${user}) resigned. You win!`);
@@ -55,7 +56,8 @@ const GameScreen = () => {
     const newGame = new Chess(game.fen());
 
     // Không cho đi nếu không phải lượt của người chơi
-    if (newGame.turn() !== playerColor[0] || game.game_over()) return false;
+    if (newGame.turn() !== playerColor[0] || newGame.game_over()) return false;
+
 
     const move = {
       from: sourceSquare,
@@ -69,7 +71,7 @@ const GameScreen = () => {
       setGame(newGame);
       setFen(newGame.fen());
 
-      socketRef.current.emit('move', { roomCode, move });
+      socketRef.current.emit('move', { roomCode, move,fen: newGame.fen() });
 
       if (newGame.game_over()) {
         setStatus('🏁 Game over');
@@ -100,7 +102,7 @@ const GameScreen = () => {
           position={fen}
           onPieceDrop={onDrop}
           boardOrientation={playerColor}
-          arePiecesDraggable={game.turn() === playerColor[0] && !game.game_over()}
+          arePiecesDraggable={gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
           customDarkSquareStyle={{ backgroundColor: '#334155' }}
           customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
