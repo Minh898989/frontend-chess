@@ -66,14 +66,16 @@ const GameScreen = () => {
       setFen(fen);
     });
 
-    socket.on('opponentResigned', (user) => {
-  console.log('Opponent resigned payload:', user);
-  
-  const username = typeof user === 'object'
-    ? (user.userid || user.username || JSON.stringify(user) || 'Unknown')
-    : user;
+    socket.on('opponentResigned', (data) => {
+  console.log('Opponent resigned payload:', data);
 
-  setStatus(`🏆 Opponent (${username}) resigned. You win!`);
+  if (typeof data === 'object' && data.winner && data.loser) {
+    setStatus(`🏆 ${data.winner} thắng! Đối thủ (${data.loser}) đã đầu hàng.`);
+  } else {
+    // Dự phòng nếu backend gửi string hoặc không đúng format
+    const username = typeof data === 'string' ? data : 'Unknown';
+    setStatus(`🏆 Opponent (${username}) resigned. You win!`);
+  }
 });
 
 
@@ -148,17 +150,35 @@ const GameScreen = () => {
     return false;
   };
 
-  const handleResign = () => {
-    if (socketRef.current && playerColor) {
-      const userid = playerColor === 'white' ? room.host_userid : room.guest_userid;
-      socketRef.current.emit('resign', {
-        roomCode,
-        user:userid || playerColor,
-      });
-      setStatus(`🏳️ You (${userid}) resigned`);
-    }
-    
-  };
+ const handleResign = () => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentUserid = user.userid;
+
+  if (!room || !currentUserid) return;
+
+  const hostId = room.host_userid;
+  const guestId = room.guest_userid;
+
+  let winnerId = '';
+  let loserId = '';
+
+  if (currentUserid === hostId) {
+    winnerId = guestId;
+    loserId = hostId;
+  } else {
+    winnerId = hostId;
+    loserId = guestId;
+  }
+
+  if (!winnerId || !loserId) {
+    setStatus('❌ Cannot determine winner.');
+  } else {
+    setStatus(`🏆 ${winnerId} thắng! Đối thủ (${loserId}) đã đầu hàng.`);
+  }
+
+  // Nếu bạn muốn gửi thống kê lên server, có thể dùng axios.post tại đây.
+};
+
   const pieceUnicode = {
     p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
     P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔',
