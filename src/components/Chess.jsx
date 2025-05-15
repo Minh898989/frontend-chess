@@ -82,24 +82,30 @@ const GameScreen = () => {
     setStatus('🏳️ You resigned');
   };
 
-  return (
-    <div className="chess-container">
-      <h2>♟️ Online Chess - Room {roomCode}</h2>
-      <div className="chess-info">
-        <p><strong>You:</strong> {playerColor.toUpperCase()}</p>
-        <p><strong>Status:</strong> {status}</p>
-      </div>
+ return (
+  <div className="chess-wrapper">
+    <h2 className="room-title">♟️ Online Chess - Room {roomCode}</h2>
+    <div className="chess-status">
+      <span><strong>You:</strong> {playerColor.toUpperCase()}</span>
+      <span><strong>Status:</strong> {status}</span>
+    </div>
+    <div className="board-container">
       <Chessboard
         position={fen}
         onPieceDrop={onDrop}
         boardOrientation={playerColor}
         arePiecesDraggable={game.turn() === playerColor[0] && !game.game_over()}
+        boardWidth={Math.min(window.innerWidth * 0.9, 500)} 
+        customDarkSquareStyle={{ backgroundColor: '#334155' }}
+        customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
       />
-      <button className="resign-button" onClick={handleResign}>
-        🏳️ Resign
-      </button>
     </div>
-  );
+    <button className="resign-button" onClick={handleResign}>
+      🏳️ Resign
+    </button>
+  </div>
+);
+
 };
 
 export default GameScreen;

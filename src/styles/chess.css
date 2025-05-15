@@ -1,27 +1,53 @@
-.chess-container {
+.chess-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 24px;
+  background: #0f172a; /* dark slate background */
+  min-height: 100vh;
+  color: #f1f5f9;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.chess-info {
-  margin-bottom: 10px;
-  text-align: center;
+.room-title {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: #facc15;
+  text-shadow: 1px 1px 2px black;
+}
+
+.chess-status {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  background: #1e293b;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.board-container {
+  margin: 0 auto 20px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 4px solid #64748b;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  background: #1e293b;
 }
 
 .resign-button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: #f44336;
+  background-color: #ef4444;
   color: white;
+  font-weight: bold;
+  padding: 10px 24px;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 16px;
+  transition: background 0.3s;
 }
 
 .resign-button:hover {
-  background-color: #d32f2f;
+  background-color: #dc2626;
 }
