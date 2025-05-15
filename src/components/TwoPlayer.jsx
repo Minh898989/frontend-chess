@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-
 import "../styles/TwoPlayer.css";
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 const socket = io(API_BASE, { transports: ['websocket'] });
-
-// Giao diện chơi cờ đơn giản
-const ChessBoard = ({ roomCode }) => {
-  return (
-    <div className="chess-board">
-      <h2>♟️ Playing Room: {roomCode}</h2>
-      <p>Giao diện bàn cờ sẽ hiển thị ở đây...</p>
-    </div>
-  );
-};
 
 const RoomManager = () => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -24,23 +13,28 @@ const RoomManager = () => {
   const [roomCode, setRoomCode] = useState('');
   const [room, setRoom] = useState(null);
   const [message, setMessage] = useState('');
-  const [inGame, setInGame] = useState(false);
 
   useEffect(() => {
     socket.on('roomUpdated', (updatedRoom) => {
       setRoom(updatedRoom);
       setMessage(`🔁 Room updated: ${updatedRoom.status}`);
-
-      // Khi cả 2 người vào phòng → chuyển sang giao diện chơi cờ
-      if (updatedRoom.status === 'playing') {
-        setInGame(true);
-      }
     });
 
     return () => {
       socket.off('roomUpdated');
     };
   }, []);
+
+  // Hàm để join room qua socket, đảm bảo socket đã connect
+  const joinRoomSocket = (code) => {
+    if (socket.connected) {
+      socket.emit('joinRoom', String(code));
+    } else {
+      socket.on('connect', () => {
+        socket.emit('joinRoom', String(code));
+      });
+    }
+  };
 
   const createRoom = async () => {
     try {
@@ -52,7 +46,8 @@ const RoomManager = () => {
       setRoom(createdRoom);
       setRoomCode(createdRoom.room_code);
       setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
-      socket.emit('joinRoom', String(createdRoom.room_code));
+
+      joinRoomSocket(createdRoom.room_code); // Host join room socket khi tạo phòng
     } catch (err) {
       console.error(err);
       setMessage('❌ Failed to create room');
@@ -74,18 +69,14 @@ const RoomManager = () => {
       const joinedRoom = res.data.room;
       setRoom(joinedRoom);
       setMessage(`✅ Joined room ${roomCode}`);
-      socket.emit('joinRoom', String(roomCode));
+
+      joinRoomSocket(roomCode); // Guest join room socket khi tham gia
     } catch (err) {
       console.error(err);
       const errMsg = err?.response?.data?.error || '❌ Failed to join room';
       setMessage(errMsg);
     }
   };
-
-  // Nếu đã vào game thì hiển thị ChessBoard
-  if (inGame && room) {
-    return <ChessBoard roomCode={room.room_code} />;
-  }
 
   return (
     <div className="room-manager">
