@@ -28,14 +28,15 @@ const GameScreen = () => {
       }
     });
 
-    socket.on('move', (move) => {
-      setGame((prevGame) => {
-        const newGame = new Chess(prevGame.fen());
-        newGame.move(move);
-        setFen(newGame.fen());
-        return newGame;
-      });
-    });
+    socket.on('move', ({ move }) => {
+    setGame((prevGame) => {
+    const newGame = new Chess(prevGame.fen());
+    newGame.move(move);
+    setFen(newGame.fen());
+    return newGame;
+  });
+});
+
 
     socket.on('opponentResigned', (user) => {
       setStatus(`🏆 Opponent (${user}) resigned. You win!`);
@@ -47,27 +48,33 @@ const GameScreen = () => {
   }, [roomCode]);
 
   const onDrop = (sourceSquare, targetSquare) => {
-    const newGame = new Chess(game.fen());
+  const newGame = new Chess(game.fen());
 
-    const move = {
-      from: sourceSquare,
-      to: targetSquare,
-      promotion: 'q',
-    };
+  // Không cho đi nếu không phải lượt của người chơi
+  if (newGame.turn() !== playerColor[0]) return false;
 
-    const result = newGame.move(move);
-
-    if (result) {
-      setGame(newGame);
-      setFen(newGame.fen());
-
-      socketRef.current.emit('move', { roomCode, move });
-
-      if (newGame.game_over()) {
-        setStatus('🏁 Game over');
-      }
-    }
+  const move = {
+    from: sourceSquare,
+    to: targetSquare,
+    promotion: 'q',
   };
+
+  const result = newGame.move(move);
+
+  if (result) {
+    setGame(newGame);
+    setFen(newGame.fen());
+
+    socketRef.current.emit('move', { roomCode, move });
+
+    if (newGame.game_over()) {
+      setStatus('🏁 Game over');
+    }
+    return true;
+  }
+
+  return false;
+};
 
   const handleResign = () => {
     socketRef.current.emit('resign', {
@@ -86,14 +93,15 @@ const GameScreen = () => {
       </div>
       <div className="board-container">
         <Chessboard
-          position={fen}
-          onPieceDrop={onDrop}
-          boardOrientation={playerColor}
-          arePiecesDraggable={game.turn() === playerColor[0] && !game.game_over()}
-          boardWidth={Math.min(window.innerWidth * 0.9, 500)}
-          customDarkSquareStyle={{ backgroundColor: '#334155' }}
-          customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
-        />
+  position={fen}
+  onPieceDrop={onDrop}
+  boardOrientation={playerColor}
+  arePiecesDraggable={game.turn() === playerColor[0] && !game.game_over()}
+  boardWidth={Math.min(window.innerWidth * 0.9, 500)}
+  customDarkSquareStyle={{ backgroundColor: '#334155' }}
+  customLightSquareStyle={{ backgroundColor: '#e2e8f0' }}
+/>
+
       </div>
       <button className="resign-button" onClick={handleResign}>
         🏳️ Resign
