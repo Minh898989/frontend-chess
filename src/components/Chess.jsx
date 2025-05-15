@@ -24,9 +24,12 @@ const GameScreen = () => {
 
     // Nhận thông báo bắt đầu game
     socket.on('startGame', ({ color }) => {
-      setPlayerColor(color);
-      setStatus('🎮 Game started');
-    });
+  if (color) {
+    setPlayerColor(color);
+    setStatus('🎮 Game started');
+  }
+});
+
 
 
     // Nhận nước đi từ đối thủ
