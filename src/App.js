@@ -42,7 +42,7 @@ function App() {
     <TwoPlayer />
   </PrivateRoute>
 } />
-<Route path="/chess/:room_code" element={
+<Route path="/chess/:roomCode" element={
   <PrivateRoute>
     <Chess />
   </PrivateRoute>
