@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Chess  from 'chess.js';
+import {Chess}  from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
