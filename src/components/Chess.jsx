@@ -3,6 +3,7 @@ import Chess from 'chess.js'; // v0.12.0
 import { Chessboard } from 'react-chessboard';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
+import axios from 'axios';
 import '../styles/chess.css';
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
@@ -15,12 +16,26 @@ const GameScreen = () => {
   const [fen, setFen] = useState('start');
   const [playerColor, setPlayerColor] = useState(null);
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
+  const [room, setRoom] = useState(null); 
+  
 
   // Cập nhật ref game
   useEffect(() => {
     gameRef.current = game;
   }, [game]);
+  
+  useEffect(() => {
+    const fetchRoomInfo = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/rooms/${roomCode}`);
+        setRoom(res.data.room);
+      } catch (err) {
+        console.error('Error fetching room:', err);
+      }
+    };
 
+    fetchRoomInfo();
+  }, [roomCode]);
   // Kết nối socket
   useEffect(() => {
     const socket = io(API_BASE, { transports: ['websocket'] });
@@ -106,7 +121,18 @@ const GameScreen = () => {
     <div className="chess-wrapper">
       <h2 className="room-title">♟️ Online Chess - Room {roomCode}</h2>
       <div className="chess-status">
-        <span><strong>You:</strong> {playerColor ? playerColor.toUpperCase() : '—'}</span>
+        {room && (
+        <div className="players-info">
+          <div className="player-box host">
+            <span className="label">👑 Host:</span>
+            <span className="username">{room.host_userid}</span>
+          </div>
+          <div className="player-box guest">
+            <span className="label">🧑‍💼 Guest:</span>
+            <span className="username">{room.guest_userid || '🕓 Waiting...'}</span>
+          </div>
+        </div>
+      )}
         <span><strong>Status:</strong> {status}</span>
       </div>
       <div className="board-container">
@@ -119,9 +145,9 @@ const GameScreen = () => {
           customDarkSquareStyle={{ backgroundColor: '#b58863' }}
           customLightSquareStyle={{ backgroundColor: '#f0d9b5' }}
           boardStyle={{
-    borderRadius: '10px',
-    boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)'
-  }}
+            borderRadius: '10px',
+            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)'
+          }}
 
         />
       </div>
