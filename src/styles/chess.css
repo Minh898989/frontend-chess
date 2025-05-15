@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   padding: 24px;
-  background: #0f172a; /* dark slate background */
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364); /* dark slate background */
   min-height: 100vh;
   color: #f1f5f9;
   font-family: 'Segoe UI', sans-serif;
