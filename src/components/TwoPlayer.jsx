@@ -31,6 +31,7 @@ const RoomManager = () => {
 
   // Hàm để join room qua socket, đảm bảo socket đã connect
   const joinRoomSocket = (code) => {
+    console.log(`🔌 Joining socket room: ${code}`);
   socket.emit('joinRoom', String(code));
 };
 
@@ -41,13 +42,13 @@ const RoomManager = () => {
       const res = await axios.post(`${API_BASE}/api/rooms/create`, {
         host_userid: userid,
       });
+const createdRoom = res.data.room;
+joinRoomSocket(createdRoom.room_code); // ← GỌI TRƯỚC
 
-      const createdRoom = res.data.room;
-      setRoom(createdRoom);
-      setRoomCode(createdRoom.room_code);
-      setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
-
-      joinRoomSocket(createdRoom.room_code); // Host join room socket khi tạo phòng
+setRoom(createdRoom);
+setRoomCode(createdRoom.room_code);
+setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
+// Host join room socket khi tạo phòng
     } catch (err) {
       console.error(err);
       setMessage('❌ Failed to create room');
