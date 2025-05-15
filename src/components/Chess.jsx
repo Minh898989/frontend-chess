@@ -203,7 +203,7 @@ const GameScreen = () => {
         <Chessboard
           position={fen}
           onPieceDrop={onDrop}
-          boardOrientation={playerColor || 'white'}
+          boardOrientation={playerColor === 'white' ? 'white' : 'black'}
           arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
         />
