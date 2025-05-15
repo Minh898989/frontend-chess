@@ -118,7 +118,7 @@ const GameScreen = () => {
       setFen(game.fen());
 
       if (socketRef.current) {
-        socketRef.current.emit('move', { roomCode, move });
+        socketRef.current.emit('move', { roomCode, move,fen: game.fen() });
       }
 
       if (game.game_over()) setStatus('🏁 Game over');
