@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import "../styles/TwoPlayer.css";
+import { useNavigate } from 'react-router-dom';
+import "../styles/Room.css";
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 const socket = io(API_BASE, { transports: ['websocket'] });
@@ -9,10 +10,13 @@ const socket = io(API_BASE, { transports: ['websocket'] });
 const RoomManager = () => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const userid = storedUser?.userid || '';
-
+ 
   const [roomCode, setRoomCode] = useState('');
   const [room, setRoom] = useState(null);
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+
+  
 
   useEffect(() => {
   // Host hoặc Guest đều lắng nghe khi phòng được cập nhật
@@ -20,12 +24,18 @@ const RoomManager = () => {
     console.log('🔄 Room updated via socket:', updatedRoom);
     setRoom(updatedRoom); // cập nhật lại UI
   });
+  socket.on('startGame', (roomData) => {
+      console.log('🎮 Game started! Navigating to game page...');
+      navigate(`/game/${roomData.room_code}`);
+    });
+    
 
   // Cleanup để tránh lắng nghe trùng lặp
   return () => {
     socket.off('roomUpdated');
+    socket.off('startGame');
   };
-}, []);
+}, [navigate]);
 
 
 
@@ -78,7 +88,7 @@ setMessage(`✅ Room created. Share code: ${createdRoom.room_code}`);
       setMessage(errMsg);
     }
   };
-
+  
   return (
     <div className="room-manager">
       <h2>♟️ Room Manager</h2>
