@@ -67,9 +67,15 @@ const GameScreen = () => {
     });
 
     socket.on('opponentResigned', (user) => {
-  const username = typeof user === 'object' ? user.userid : user;
+  console.log('Opponent resigned payload:', user);
+  
+  const username = typeof user === 'object'
+    ? (user.userid || user.username || JSON.stringify(user) || 'Unknown')
+    : user;
+
   setStatus(`🏆 Opponent (${username}) resigned. You win!`);
 });
+
 
 
     return () => {
