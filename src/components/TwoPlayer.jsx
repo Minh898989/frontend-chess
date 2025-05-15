@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import "../styles/TwoPlayer.css";
 
-const API_BASE = 'https://backend-chess-fjr7.onrender.com';
-const socket = io(API_BASE);
+const socket = io('http://localhost:5000'); // đổi nếu deploy backend
 
-const RoomManager = () => {
-  const storedUser = JSON.parse(localStorage.getItem('user'));
-  const userid = storedUser?.userid || '';
-
+function App() {
+  const [hostUserId, setHostUserId] = useState('');
+  const [guestUserId, setGuestUserId] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [room, setRoom] = useState(null);
-  const [message, setMessage] = useState('');
+  const [roomData, setRoomData] = useState(null);
+  const [log, setLog] = useState([]);
 
   useEffect(() => {
-    // Lắng nghe khi trạng thái phòng được cập nhật từ server
     socket.on('roomUpdated', (updatedRoom) => {
-      setRoom(updatedRoom);
+      setLog((prev) => [...prev, `📢 Room updated: ${JSON.stringify(updatedRoom)}`]);
+      setRoomData(updatedRoom);
     });
 
     return () => {
@@ -27,64 +24,80 @@ const RoomManager = () => {
 
   const createRoom = async () => {
     try {
-      const res = await axios.post(`${API_BASE}/api/rooms/create`, {
-        host_userid: userid,
+      const res = await axios.post('http://localhost:5000/api/rooms/create', {
+        host_userid: hostUserId,
       });
-      setRoom(res.data.room);
-      setRoomCode(res.data.room.room_code);
-      setMessage(`Room created. Share code: ${res.data.room.room_code}`);
-      socket.emit('joinRoom', String(res.data.room.room_code)); // Host join room
+      const room = res.data.room;
+      setRoomCode(room.room_code);
+      setRoomData(room);
+      socket.emit('joinRoom', room.room_code);
+      setLog((prev) => [...prev, `✅ Room created: ${room.room_code}`]);
     } catch (err) {
       console.error(err);
-      setMessage('Failed to create room');
+      setLog((prev) => [...prev, `❌ Create error: ${err.message}`]);
     }
   };
 
   const joinRoom = async () => {
     try {
-      const res = await axios.post(`${API_BASE}/api/rooms/join`, {
-        room_code: parseInt(roomCode),
-        guest_userid: userid,
+      const res = await axios.post('http://localhost:5000/api/rooms/join', {
+        guest_userid: guestUserId,
+        room_code: roomCode,
       });
-      setRoom(res.data.room);
-      setMessage(`Joined room ${roomCode}`);
-      socket.emit('joinRoom', String(roomCode)); // Guest join room
+      const room = res.data.room;
+      setRoomData(room);
+      socket.emit('joinRoom', roomCode);
+      setLog((prev) => [...prev, `👤 Joined room: ${roomCode}`]);
     } catch (err) {
       console.error(err);
-      setMessage('Failed to join room');
+      setLog((prev) => [...prev, `❌ Join error: ${err.response?.data?.error || err.message}`]);
     }
   };
 
   return (
-    <div className="room-manager">
-      <h2>Room Manager</h2>
-      <div className="userid">Your ID: <strong>{userid}</strong></div>
+    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
+      <h1>🎮 Test Tạo/Tham Gia Phòng</h1>
 
-      <div className="controls">
-        <button onClick={createRoom}>Create Room</button>
-
+      <div>
+        <h3>Tạo phòng</h3>
         <input
-          type="text"
-          placeholder="Enter room code"
+          placeholder="Host User ID"
+          value={hostUserId}
+          onChange={(e) => setHostUserId(e.target.value)}
+        />
+        <button onClick={createRoom}>Tạo phòng</button>
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        <h3>Tham gia phòng</h3>
+        <input
+          placeholder="Guest User ID"
+          value={guestUserId}
+          onChange={(e) => setGuestUserId(e.target.value)}
+        />
+        <input
+          placeholder="Room Code"
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value)}
         />
-        <button onClick={joinRoom}>Join Room</button>
+        <button onClick={joinRoom}>Tham gia</button>
       </div>
 
-      {message && <div className="message">{message}</div>}
+      <div style={{ marginTop: 20 }}>
+        <h3>Thông tin phòng:</h3>
+        <pre>{JSON.stringify(roomData, null, 2)}</pre>
+      </div>
 
-      {room && (
-        <div className="room-info">
-          <p><strong>Room ID:</strong> {room.id}</p>
-          <p><strong>Room Code:</strong> {room.room_code}</p>
-          <p><strong>Host:</strong> {room.host_userid}</p>
-          <p><strong>Guest:</strong> {room.guest_userid || 'Waiting...'}</p>
-          <p><strong>Status:</strong> {room.status}</p>
-        </div>
-      )}
+      <div style={{ marginTop: 20 }}>
+        <h3>Log:</h3>
+        <ul>
+          {log.map((entry, idx) => (
+            <li key={idx}>{entry}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
-};
+}
 
-export default RoomManager;
+export default App;
