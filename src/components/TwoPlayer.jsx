@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import "../styles/Twoplayer.css";
+import "../styles/TwoPlayer.css";
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
 const socket = io(API_BASE);
