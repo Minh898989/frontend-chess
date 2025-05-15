@@ -1,4 +1,4 @@
-/* Overlay nền mờ */
+
 .room-modal-overlay {
   position: fixed;
   top: 0;
@@ -24,12 +24,12 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Giao diện chính */
+
 .room-manager-modal {
   padding: 40px 24px;
   font-family: 'Segoe UI', sans-serif;
   color: #333;
-  background: linear-gradient(to bottom right, #f7faff, #e3f2fd);
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
   min-height: 100vh;
   text-align: center;
 }
