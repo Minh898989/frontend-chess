@@ -17,6 +17,8 @@ const GameScreen = () => {
   const [playerColor, setPlayerColor] = useState(null);
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
   const [room, setRoom] = useState(null); 
+  const [capturedWhite, setCapturedWhite] = useState([]);
+  const [capturedBlack, setCapturedBlack] = useState([]);
   
 
   // Cập nhật ref game
@@ -58,6 +60,7 @@ const GameScreen = () => {
     socket.on('move', ({ move, fen }) => {
       console.log('📥 Received move from opponent:', move);
       const newGame = new Chess(fen);
+      updateCapturedPieces(gameRef.current, newGame)
       setGame(newGame);
       gameRef.current = newGame;
       setFen(fen);
@@ -71,6 +74,35 @@ const GameScreen = () => {
       socket.disconnect();
     };
   }, [roomCode]);
+  const updateCapturedPieces = (prevGame, newGame) => {
+  const prevPieces = prevGame.board().flat().filter(Boolean);
+  const newPieces = newGame.board().flat().filter(Boolean);
+
+  const prevCount = {};
+  const newCount = {};
+
+  for (const p of prevPieces) {
+    const key = p.color + p.type;
+    prevCount[key] = (prevCount[key] || 0) + 1;
+  }
+  for (const p of newPieces) {
+    const key = p.color + p.type;
+    newCount[key] = (newCount[key] || 0) + 1;
+  }
+
+  for (const key in prevCount) {
+    const diff = (prevCount[key] || 0) - (newCount[key] || 0);
+    if (diff > 0) {
+      const color = key[0];
+      const type = key[1];
+      for (let i = 0; i < diff; i++) {
+        if (color === 'w') setCapturedWhite(prev => [...prev, type]);
+        else setCapturedBlack(prev => [...prev, type]);
+      }
+    }
+  }
+};
+
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (!playerColor) return false;
@@ -90,6 +122,7 @@ const GameScreen = () => {
     const result = newGame.move(move);
 
     if (result) {
+      updateCapturedPieces(game, newGame)
       setGame(newGame);
       setFen(newGame.fen());
 
@@ -116,6 +149,22 @@ const GameScreen = () => {
     }
     setStatus('🏳️ You resigned');
   };
+  const pieceUnicode = {
+    p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
+    P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔',
+  };
+
+  const renderCaptured = (captured, color) => {
+    return (
+      <div className="captured-pieces">
+        {captured.map((type, index) => (
+          <span key={index} className={`captured-piece ${color}`}>
+            {pieceUnicode[color === 'white' ? type.toUpperCase() : type.toLowerCase()]}
+          </span>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="game-container">
@@ -125,11 +174,11 @@ const GameScreen = () => {
     <div className="player-panel">
       <div className="player-card host">
         <span>👑 <strong>{room.host_userid}</strong></span>
-        
+        {renderCaptured(playerColor === 'white' ? capturedBlack : capturedWhite, 'white')}
       </div>
       <div className="player-card guest">
         <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-        
+        {renderCaptured(playerColor === 'white' ? capturedWhite : capturedBlack, 'black')}
       </div>
     </div>
   )}

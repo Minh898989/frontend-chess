@@ -114,3 +114,20 @@ body {
     font-size: 1.1rem;
   }
 }
+.captured-pieces {
+  margin-top: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 18px;
+}
+
+.captured-piece.white {
+  color: #fff;
+  text-shadow: 1px 1px #000;
+}
+
+.captured-piece.black {
+  color: #000;
+}
+
