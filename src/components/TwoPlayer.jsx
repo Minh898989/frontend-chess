@@ -15,27 +15,17 @@ const RoomManager = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-  socket.on('roomUpdated', (updatedRoom) => {
-    console.log('[roomUpdated] Received by client:', updatedRoom);
-    setRoom(updatedRoom);
-    setMessage(`🔁 Room updated: ${updatedRoom.status}`);
-  });
+  if (room?.room_code) {
+    socket.emit('joinRoom', String(room.room_code));
+  }
+}, [room?.room_code]);
 
-  return () => {
-    socket.off('roomUpdated');
-  };
-}, []);
 
   // Hàm để join room qua socket, đảm bảo socket đã connect
   const joinRoomSocket = (code) => {
-  if (socket.connected) {
-    socket.emit('joinRoom', String(code));
-  } else {
-    socket.once('connect', () => {  // ✅ dùng once để không chồng nhiều listener
-      socket.emit('joinRoom', String(code));
-    });
-  }
+  socket.emit('joinRoom', String(code));
 };
+
 
 
   const createRoom = async () => {
