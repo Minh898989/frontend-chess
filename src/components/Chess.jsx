@@ -21,11 +21,14 @@ const GameScreen = () => {
   const [capturedBlack, setCapturedBlack] = useState([]);
   const startTimeRef = useRef(null);
 
-  useEffect(() => {
-    axios.get(`${API_BASE}/api/rooms/${roomCode}`)
-      .then(res => setRoom(res.data.room))
-      .catch(console.error);
-  }, [roomCode]);
+ useEffect(() => {
+  axios.get(`${API_BASE}/api/rooms/${roomCode}`)
+    .then(res => {
+      console.log("📦 Room from backend:", res.data.room);
+      setRoom(res.data.room);
+    })
+    .catch(console.error);
+}, [roomCode]);
 
   useEffect(() => {
     const socket = io(API_BASE, { transports: ['websocket'] });
@@ -45,10 +48,7 @@ const GameScreen = () => {
       setCapturedWhite([]);
       setCapturedBlack([]);
 
-      setRoom({
-        host_userid: color === 'white' ? yourUserId : opponentUserId,
-        guest_userid: color === 'white' ? opponentUserId : yourUserId,
-      });
+      
     });
 
     socket.on('roomFull', () => {
@@ -141,16 +141,17 @@ const GameScreen = () => {
 
   const loserId = myUserId;
   const winnerId = playerColor === 'white'
-    ? room.guest_userid
-    : room.host_userid;
+    ? room.guest_userid  // bạn là trắng => đen thắng
+    : room.host_userid;  // bạn là đen => trắng thắng
 
   const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
   const winnerCaptured = winnerId === room.host_userid ? capturedWhite.length : capturedBlack.length;
   const loserCaptured = loserId === room.host_userid ? capturedWhite.length : capturedBlack.length;
 
-  console.log('🎯 RESIGN');
-  console.log('You (loser):', loserId);
-  console.log('Opponent (winner):', winnerId);
+  console.log('🎯 RESIGN DEBUG');
+  console.log('playerColor:', playerColor);
+  console.log('myUserId (loser):', loserId);
+  console.log('winnerId:', winnerId);
 
   socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
 
