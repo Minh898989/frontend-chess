@@ -36,6 +36,14 @@
     border-radius: 12px;
     transition: background-color 0.3s ease;
   }
+  .auth-box label {
+  display: block;        /* Hiển thị label thành block chiếm nguyên dòng */
+  text-align: left;      /* Căn chữ trong label sang trái */
+  margin-bottom: 6px;    /* Khoảng cách dưới label */
+  font-weight: 600;      /* In đậm chữ */
+  color: #333;           /* Màu chữ dễ nhìn */
+}
+
   
   .tab-buttons button.active {
     background-color: #ff6b6b; /* giống nút ở trang home */
