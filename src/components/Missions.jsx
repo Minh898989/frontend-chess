@@ -3,7 +3,8 @@ import axios from "axios";
 import "../styles/Missions.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import confetti from "canvas-confetti"; // Thêm dòng này ở đầu file
+import confetti from "canvas-confetti";
+import { ArrowLeftOutlined,CheckCircleTwoTone, CloseCircleTwoTone , GiftTwoTone, ClockCircleTwoTone } from "@ant-design/icons"; // Thêm dòng này ở đầu file
 
 
 const Mission = () => {
@@ -94,7 +95,7 @@ const Mission = () => {
   return (
     <div className="missions-screen">
       <button className="back-button" onClick={() => window.history.back()}>
-        ⬅ Back
+         <ArrowLeftOutlined /> Back
       </button>
 
       <h2>Nhiệm vụ của bạn</h2>
@@ -122,7 +123,15 @@ const Mission = () => {
                     : "status-incomplete"
                 }
               >
-                {mission.isCompleted ? "✅ Hoàn thành" : "❌ Chưa hoàn thành"}
+                {mission.isCompleted ? (
+  <>
+    <CheckCircleTwoTone twoToneColor="#52c41a" /> Hoàn thành
+  </>
+) : (
+  <>
+    <CloseCircleTwoTone twoToneColor="#ff4d4f" /> Chưa hoàn thành
+  </>
+)}
               </span>
             </p>
             <p>
@@ -134,7 +143,15 @@ const Mission = () => {
                     : "status-unclaimed"
                 }
               >
-                {mission.isClaimedToday ? "🎁 Đã nhận" : "🕐 Chưa nhận"}
+                {mission.isClaimedToday ? (
+  <>
+    <GiftTwoTone twoToneColor="#faad14" /> Đã nhận
+  </>
+) : (
+  <>
+    <ClockCircleTwoTone twoToneColor="#1890ff" /> Chưa nhận
+  </>
+)}
               </span>
             </p>
             <button
