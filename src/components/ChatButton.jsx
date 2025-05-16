@@ -8,7 +8,8 @@ const ChatButton = ({ hasNewMessage, isChatOpen, onClick }) => {
     <FloatButton.Group shape="circle" style={{ right: 24, bottom: 24, zIndex: 1000 }}>
       <Badge dot={hasNewMessage}>
         <FloatButton
-          icon={<MessageOutlined />}
+        
+          icon={<MessageOutlined style={{ fontSize: '22px' }} />}
           type={isChatOpen ? "primary" : "default"}
           onClick={onClick}
           tooltip="Open Chat"
