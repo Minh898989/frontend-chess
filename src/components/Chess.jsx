@@ -80,47 +80,36 @@ const GameScreen = () => {
     return () => {
       socket.disconnect();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode]);
 
   const updateCapturedPieces = (prevGame, newGame) => {
-  const prevPieces = prevGame.board().flat().filter(Boolean);
-  const newPieces = newGame.board().flat().filter(Boolean);
+    const prevPieces = prevGame.board().flat().filter(Boolean);
+    const newPieces = newGame.board().flat().filter(Boolean);
 
-  const prevCount = {};
-  const newCount = {};
+    const prevCount = {};
+    const newCount = {};
 
-  for (const p of prevPieces) {
-    const key = p.color + p.type;
-    prevCount[key] = (prevCount[key] || 0) + 1;
-  }
+    for (const p of prevPieces) {
+      const key = p.color + p.type;
+      prevCount[key] = (prevCount[key] || 0) + 1;
+    }
+    for (const p of newPieces) {
+      const key = p.color + p.type;
+      newCount[key] = (newCount[key] || 0) + 1;
+    }
 
-  for (const p of newPieces) {
-    const key = p.color + p.type;
-    newCount[key] = (newCount[key] || 0) + 1;
-  }
-
-  for (const key in prevCount) {
-    const diff = (prevCount[key] || 0) - (newCount[key] || 0);
-    if (diff > 0) {
-      const color = key[0]; // 'w' hoặc 'b'
-      const type = key[1];
-      for (let i = 0; i < diff; i++) {
-        // Nếu color khác với người chơi thì ta ăn quân đó
-        if (color === (playerColor === 'white' ? 'b' : 'w')) {
-          // Ta ăn quân đối thủ
-          setCapturedWhite(prev => playerColor === 'white' ? [...prev, type] : prev);
-          setCapturedBlack(prev => playerColor === 'black' ? [...prev, type] : prev);
-        } else {
-          // Đối thủ ăn quân ta
-          setCapturedWhite(prev => playerColor === 'black' ? [...prev, type] : prev);
-          setCapturedBlack(prev => playerColor === 'white' ? [...prev, type] : prev);
+    for (const key in prevCount) {
+      const diff = (prevCount[key] || 0) - (newCount[key] || 0);
+      if (diff > 0) {
+        const color = key[0];
+        const type = key[1];
+        for (let i = 0; i < diff; i++) {
+          if (color === 'w') setCapturedWhite(prev => [...prev, type]);
+          else setCapturedBlack(prev => [...prev, type]);
         }
       }
     }
-  }
-};
-
+  };
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (!playerColor) return false;
@@ -196,7 +185,6 @@ const renderCaptured = (captured, perspective) => (
   </div>
 );
 
-
   return (
     <div className="game-container">
       <h2>♟️ Online Chess - Room {roomCode}</h2>
@@ -206,20 +194,18 @@ const renderCaptured = (captured, perspective) => (
           <div className="player-card host">
             <span>👑 <strong>{room.host_userid}</strong></span>
             {renderCaptured(
-      room.host_userid === myUserId
-        ? (playerColor === 'white' ? capturedBlack : capturedWhite)
-        : (playerColor === 'white' ? capturedWhite : capturedBlack),
-      room.host_userid === myUserId ? 'opponent' : 'me'
-    )}
+  room.host_userid === myUserId ? 
+    (playerColor === 'white' ? capturedBlack : capturedWhite) : 
+    (playerColor === 'white' ? capturedWhite : capturedBlack)
+)}
           </div>
           <div className="player-card guest">
             <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-            {renderCaptured(
-      room.guest_userid === myUserId
-        ? (playerColor === 'white' ? capturedBlack : capturedWhite)
-        : (playerColor === 'white' ? capturedWhite : capturedBlack),
-      room.guest_userid === myUserId ? 'opponent' : 'me'
-    )}
+           {renderCaptured(
+  room.host_userid === myUserId ? 
+    (playerColor === 'white' ? capturedBlack : capturedWhite) : 
+    (playerColor === 'white' ? capturedWhite : capturedBlack)
+)}
           </div>
         </div>
       )}
@@ -230,7 +216,7 @@ const renderCaptured = (captured, perspective) => (
         <Chessboard
           position={fen}
           onPieceDrop={onDrop}
-          boardOrientation={room && myUserId === room.host_userid ? 'white' : 'black'}
+          boardOrientation={playerColor === 'white' ? 'white' : 'black'}
           arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
         />
@@ -242,3 +228,4 @@ const renderCaptured = (captured, perspective) => (
 };
 
 export default GameScreen;
+
