@@ -9,7 +9,7 @@ const ChatButton = ({ hasNewMessage, isChatOpen, onClick }) => {
       <Badge dot={hasNewMessage}>
         <FloatButton
         
-          icon={<MessageOutlined style={{ fontSize: '33px' }} />}
+          icon={<MessageOutlined style={{ fontSize: '26px' }} />}
           type={isChatOpen ? "primary" : "default"}
           onClick={onClick}
           tooltip="Open Chat"
