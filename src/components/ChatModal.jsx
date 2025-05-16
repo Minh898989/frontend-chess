@@ -2,7 +2,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import "../styles/chatmodal.css";
 
-const ChatModal = ({ socket, roomCode, isOpen, onClose, myUserId }) => {
+const ChatModal = ({
+  socket,
+  roomCode,
+  isOpen,
+  onClose,
+  myUserId,
+  setHasNewMessage,
+  isChatOpen
+}) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
@@ -12,11 +20,31 @@ const ChatModal = ({ socket, roomCode, isOpen, onClose, myUserId }) => {
 
     const handleMessage = (msg) => {
       setMessages((prev) => [...prev, msg]);
+      if (msg.user !== myUserId && !isChatOpen) {
+        setHasNewMessage(true);
+      }
+    };
+
+    const handleUnread = ({ from, roomCode: incomingRoom }) => {
+      if (incomingRoom === roomCode && from !== myUserId && !isChatOpen) {
+        setHasNewMessage(true);
+      }
     };
 
     socket.on('chatMessage', handleMessage);
-    return () => socket.off('chatMessage', handleMessage);
-  }, [socket]);
+    socket.on('unreadMessage', handleUnread);
+
+    return () => {
+      socket.off('chatMessage', handleMessage);
+      socket.off('unreadMessage', handleUnread);
+    };
+  }, [socket, isChatOpen, myUserId, roomCode, setHasNewMessage]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setHasNewMessage(false);
+    }
+  }, [isOpen, setHasNewMessage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

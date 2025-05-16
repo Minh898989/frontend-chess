@@ -4,8 +4,9 @@ import { Chessboard } from 'react-chessboard';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
-import ChatModal from './Chat';
+import ChatModal from './ChatModal';
 import ChatButton from './ChatButton';
+
 import "../styles/chess.css";
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
@@ -22,27 +23,11 @@ const GameScreen = () => {
   const [capturedWhite, setCapturedWhite] = useState([]);
   const [capturedBlack, setCapturedBlack] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  
-  const [unreadMessage, setUnreadMessage] = useState(false);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
+
   const startTimeRef = useRef(null);
   
-  useEffect(() => {
-  const socket = socketRef.current;
-
-  if (!socket) return;
-
-  socket.on('unreadMessage', ({ from }) => {
-    if (!isChatOpen) {
-      console.log('🔔 Tin nhắn mới từ:', from);
-      setUnreadMessage(true);
-    }
-  });
-
-  return () => {
-    socket.off('unreadMessage');
-  };
-}, [isChatOpen]);
- 
+  
 
 
   useEffect(() => {
@@ -246,25 +231,21 @@ const GameScreen = () => {
       )}
 
       <div className="status-bar">{status}</div>
-      
-      
-      <ChatButton
-  hasNewMessage={unreadMessage} // dùng biến đúng
-  isChatOpen={isChatOpen}
-  onClick={() => {
-    setIsChatOpen((prev) => !prev);
-    setUnreadMessage(false); // đánh dấu là đã đọc khi mở
-  }}
-/>
-<ChatModal
+      <ChatModal
   socket={socketRef.current}
   roomCode={roomCode}
   isOpen={isChatOpen}
   onClose={() => setIsChatOpen(false)}
   myUserId={myUserId}
+  setHasNewMessage={setHasNewMessage}
+  isChatOpen={isChatOpen}
 />
 
-
+<ChatButton
+  hasNewMessage={hasNewMessage}
+  isChatOpen={isChatOpen}
+  onClick={() => setIsChatOpen(true)}
+/>
 
       <div className="board-section">
         <Chessboard
