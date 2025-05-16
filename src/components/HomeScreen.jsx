@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import {UserOutlined,LogoutOutlined,ArrowLeftOutlined,TrophyOutlined,FileTextOutlined,BookOutlined,TeamOutlined,RobotOutlined,SmileTwoTone,MehTwoTone,FrownTwoTone,} from "@ant-design/icons";
+import {UserOutlined,LogoutOutlined,} from "@ant-design/icons";
 
 import "../styles/HomeScreen.css";
 
@@ -151,7 +151,7 @@ function HomeScreen() {
 
       </div>
 
-      <h1><TrophyOutlined style={{ marginRight: "8px" }} /> Game Cờ Vua</h1>
+      <h1>♟️ Game Cờ Vua</h1>
 
 
       {/* Mode selection */}
@@ -160,19 +160,10 @@ function HomeScreen() {
       {mode === "select" && (
         <div className="mode-selection">
           <h2>Chọn chế độ chơi:</h2>
-          <button onClick={() => handleModeSelection("2players")}>
-  <TeamOutlined style={{ marginRight: "6px" }} />
-  Chơi 2 người
-</button>
-<button onClick={goToAIDifficulty}>
-  <RobotOutlined style={{ marginRight: "6px" }} />
-  Chơi với máy
-</button>
+          <button onClick={() => handleModeSelection("2players")}>👥 Chơi 2 người</button>
+          <button onClick={goToAIDifficulty}>🤖 Chơi với máy</button>
+          <button onClick={resetMode}>⬅️ Quay lại</button>
 
-          <button onClick={resetMode}>
-  <ArrowLeftOutlined style={{ marginRight: "6px" }} />
-  Quay lại
-</button>
 
         </div>
       )}
@@ -180,23 +171,11 @@ function HomeScreen() {
       {mode === "ai" && (
         <div className="mode-selection">
           <h2>🤖 Chọn độ khó:</h2>
-          <button onClick={() => handleModeSelection("easy")}>
-  <SmileTwoTone twoToneColor="#52c41a" style={{ marginRight: "6px" }} />
-  Dễ
-</button>
-<button onClick={() => handleModeSelection("medium")}>
-  <MehTwoTone twoToneColor="#faad14" style={{ marginRight: "6px" }} />
-  Trung bình
-</button>
-<button onClick={() => handleModeSelection("hard")}>
-  <FrownTwoTone twoToneColor="#f5222d" style={{ marginRight: "6px" }} />
-  Khó
-</button>
+          <button onClick={() => handleModeSelection("easy")}>🟢 Dễ</button>
+          <button onClick={() => handleModeSelection("medium")}>🟡 Trung bình</button>
+          <button onClick={() => handleModeSelection("hard")}>🔴 Khó</button>
+          <button onClick={resetMode}>⬅️ Quay lại</button>
 
-          <button onClick={goToPlay}>
-  <ArrowLeftOutlined style={{ marginRight: "6px" }} />
-  Quay lại
-</button>
 
         </div>
       )}
@@ -205,22 +184,13 @@ function HomeScreen() {
       {!mode && (
         <>
           <div className="extra-buttons">
-           <button onClick={goToQuests}>
-  <FileTextOutlined style={{ marginRight: "6px" }} />
-  Nhiệm vụ & phần thưởng
-</button>
+           <button onClick={goToQuests}>📝 Nhiệm vụ & phần thưởng</button>
           </div>
           <div className="extra-buttons">
-            <button onClick={goToGuide}>
-  <BookOutlined style={{ marginRight: "6px" }} />
-  Hướng dẫn chơi
-</button>
+            <button onClick={goToGuide}>📖 Hướng dẫn chơi</button>
           </div>
           <div className="extra-buttons">
-<button onClick={openLeaderboardModal}>
-  <TrophyOutlined style={{ marginRight: "6px" }} />
-  Bảng xếp hạng
-</button>
+            <button onClick={openLeaderboardModal}>🏆 Bảng xếp hạng</button>
           </div>
         </>
       )}
