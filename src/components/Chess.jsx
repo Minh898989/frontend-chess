@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
 import ChatModal from './Chat';
+import ChatButton from './ChatButton';
 import "../styles/chess.css";
 
 const API_BASE = 'https://backend-chess-fjr7.onrender.com';
@@ -21,7 +22,24 @@ const GameScreen = () => {
   const [capturedWhite, setCapturedWhite] = useState([]);
   const [capturedBlack, setCapturedBlack] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
   const startTimeRef = useRef(null);
+  
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    const handleMessage = (msg) => {
+      if (!isChatOpen) {
+        setHasNewMessage(true);
+      }
+    };
+
+    socketRef.current.on('chatMessage', handleMessage);
+
+    return () => {
+      socketRef.current.off('chatMessage', handleMessage);
+    };
+  }, [isChatOpen]);
 
   useEffect(() => {
     axios.get(`${API_BASE}/api/rooms/${roomCode}`)
@@ -229,14 +247,22 @@ const GameScreen = () => {
       )}
 
       <div className="status-bar">{status}</div>
-      <button className="btn-chat" onClick={() => setIsChatOpen(true)}>💬 Chat</button>
+      
+      <ChatButton
+        hasNewMessage={hasNewMessage}
+        isChatOpen={isChatOpen}
+        onClick={() => {
+          setIsChatOpen((prev) => !prev);
+          setHasNewMessage(false);
+        }}
+      />
       <ChatModal
-  socket={socketRef.current}
-  roomCode={roomCode}
-  isOpen={isChatOpen}
-  onClose={() => setIsChatOpen(false)}
-  myUserId={myUserId}
-/>
+        socket={socketRef.current}
+        roomCode={roomCode}
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        myUserId={myUserId}
+      />
 
       <div className="board-section">
         <Chessboard
