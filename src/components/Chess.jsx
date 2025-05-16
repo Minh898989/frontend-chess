@@ -137,37 +137,37 @@ const GameScreen = () => {
   };
 
   const handleResign = async () => {
-    if (!room || !myUserId) return;
+  if (!room || !myUserId) return;
 
-    const loserId = myUserId;
+  const loserId = myUserId;
   const winnerId = (room.host_userid === myUserId) ? room.guest_userid : room.host_userid;
 
-    if (!winnerId || !loserId) {
-      setStatus('❌ Cannot determine winner.');
-      return;
-    }
+  if (!winnerId || !loserId) {
+    setStatus('❌ Cannot determine winner.');
+    return;
+  }
 
-    const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
-    const winnerCaptured = winnerId === hostId ? capturedWhite.length : capturedBlack.length;
-    const loserCaptured = loserId === hostId ? capturedWhite.length : capturedBlack.length;
+  const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
+  const winnerCaptured = winnerId === room.host_userid ? capturedWhite.length : capturedBlack.length;
+  const loserCaptured = loserId === room.host_userid ? capturedWhite.length : capturedBlack.length;
 
-    socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
+  socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
 
-    try {
-      await axios.post(`${API_BASE}/api/resign`, {
-        winnerId,
-        loserId,
-        winnerCaptured,
-        loserCaptured,
-        startTime: new Date(startTimeRef.current).toISOString(),
-        durationMinutes,
-      });
-      setStatus(`🏳️ Bạn đã đầu hàng. ${winnerId} thắng cuộc.`);
-    } catch (err) {
-      console.error(err);
-      setStatus('❌ Gửi thống kê thất bại.');
-    }
-  };
+  try {
+    await axios.post(`${API_BASE}/api/resign`, {
+      winnerId,
+      loserId,
+      winnerCaptured,
+      loserCaptured,
+      startTime: new Date(startTimeRef.current).toISOString(),
+      durationMinutes,
+    });
+    setStatus(`🏳️ Bạn đã đầu hàng. ${winnerId} thắng cuộc.`);
+  } catch (err) {
+    console.error(err);
+    setStatus('❌ Gửi thống kê thất bại.');
+  }
+};
 
   const pieceUnicode = {
   p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
