@@ -1,4 +1,4 @@
-import React from "react";
+import React ,{ useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
@@ -10,6 +10,13 @@ import TwoPlayer from './components/Room';
 import Chess from './components/Chess';
 
 function App() {
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand(); // làm cho app full screen
+    }
+  }, []);
   return (
     <Router>
       <div className="app">
