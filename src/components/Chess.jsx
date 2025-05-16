@@ -14,6 +14,7 @@ const GameScreen = () => {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState('start');
   const [playerColor, setPlayerColor] = useState(null);
+  const [myUserId, setMyUserId] = useState(null); // ← Thêm
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
   const [room, setRoom] = useState(null);
   const [capturedWhite, setCapturedWhite] = useState([]);
@@ -31,10 +32,11 @@ const GameScreen = () => {
     socketRef.current = socket;
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    socket.emit('joinRoom', roomCode, user.userid); // Gửi userid lên server
+    socket.emit('joinRoom', roomCode, user.userid); // Gửi userid
 
     socket.on('startGame', ({ color, yourUserId, opponentUserId }) => {
       setPlayerColor(color);
+      setMyUserId(yourUserId); // ← Lưu lại mình là ai
       setStatus('🎮 Game started');
       startTimeRef.current = Date.now();
       gameRef.current.reset();
@@ -42,12 +44,11 @@ const GameScreen = () => {
       setCapturedWhite([]);
       setCapturedBlack([]);
 
-      // Cập nhật lại room hiển thị đúng tên user theo màu
-      const updatedRoom = {
+      // Cập nhật tên host/guest theo đúng vai trò
+      setRoom({
         host_userid: color === 'white' ? yourUserId : opponentUserId,
         guest_userid: color === 'white' ? opponentUserId : yourUserId,
-      };
-      setRoom(updatedRoom);
+      });
     });
 
     socket.on('roomFull', () => {
@@ -136,15 +137,12 @@ const GameScreen = () => {
   };
 
   const handleResign = async () => {
-    if (!room) return;
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const currentUserid = user.userid;
-    if (!currentUserid) return;
+    if (!room || !myUserId) return;
 
     const hostId = room.host_userid;
     const guestId = room.guest_userid;
-    let winnerId = currentUserid === hostId ? guestId : hostId;
-    let loserId = currentUserid;
+    let winnerId = myUserId === hostId ? guestId : hostId;
+    let loserId = myUserId;
 
     if (!winnerId || !loserId) {
       setStatus('❌ Cannot determine winner.');
@@ -196,11 +194,11 @@ const GameScreen = () => {
         <div className="player-panel">
           <div className="player-card host">
             <span>👑 <strong>{room.host_userid}</strong></span>
-            {renderCaptured(playerColor === 'white' ? capturedBlack : capturedWhite, 'white')}
+            {renderCaptured(myUserId === room.host_userid ? capturedBlack : capturedWhite, 'white')}
           </div>
           <div className="player-card guest">
             <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-            {renderCaptured(playerColor === 'white' ? capturedWhite : capturedBlack, 'black')}
+            {renderCaptured(myUserId === room.host_userid ? capturedWhite : capturedBlack, 'black')}
           </div>
         </div>
       )}
