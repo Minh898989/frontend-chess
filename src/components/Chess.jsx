@@ -193,19 +193,19 @@ const renderCaptured = (captured, perspective) => (
         <div className="player-panel">
           <div className="player-card host">
             <span>👑 <strong>{room.host_userid}</strong></span>
-            {renderCaptured(
-  room.host_userid === myUserId ? 
-    (playerColor === 'white' ? capturedBlack : capturedWhite) : 
-    (playerColor === 'white' ? capturedWhite : capturedBlack)
-)}
+            {renderCaptured(room.host_userid === room.guest_userid
+        ? []  // tránh lỗi khi chưa có guest
+        : room.host_userid === myUserId
+          ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+          : (playerColor === 'white' ? capturedWhite : capturedBlack)
+      )}
           </div>
           <div className="player-card guest">
             <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-           {renderCaptured(
-  room.host_userid === myUserId ? 
-    (playerColor === 'white' ? capturedBlack : capturedWhite) : 
-    (playerColor === 'white' ? capturedWhite : capturedBlack)
-)}
+           {renderCaptured(room.guest_userid === myUserId
+        ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+        : (playerColor === 'white' ? capturedWhite : capturedBlack)
+      )}
           </div>
         </div>
       )}
