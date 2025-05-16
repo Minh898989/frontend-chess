@@ -80,36 +80,47 @@ const GameScreen = () => {
     return () => {
       socket.disconnect();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode]);
 
   const updateCapturedPieces = (prevGame, newGame) => {
-    const prevPieces = prevGame.board().flat().filter(Boolean);
-    const newPieces = newGame.board().flat().filter(Boolean);
+  const prevPieces = prevGame.board().flat().filter(Boolean);
+  const newPieces = newGame.board().flat().filter(Boolean);
 
-    const prevCount = {};
-    const newCount = {};
+  const prevCount = {};
+  const newCount = {};
 
-    for (const p of prevPieces) {
-      const key = p.color + p.type;
-      prevCount[key] = (prevCount[key] || 0) + 1;
-    }
-    for (const p of newPieces) {
-      const key = p.color + p.type;
-      newCount[key] = (newCount[key] || 0) + 1;
-    }
+  for (const p of prevPieces) {
+    const key = p.color + p.type;
+    prevCount[key] = (prevCount[key] || 0) + 1;
+  }
 
-    for (const key in prevCount) {
-      const diff = (prevCount[key] || 0) - (newCount[key] || 0);
-      if (diff > 0) {
-        const color = key[0];
-        const type = key[1];
-        for (let i = 0; i < diff; i++) {
-          if (color === 'w') setCapturedWhite(prev => [...prev, type]);
-          else setCapturedBlack(prev => [...prev, type]);
+  for (const p of newPieces) {
+    const key = p.color + p.type;
+    newCount[key] = (newCount[key] || 0) + 1;
+  }
+
+  for (const key in prevCount) {
+    const diff = (prevCount[key] || 0) - (newCount[key] || 0);
+    if (diff > 0) {
+      const color = key[0]; // 'w' hoặc 'b'
+      const type = key[1];
+      for (let i = 0; i < diff; i++) {
+        // Nếu color khác với người chơi thì ta ăn quân đó
+        if (color === (playerColor === 'white' ? 'b' : 'w')) {
+          // Ta ăn quân đối thủ
+          setCapturedWhite(prev => playerColor === 'white' ? [...prev, type] : prev);
+          setCapturedBlack(prev => playerColor === 'black' ? [...prev, type] : prev);
+        } else {
+          // Đối thủ ăn quân ta
+          setCapturedWhite(prev => playerColor === 'black' ? [...prev, type] : prev);
+          setCapturedBlack(prev => playerColor === 'white' ? [...prev, type] : prev);
         }
       }
     }
-  };
+  }
+};
+
 
   const onDrop = (sourceSquare, targetSquare) => {
     if (!playerColor) return false;
