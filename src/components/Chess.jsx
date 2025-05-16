@@ -137,19 +137,20 @@ const GameScreen = () => {
   };
 
   const handleResign = async () => {
-  if (!room || !myUserId) return;
+  if (!room || !myUserId || !playerColor) return;
 
   const loserId = myUserId;
-  const winnerId = (room.host_userid === myUserId) ? room.guest_userid : room.host_userid;
-
-  if (!winnerId || !loserId) {
-    setStatus('❌ Cannot determine winner.');
-    return;
-  }
+  const winnerId = playerColor === 'white'
+    ? room.guest_userid
+    : room.host_userid;
 
   const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
   const winnerCaptured = winnerId === room.host_userid ? capturedWhite.length : capturedBlack.length;
   const loserCaptured = loserId === room.host_userid ? capturedWhite.length : capturedBlack.length;
+
+  console.log('🎯 RESIGN');
+  console.log('You (loser):', loserId);
+  console.log('Opponent (winner):', winnerId);
 
   socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
 
@@ -168,6 +169,7 @@ const GameScreen = () => {
     setStatus('❌ Gửi thống kê thất bại.');
   }
 };
+
 
   const pieceUnicode = {
   p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
