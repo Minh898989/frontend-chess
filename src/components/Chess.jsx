@@ -21,14 +21,14 @@ const GameScreen = () => {
   const [capturedBlack, setCapturedBlack] = useState([]);
   const startTimeRef = useRef(null);
 
- useEffect(() => {
-  axios.get(`${API_BASE}/api/rooms/${roomCode}`)
-    .then(res => {
-      console.log("📦 Room from backend:", res.data.room);
-      setRoom(res.data.room);
-    })
-    .catch(console.error);
-}, [roomCode]);
+  useEffect(() => {
+    axios.get(`${API_BASE}/api/rooms/${roomCode}`)
+      .then(res => {
+        console.log("📦 Room from backend:", res.data.room);
+        setRoom(res.data.room);
+      })
+      .catch(console.error);
+  }, [roomCode]);
 
   useEffect(() => {
     const socket = io(API_BASE, { transports: ['websocket'] });
@@ -47,8 +47,6 @@ const GameScreen = () => {
       setFen(gameRef.current.fen());
       setCapturedWhite([]);
       setCapturedBlack([]);
-
-      
     });
 
     socket.on('roomFull', () => {
@@ -137,55 +135,71 @@ const GameScreen = () => {
   };
 
   const handleResign = async () => {
-  if (!room || !myUserId || !playerColor) return;
+    if (!room || !myUserId || !playerColor) return;
 
-  const loserId = myUserId;
-  const winnerId = playerColor === 'white'
-    ? room.guest_userid  // bạn là trắng => đen thắng
-    : room.host_userid;  // bạn là đen => trắng thắng
+    const loserId = myUserId;
+    const winnerId = playerColor === 'white'
+      ? room.guest_userid  // bạn là trắng => đen thắng
+      : room.host_userid;  // bạn là đen => trắng thắng
 
-  const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
-  const winnerCaptured = winnerId === room.host_userid ? capturedWhite.length : capturedBlack.length;
-  const loserCaptured = loserId === room.host_userid ? capturedWhite.length : capturedBlack.length;
+    const durationMinutes = Math.round((Date.now() - startTimeRef.current) / 60000);
 
-  console.log('🎯 RESIGN DEBUG');
-  console.log('playerColor:', playerColor);
-  console.log('myUserId (loser):', loserId);
-  console.log('winnerId:', winnerId);
+    const getUserColor = (userid) => {
+      if (!room) return null;
+      if (userid === room.host_userid) {
+        return myUserId === room.host_userid ? playerColor : (playerColor === 'white' ? 'black' : 'white');
+      }
+      if (userid === room.guest_userid) {
+        return myUserId === room.guest_userid ? playerColor : (playerColor === 'white' ? 'black' : 'white');
+      }
+      return null;
+    };
 
-  socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
+    const winnerColor = getUserColor(winnerId);
+    const loserColor = getUserColor(loserId);
 
-  try {
-    await axios.post(`${API_BASE}/api/resign`, {
-      winnerId,
-      loserId,
-      winnerCaptured,
-      loserCaptured,
-      startTime: new Date(startTimeRef.current).toISOString(),
-      durationMinutes,
-    });
-    setStatus(`🏳️ Bạn đã đầu hàng. ${winnerId} thắng cuộc.`);
-  } catch (err) {
-    console.error(err);
-    setStatus('❌ Gửi thống kê thất bại.');
-  }
-};
+    const winnerCaptured = winnerColor === 'white' ? capturedBlack.length : capturedWhite.length;
+    const loserCaptured = loserColor === 'white' ? capturedBlack.length : capturedWhite.length;
 
+    console.log('🎯 RESIGN DEBUG');
+    console.log('playerColor:', playerColor);
+    console.log('myUserId (loser):', loserId);
+    console.log('winnerId:', winnerId);
+    console.log('winnerCaptured:', winnerCaptured);
+    console.log('loserCaptured:', loserCaptured);
+
+    socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
+
+    try {
+      await axios.post(`${API_BASE}/api/resign`, {
+        winnerId,
+        loserId,
+        winnerCaptured,
+        loserCaptured,
+        startTime: new Date(startTimeRef.current).toISOString(),
+        durationMinutes,
+      });
+      setStatus(`🏳️ Bạn đã đầu hàng. ${winnerId} thắng cuộc.`);
+    } catch (err) {
+      console.error(err);
+      setStatus('❌ Gửi thống kê thất bại.');
+    }
+  };
 
   const pieceUnicode = {
-  p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
-  P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔',
-};
+    p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
+    P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔',
+  };
 
-const renderCaptured = (captured, perspective) => (
-  <div className="captured-pieces">
-    {captured.map((type, idx) => (
-      <span key={idx} className={`captured-piece`}>
-        {pieceUnicode[type === type.toLowerCase() ? type : type.toLowerCase()]}
-      </span>
-    ))}
-  </div>
-);
+  const renderCaptured = (captured, perspective) => (
+    <div className="captured-pieces">
+      {captured.map((type, idx) => (
+        <span key={idx} className={`captured-piece`}>
+          {pieceUnicode[type === type.toLowerCase() ? type : type.toLowerCase()]}
+        </span>
+      ))}
+    </div>
+  );
 
   return (
     <div className="game-container">
@@ -196,18 +210,18 @@ const renderCaptured = (captured, perspective) => (
           <div className="player-card host">
             <span>👑 <strong>{room.host_userid}</strong></span>
             {renderCaptured(room.host_userid === room.guest_userid
-        ? []  // tránh lỗi khi chưa có guest
-        : room.host_userid === myUserId
-          ? (playerColor === 'white' ? capturedBlack : capturedWhite)
-          : (playerColor === 'white' ? capturedWhite : capturedBlack)
-      )}
+              ? []  // tránh lỗi khi chưa có guest
+              : room.host_userid === myUserId
+                ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+                : (playerColor === 'white' ? capturedWhite : capturedBlack)
+            )}
           </div>
           <div className="player-card guest">
             <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-           {renderCaptured(room.guest_userid === myUserId
-        ? (playerColor === 'white' ? capturedBlack : capturedWhite)
-        : (playerColor === 'white' ? capturedWhite : capturedBlack)
-      )}
+            {renderCaptured(room.guest_userid === myUserId
+              ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+              : (playerColor === 'white' ? capturedWhite : capturedBlack)
+            )}
           </div>
         </div>
       )}
@@ -230,4 +244,3 @@ const renderCaptured = (captured, perspective) => (
 };
 
 export default GameScreen;
-
