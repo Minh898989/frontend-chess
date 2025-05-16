@@ -32,6 +32,7 @@ const GameScreen = () => {
     socketRef.current = socket;
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    console.log("Joining room with user:", user);
     socket.emit('joinRoom', roomCode, user.userid);
 
     socket.on('startGame', ({ color, yourUserId, opponentUserId }) => {
