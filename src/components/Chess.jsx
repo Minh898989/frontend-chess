@@ -22,24 +22,28 @@ const GameScreen = () => {
   const [capturedWhite, setCapturedWhite] = useState([]);
   const [capturedBlack, setCapturedBlack] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [hasNewMessage, setHasNewMessage] = useState(false);
+  
+  const [unreadMessage, setUnreadMessage] = useState(false);
   const startTimeRef = useRef(null);
   
   useEffect(() => {
-    if (!socketRef.current) return;
+  const socket = socketRef.current;
 
-    const handleMessage = (msg) => {
-      if (!isChatOpen) {
-        setHasNewMessage(true);
-      }
-    };
+  if (!socket) return;
 
-    socketRef.current.on('chatMessage', handleMessage);
+  socket.on('unreadMessage', ({ from }) => {
+    if (!isChatOpen) {
+      console.log('🔔 Tin nhắn mới từ:', from);
+      setUnreadMessage(true);
+    }
+  });
 
-    return () => {
-      socketRef.current.off('chatMessage', handleMessage);
-    };
-  }, [isChatOpen]);
+  return () => {
+    socket.off('unreadMessage');
+  };
+}, [isChatOpen]);
+ 
+
 
   useEffect(() => {
     axios.get(`${API_BASE}/api/rooms/${roomCode}`)
@@ -181,12 +185,7 @@ const GameScreen = () => {
     const winnerCaptured = winnerColor === 'white' ? capturedBlack.length : capturedWhite.length;
     const loserCaptured = loserColor === 'white' ? capturedBlack.length : capturedWhite.length;
 
-    console.log('🎯 RESIGN DEBUG');
-    console.log('playerColor:', playerColor);
-    console.log('myUserId (loser):', loserId);
-    console.log('winnerId:', winnerId);
-    console.log('winnerCaptured:', winnerCaptured);
-    console.log('loserCaptured:', loserCaptured);
+   
 
     socketRef.current.emit('resign', { winner: winnerId, loser: loserId });
 
@@ -248,21 +247,24 @@ const GameScreen = () => {
 
       <div className="status-bar">{status}</div>
       
+      
       <ChatButton
-        hasNewMessage={hasNewMessage}
-        isChatOpen={isChatOpen}
-        onClick={() => {
-          setIsChatOpen((prev) => !prev);
-          setHasNewMessage(false);
-        }}
-      />
-      <ChatModal
-        socket={socketRef.current}
-        roomCode={roomCode}
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        myUserId={myUserId}
-      />
+  hasNewMessage={unreadMessage} // dùng biến đúng
+  isChatOpen={isChatOpen}
+  onClick={() => {
+    setIsChatOpen((prev) => !prev);
+    setUnreadMessage(false); // đánh dấu là đã đọc khi mở
+  }}
+/>
+<ChatModal
+  socket={socketRef.current}
+  roomCode={roomCode}
+  isOpen={isChatOpen}
+  onClose={() => setIsChatOpen(false)}
+  myUserId={myUserId}
+/>
+
+
 
       <div className="board-section">
         <Chessboard
