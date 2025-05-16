@@ -30,9 +30,10 @@ const GameScreen = () => {
     const socket = io(API_BASE, { transports: ['websocket'] });
     socketRef.current = socket;
 
-    socket.emit('joinRoom', roomCode);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    socket.emit('joinRoom', roomCode, user.userid); // Gửi userid lên server
 
-    socket.on('startGame', ({ color }) => {
+    socket.on('startGame', ({ color, yourUserId, opponentUserId }) => {
       setPlayerColor(color);
       setStatus('🎮 Game started');
       startTimeRef.current = Date.now();
@@ -40,6 +41,13 @@ const GameScreen = () => {
       setFen(gameRef.current.fen());
       setCapturedWhite([]);
       setCapturedBlack([]);
+
+      // Cập nhật lại room hiển thị đúng tên user theo màu
+      const updatedRoom = {
+        host_userid: color === 'white' ? yourUserId : opponentUserId,
+        guest_userid: color === 'white' ? opponentUserId : yourUserId,
+      };
+      setRoom(updatedRoom);
     });
 
     socket.on('roomFull', () => {
@@ -118,7 +126,7 @@ const GameScreen = () => {
       setFen(game.fen());
 
       if (socketRef.current) {
-        socketRef.current.emit('move', { roomCode, move,fen: game.fen() });
+        socketRef.current.emit('move', { roomCode, move, fen: game.fen() });
       }
 
       if (game.game_over()) setStatus('🏁 Game over');
