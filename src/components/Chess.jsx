@@ -171,19 +171,20 @@ const GameScreen = () => {
   };
 
   const pieceUnicode = {
-    p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
-    P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔',
-  };
+  p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
+  P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔',
+};
 
-  const renderCaptured = (captured, color) => (
-    <div className="captured-pieces">
-      {captured.map((type, idx) => (
-        <span key={idx} className={`captured-piece ${color}`}>
-          {pieceUnicode[color === 'white' ? type.toUpperCase() : type.toLowerCase()]}
-        </span>
-      ))}
-    </div>
-  );
+const renderCaptured = (captured, perspective) => (
+  <div className="captured-pieces">
+    {captured.map((type, idx) => (
+      <span key={idx} className={`captured-piece`}>
+        {pieceUnicode[type === type.toLowerCase() ? type : type.toLowerCase()]}
+      </span>
+    ))}
+  </div>
+);
+
 
   return (
     <div className="game-container">
@@ -193,17 +194,21 @@ const GameScreen = () => {
         <div className="player-panel">
           <div className="player-card host">
             <span>👑 <strong>{room.host_userid}</strong></span>
-            {renderCaptured(room.host_userid === myUserId
-      ? (playerColor === 'white' ? capturedBlack : capturedWhite)
-      : (playerColor === 'white' ? capturedWhite : capturedBlack),
-      playerColor === 'white' ? 'white' : 'black')}
+            {renderCaptured(
+      room.host_userid === myUserId
+        ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+        : (playerColor === 'white' ? capturedWhite : capturedBlack),
+      room.host_userid === myUserId ? 'opponent' : 'me'
+    )}
           </div>
           <div className="player-card guest">
             <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-            {renderCaptured(room.guest_userid === myUserId
-      ? (playerColor === 'white' ? capturedBlack : capturedWhite)
-      : (playerColor === 'white' ? capturedWhite : capturedBlack),
-      playerColor === 'white' ? 'white' : 'black')}
+            {renderCaptured(
+      room.guest_userid === myUserId
+        ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+        : (playerColor === 'white' ? capturedWhite : capturedBlack),
+      room.guest_userid === myUserId ? 'opponent' : 'me'
+    )}
           </div>
         </div>
       )}
