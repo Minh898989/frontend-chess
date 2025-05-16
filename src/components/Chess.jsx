@@ -14,7 +14,7 @@ const GameScreen = () => {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState('start');
   const [playerColor, setPlayerColor] = useState(null);
-  const [myUserId, setMyUserId] = useState(null); // ← Thêm
+  const [myUserId, setMyUserId] = useState(null);
   const [status, setStatus] = useState('⏳ Waiting for opponent...');
   const [room, setRoom] = useState(null);
   const [capturedWhite, setCapturedWhite] = useState([]);
@@ -32,11 +32,11 @@ const GameScreen = () => {
     socketRef.current = socket;
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    socket.emit('joinRoom', roomCode, user.userid); // Gửi userid
+    socket.emit('joinRoom', roomCode, user.userid);
 
     socket.on('startGame', ({ color, yourUserId, opponentUserId }) => {
       setPlayerColor(color);
-      setMyUserId(yourUserId); // ← Lưu lại mình là ai
+      setMyUserId(yourUserId);
       setStatus('🎮 Game started');
       startTimeRef.current = Date.now();
       gameRef.current.reset();
@@ -44,7 +44,6 @@ const GameScreen = () => {
       setCapturedWhite([]);
       setCapturedBlack([]);
 
-      // Cập nhật tên host/guest theo đúng vai trò
       setRoom({
         host_userid: color === 'white' ? yourUserId : opponentUserId,
         guest_userid: color === 'white' ? opponentUserId : yourUserId,
@@ -209,7 +208,7 @@ const GameScreen = () => {
         <Chessboard
           position={fen}
           onPieceDrop={onDrop}
-          boardOrientation={playerColor === 'white' ? 'white' : 'black'}
+          boardOrientation={room && myUserId === room.host_userid ? 'white' : 'black'}
           arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
         />
