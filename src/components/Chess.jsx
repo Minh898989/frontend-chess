@@ -139,10 +139,8 @@ const GameScreen = () => {
   const handleResign = async () => {
     if (!room || !myUserId) return;
 
-    const hostId = room.host_userid;
-    const guestId = room.guest_userid;
-    let winnerId = myUserId === hostId ? guestId : hostId;
-    let loserId = myUserId;
+    const loserId = myUserId;
+  const winnerId = (room.host_userid === myUserId) ? room.guest_userid : room.host_userid;
 
     if (!winnerId || !loserId) {
       setStatus('❌ Cannot determine winner.');
