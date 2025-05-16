@@ -193,11 +193,17 @@ const GameScreen = () => {
         <div className="player-panel">
           <div className="player-card host">
             <span>👑 <strong>{room.host_userid}</strong></span>
-            {renderCaptured(playerColor === 'white' ? capturedBlack : capturedWhite, 'white')}
+            {renderCaptured(room.host_userid === myUserId
+      ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+      : (playerColor === 'white' ? capturedWhite : capturedBlack),
+      playerColor === 'white' ? 'white' : 'black')}
           </div>
           <div className="player-card guest">
             <span>🧑‍💼 <strong>{room.guest_userid || 'Waiting...'}</strong></span>
-            {renderCaptured(playerColor === 'white' ? capturedWhite : capturedBlack, 'black')}
+            {renderCaptured(room.guest_userid === myUserId
+      ? (playerColor === 'white' ? capturedBlack : capturedWhite)
+      : (playerColor === 'white' ? capturedWhite : capturedBlack),
+      playerColor === 'white' ? 'white' : 'black')}
           </div>
         </div>
       )}
