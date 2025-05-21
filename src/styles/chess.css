@@ -133,7 +133,7 @@ body {
 }
 
 .toggle-theme-btn:hover {
-  background: #dcb20d;
+  background: #251a50;
 }
 
 /* ==== Responsive ==== */
@@ -161,7 +161,7 @@ body {
 /* ==== Dark Mode Support ==== */
 /* ==== DARK MODE ==== */
 body.dark-mode {
-  background: linear-gradient(to right, #1e1e2f, #2a2a3b, #3a3a4d);
+  background: linear-gradient(to right, #4f4fa7, #2a2a3b, #3a3a4d);
   color: #e4e4e7;
 }
 
