@@ -88,6 +88,16 @@ function Friends() {
       setError("Không thể xử lý lời mời.");
     }
   };
+  const getBadge = (days) => {
+  if (days >= 30) return "👑 Vua bạn bè";
+  if (days >= 21) return "💎 Kim cương";
+  if (days >= 14) return "🔥 Lửa cháy";
+  if (days >= 7) return "🏆 Vàng";
+  if (days >= 3) return "🥈 Bạc";
+  if (days >= 1) return "🥉 Đồng";
+  return "⏳ Mới kết bạn";
+};
+
 
   return (
     <div className="friends-page">
@@ -120,8 +130,10 @@ function Friends() {
           <ul>
             {friends.map((friend) => (
               <li key={friend.userid}>
-                {friend.userid} - {friend.days_friends} ngày làm bạn
+                {friend.userid} - {friend.days_friends} ngày làm bạn{" "}
+                <span className="badge">{getBadge(friend.days_friends)}</span>
               </li>
+              
             ))}
           </ul>
         ) : (

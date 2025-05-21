@@ -218,7 +218,7 @@ const GameScreen = () => {
   className="toggle-theme-btn"
   onClick={() => setIsDarkMode(prev => !prev)}
 >
-  {isDarkMode ? '🌞 Sáng' : '🌙 Tối'}
+  {isDarkMode ? '🌞 ' : '🌙 '}
 </button>
 
 
