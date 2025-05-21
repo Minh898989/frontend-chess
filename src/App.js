@@ -8,6 +8,7 @@ import AuthForm from './components/AuthForm';
 import PrivateRoute from './components/PrivateRoute';
 import TwoPlayer from './components/Room';
 import Chess from './components/Chess';
+import Friends from "./components/Friends";
 
 function App() {
   useEffect(() => {
@@ -52,6 +53,11 @@ function App() {
 <Route path="/chess/:roomCode" element={
   <PrivateRoute>
     <Chess />
+  </PrivateRoute>
+} />
+<Route path="/friends" element={
+  <PrivateRoute>
+    <Friends />
   </PrivateRoute>
 } />
           

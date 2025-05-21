@@ -26,15 +26,7 @@ function HomeScreen() {
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [errorLeaderboard, setErrorLeaderboard] = useState("");
   // Friend search modal states
-  const [showFriendModal, setShowFriendModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState("");
-  const [friendSuccessMsg, setFriendSuccessMsg] = useState("");
-  const [receivedRequests, setReceivedRequests] = useState([]);
-  const [showReceivedModal, setShowReceivedModal] = useState(false);
-  const [respondMsg, setRespondMsg] = useState("");
+  
 
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode");
@@ -51,61 +43,6 @@ function HomeScreen() {
     navigate(`/game/${selectedMode}`);
   }
 };
-const handleFriendSearch = () => {
-  setSearchLoading(true);
-  setSearchError("");
-  setFriendSuccessMsg("");
-
-  axios
-    .get(`${API_BASE}/friends/search?userid=${searchQuery}`)
-    .then((res) => {
-      const results = res.data.filter((u) => u.userid !== user.userid); // tránh tìm chính mình
-      setSearchResults(results);
-      setSearchLoading(false);
-    })
-    .catch((err) => {
-      setSearchError("Không thể tìm người dùng.");
-      setSearchLoading(false);
-    });
-};
-
-const sendFriendRequest = (receiverId) => {
-  axios
-    .post(`${API_BASE}/friends/send`, {
-      senderId: user.id,
-      receiverId,
-    })
-    .then(() => {
-      setFriendSuccessMsg("✅ Đã gửi lời mời kết bạn.");
-    })
-    .catch((err) => {
-      setFriendSuccessMsg("❌ Gửi lời mời thất bại hoặc đã tồn tại.");
-    });
-};
-const openReceivedRequestsModal = () => {
-  setShowReceivedModal(true);
-  axios
-    .get(`${API_BASE}/friends/received/${user.userid}`)
-    .then((res) => {
-      setReceivedRequests(res.data);
-    })
-    .catch(() => {
-      setReceivedRequests([]);
-    });
-};
-
-const respondToRequest = (requestId, status) => {
-  axios
-    .post(`${API_BASE}/friends/respond`, { requestId, status })
-    .then(() => {
-      setRespondMsg(`✅ Đã ${status === "accepted" ? "chấp nhận" : "từ chối"} lời mời.`);
-      setReceivedRequests((prev) => prev.filter((req) => req.id !== requestId));
-    })
-    .catch(() => {
-      setRespondMsg("❌ Xử lý thất bại.");
-    });
-};
-
 
 
   const handleAvatarChange = (event) => {
@@ -256,11 +193,10 @@ const respondToRequest = (requestId, status) => {
             <button onClick={openLeaderboardModal}>🏆 Bảng xếp hạng</button>
           </div>
           <div className="extra-buttons">
-            <button onClick={() => setShowFriendModal(true)}>🔍 Tìm bạn</button>
-          </div>
-          <div className="extra-buttons">
-            <button onClick={openReceivedRequestsModal}>📨 Lời mời đến</button>
-          </div>
+  <button onClick={() => navigate("/friends")}>👥 Quản lý bạn bè</button>
+</div>
+
+          
 
           
         </>
@@ -336,70 +272,7 @@ const respondToRequest = (requestId, status) => {
           </div>
         </div>
       )}
-      {showFriendModal && (
-  <div className="modal-overlay" onClick={() => setShowFriendModal(false)}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <h2>🔍 Tìm bạn</h2>
-      <input
-        type="text"
-        placeholder="Nhập userid..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{ width: "100%", padding: "6px", marginBottom: "10px" }}
-      />
-      <button onClick={handleFriendSearch}>Tìm</button>
-
-      {searchLoading ? (
-        <p>Đang tìm kiếm...</p>
-      ) : searchError ? (
-        <p style={{ color: "red" }}>{searchError}</p>
-      ) : (
-        <ul>
-          {searchResults.map((result) => (
-            <li key={result.id} style={{ margin: "10px 0" }}>
-              👤 {result.userid}
-              <button
-                onClick={() => sendFriendRequest(result.id)}
-                style={{ marginLeft: "10px" }}
-              >
-                ➕ Kết bạn
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {friendSuccessMsg && <p>{friendSuccessMsg}</p>}
-      <button onClick={() => setShowFriendModal(false)}>Đóng</button>
-    </div>
-  </div>
-)}
-{showReceivedModal && (
-  <div className="modal-overlay" onClick={() => setShowReceivedModal(false)}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <h2>📨 Lời mời kết bạn đến</h2>
-      {receivedRequests.length === 0 ? (
-        <p>Không có lời mời nào.</p>
-      ) : (
-        <ul>
-          {receivedRequests.map((req) => (
-            <li key={req.id} style={{ margin: "10px 0" }}>
-              👤 {req.sender_userid}
-              <button onClick={() => respondToRequest(req.id, "accepted")} style={{ marginLeft: "10px" }}>
-                ✅ Chấp nhận
-              </button>
-              <button onClick={() => respondToRequest(req.id, "rejected")} style={{ marginLeft: "5px" }}>
-                ❌ Từ chối
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {respondMsg && <p>{respondMsg}</p>}
-      <button onClick={() => setShowReceivedModal(false)}>Đóng</button>
-    </div>
-  </div>
-)}
+     
 
 
     </div>
