@@ -130,4 +130,65 @@ body {
 .captured-piece.black {
   color: #000;
 }
+/* Theme toggle button */
+.toggle-theme-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f3c623;
+  border: none;
+  border-radius: 50%;
+  padding: 0.5rem 0.7rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease;
+}
+.toggle-theme-btn:hover {
+  background: #dcb20d;
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background: linear-gradient(to right, #000000, #1a1a1a, #2c2c2c);
+  color: #e0e0e0;
+}
+
+body.dark-mode .player-card {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .player-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .label {
+  color: #ffda6a;
+}
+
+body.dark-mode .status-bar {
+  color: #aad2ff;
+}
+
+body.dark-mode .btn-resign {
+  background: #cc3333;
+}
+body.dark-mode .btn-resign:hover {
+  background: #990000;
+}
+
+/* Chessboard dark mode */
+body.dark-mode .chessboard-b72b1 {
+  filter: brightness(0.7) contrast(1.2) saturate(0.8);
+}
+
+/* Captured piece colors in dark mode */
+body.dark-mode .captured-piece.white {
+  color: #ddd;
+}
+body.dark-mode .captured-piece.black {
+  color: #444;
+}
 
