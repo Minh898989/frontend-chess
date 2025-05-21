@@ -159,37 +159,39 @@ body {
 /* ==== Dark Mode Support ==== */
 /* ==== DARK MODE ==== */
 body.dark-mode {
-  background: linear-gradient(to right, #2626a6, #2a2a3b, #3a3a4d);
-  color: #e4e4e7;
+  background: linear-gradient(to right, #1f2937, #111827); /* xám xanh đậm -> đen */
+  color: #e5e7eb; /* text chính - sáng vừa */
 }
 
 /* Card trong dark mode */
 body.dark-mode .player-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(31, 41, 55, 0.85); /* xám xanh mờ */
+  border-color: rgba(255, 255, 255, 0.05);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
-  color: #f1f5f9;
+  color: #f9fafb; /* trắng nhẹ */
 }
 
 body.dark-mode .player-card:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(55, 65, 81, 0.85); /* sáng hơn khi hover */
 }
 
 /* Label & Status */
 body.dark-mode .label {
-  color: #facc15; /* vàng sáng nhẹ */
+  color: #facc15; /* vàng hiện đại */
 }
 
 body.dark-mode .status-bar {
-  color: #93c5fd; /* xanh nhạt */
+  color: #60a5fa; /* xanh dương nhạt */
 }
 
 /* Resign Button */
 body.dark-mode .btn-resign {
-  background: #ef4444;
+  background: #f87171; /* đỏ mềm hơn */
+  color: #111827;
 }
+
 body.dark-mode .btn-resign:hover {
-  background: #b91c1c;
+  background: #dc2626; /* đỏ đậm */
 }
 
 /* Captured Pieces */
@@ -198,10 +200,10 @@ body.dark-mode .captured-piece.white {
 }
 
 body.dark-mode .captured-piece.black {
-  color: #6b7280;
+  color: #9ca3af;
 }
 
-/* Chessboard effect trong dark mode */
+/* Chessboard effect */
 body.dark-mode .chessboard-b72b1 {
-  filter: brightness(0.85) contrast(1.1) saturate(0.9);
+  filter: brightness(0.95) contrast(1.1) saturate(1);
 }
