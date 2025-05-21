@@ -24,6 +24,7 @@ const GameScreen = () => {
   const [capturedBlack, setCapturedBlack] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [useModernPieces, setUseModernPieces] = useState(true);
 
   const startTimeRef = useRef(null);
   
@@ -204,10 +205,29 @@ const GameScreen = () => {
       ))}
     </div>
   );
+  const customUnicodePieces = ({ piece, squareWidth }) => {
+  return (
+    <div
+      style={{
+        fontSize: squareWidth * 0.8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: squareWidth,
+        width: squareWidth,
+      }}
+    >
+      {pieceUnicode[piece]}
+    </div>
+  );
+};
 
   return (
     <div className="game-container">
       <h2>♟️ Online Chess - Room {roomCode}</h2>
+      <button onClick={() => setUseModernPieces(prev => !prev)}>
+        {useModernPieces ? 'Hiển thị kiểu truyền thống ♟' : 'Hiển thị kiểu hiện đại 🖼️'}
+      </button>
 
       {room && (
         <div className="player-panel">
@@ -254,6 +274,7 @@ const GameScreen = () => {
           boardOrientation={playerColor === 'white' ? 'white' : 'black'}
           arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
+          customPieces={!useModernPieces ? customUnicodePieces : undefined}
         />
       </div>
 
