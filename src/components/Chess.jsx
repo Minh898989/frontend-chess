@@ -24,11 +24,15 @@ const GameScreen = () => {
   const [capturedBlack, setCapturedBlack] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
-  
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
 
   const startTimeRef = useRef(null);
   
   
+  useEffect(() => {
+  document.body.classList.toggle('dark-mode', isDarkMode);
+}, [isDarkMode]);
 
 
   useEffect(() => {
@@ -210,14 +214,13 @@ const GameScreen = () => {
   return (
     <div className="game-container">
       <h2>♟️ Online Chess - Room {roomCode}</h2>
-      <button
+       <button
   className="toggle-theme-btn"
-  onClick={() => {
-    document.body.classList.toggle('dark-mode');
-  }}
+  onClick={() => setIsDarkMode(prev => !prev)}
 >
-  🌙 / ☀️
+  {isDarkMode ? '🌞 Sáng' : '🌙 Tối'}
 </button>
+
 
 
       
@@ -266,6 +269,8 @@ const GameScreen = () => {
           boardOrientation={playerColor === 'white' ? 'white' : 'black'}
           arePiecesDraggable={playerColor && gameRef.current.turn() === playerColor[0] && !gameRef.current.game_over()}
           boardWidth={Math.min(window.innerWidth * 0.9, 500)}
+          customDarkSquareStyle={{ backgroundColor: isDarkMode ? '#444' : '#b58863' }}
+          customLightSquareStyle={{ backgroundColor: isDarkMode ? '#999' : '#f0d9b5' }}
           
 
         />

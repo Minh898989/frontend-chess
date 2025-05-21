@@ -1,11 +1,14 @@
+/* ==== Base Styles ==== */
 body {
   font-family: 'Poppins', sans-serif;
   background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
   margin: 0;
   color: #fff;
   text-align: center;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
+/* ==== Layout ==== */
 .game-container {
   display: flex;
   flex-direction: column;
@@ -26,12 +29,19 @@ body {
 .player-panel {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1rem;
   gap: 1.5rem;
+  margin-bottom: 1rem;
   width: 100%;
   max-width: 500px;
 }
 
+.board-section {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+/* ==== Player Cards ==== */
 .player-card {
   flex: 1;
   background: rgba(255, 255, 255, 0.08);
@@ -52,31 +62,26 @@ body {
 .player-card .label {
   display: block;
   font-size: 1rem;
+  font-weight: 600;
   opacity: 0.8;
   margin-top: 6px;
-  font-weight: 600;
   color: #f3c623;
   text-align: left;
 }
 
 .player-card strong {
   font-size: 1.2rem;
-  color: #fff;
   display: block;
   margin-top: 4px;
+  color: #fff;
 }
 
+/* ==== Status & Buttons ==== */
 .status-bar {
   margin: 1rem 0;
   font-size: 1rem;
-  color: #cce6ff;
   font-weight: 500;
-}
-
-.board-section {
-  display: flex;
-  justify-content: center;
-  margin: 1rem 0;
+  color: #cce6ff;
 }
 
 .btn-resign {
@@ -94,6 +99,44 @@ body {
   background: #e60000;
 }
 
+/* ==== Captured Pieces ==== */
+.captured-pieces {
+  margin-top: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 18px;
+}
+
+.captured-piece.white {
+  color: #fff;
+  text-shadow: 1px 1px #000;
+}
+
+.captured-piece.black {
+  color: #000;
+}
+
+/* ==== Toggle Theme Button ==== */
+.toggle-theme-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f3c623;
+  border: none;
+  border-radius: 50%;
+  padding: 0.5rem 0.7rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease;
+}
+
+.toggle-theme-btn:hover {
+  background: #dcb20d;
+}
+
+/* ==== Responsive ==== */
 @media (max-width: 600px) {
   .player-panel {
     flex-direction: column;
@@ -114,41 +157,8 @@ body {
     font-size: 1.1rem;
   }
 }
-.captured-pieces {
-  margin-top: 5px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 18px;
-}
 
-.captured-piece.white {
-  color: #fff;
-  text-shadow: 1px 1px #000;
-}
-
-.captured-piece.black {
-  color: #000;
-}
-/* Theme toggle button */
-.toggle-theme-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #f3c623;
-  border: none;
-  border-radius: 50%;
-  padding: 0.5rem 0.7rem;
-  font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: background 0.3s ease;
-}
-.toggle-theme-btn:hover {
-  background: #dcb20d;
-}
-
-/* Dark mode styles */
+/* ==== Dark Mode Support ==== */
 body.dark-mode {
   background: linear-gradient(to right, #000000, #1a1a1a, #2c2c2c);
   color: #e0e0e0;
@@ -175,20 +185,19 @@ body.dark-mode .status-bar {
 body.dark-mode .btn-resign {
   background: #cc3333;
 }
+
 body.dark-mode .btn-resign:hover {
   background: #990000;
 }
 
-/* Chessboard dark mode */
-body.dark-mode .chessboard-b72b1 {
-  filter: brightness(0.7) contrast(1.2) saturate(0.8);
-}
-
-/* Captured piece colors in dark mode */
 body.dark-mode .captured-piece.white {
   color: #ddd;
 }
+
 body.dark-mode .captured-piece.black {
   color: #444;
 }
 
+body.dark-mode .chessboard-b72b1 {
+  filter: brightness(0.7) contrast(1.2) saturate(0.8);
+}
