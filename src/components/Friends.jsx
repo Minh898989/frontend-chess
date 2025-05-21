@@ -1,4 +1,3 @@
-// src/pages/Friends.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Friends.css";
@@ -9,45 +8,59 @@ function Friends() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [friends, setFriends] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResult, setSearchResult] = useState(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Lấy danh sách bạn bè
   useEffect(() => {
     if (!user?.userid) return;
 
     axios
-      .post(`${API_BASE}/friends/${user.userid}`)
-      .then((res) => setFriends(res.data.friends || []))
-      .catch((err) => setError("Không thể tải danh sách bạn bè."));
+      .get(`${API_BASE}/friends/${user.userid}`)
+      .then((res) => setFriends(res.data || []))
+      .catch(() => setError("Không thể tải danh sách bạn bè."));
   }, [user]);
 
-  const handleSearch = () => {
-    if (!searchText.trim()) return;
+  // Tìm kiếm người dùng
+  const handleSearch = async () => {
     setError("");
-    axios
-      .get(`${API_BASE}/users/search/${searchText}`)
-      .then((res) => {
-        setSearchResults(res.data.results || []);
-      })
-      .catch(() => {
-        setError("Không tìm thấy người dùng.");
-        setSearchResults([]);
+    setSuccess("");
+    setSearchResult(null);
+
+    if (!searchText.trim()) return;
+
+    try {
+      const res = await axios.post(`${API_BASE}/friends/search`, {
+        userid: searchText.trim(),
       });
+
+      // Nếu tìm thấy chính mình
+      if (res.data.userid === user.userid) {
+        setError("Không thể thêm chính bạn.");
+      } else {
+        setSearchResult(res.data);
+      }
+    } catch (err) {
+      setError("Không tìm thấy người dùng.");
+    }
   };
 
-  const handleAddFriend = (friendId) => {
-    axios
-      .post(`${API_BASE}/friends/add`, {
-        userId: user.userid,
-        friendId,
-      })
-      .then(() => {
-        setFriends([...friends, { userid: friendId }]);
-        setSearchResults([]);
-        setSearchText("");
-      })
-      .catch(() => setError("Không thể thêm bạn."));
+  // Gửi lời mời kết bạn
+  const handleAddFriend = async () => {
+    if (!searchResult) return;
+
+    try {
+      await axios.post(`${API_BASE}/friends/send-request`, {
+        senderId: user.userid,
+        receiverId: searchResult.userid,
+      });
+      setSuccess("Đã gửi lời mời kết bạn.");
+      setSearchResult(null);
+      setSearchText("");
+    } catch (err) {
+      setError("Không thể gửi lời mời kết bạn.");
+    }
   };
 
   return (
@@ -55,6 +68,7 @@ function Friends() {
       <h2>👥 Danh sách bạn bè</h2>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <div className="search-bar">
         <input
@@ -66,28 +80,27 @@ function Friends() {
         <button onClick={handleSearch}>Tìm kiếm</button>
       </div>
 
-      {searchResults.length > 0 && (
+      {searchResult && (
         <div className="search-results">
           <h3>Kết quả tìm kiếm:</h3>
-          <ul>
-            {searchResults.map((result) => (
-              <li key={result.userid}>
-                {result.userid}{" "}
-                <button onClick={() => handleAddFriend(result.userid)}>Thêm bạn</button>
-              </li>
-            ))}
-          </ul>
+          <p>{searchResult.userid}</p>
+          <button onClick={handleAddFriend}>Thêm bạn</button>
         </div>
       )}
 
       <div className="friends-list">
-        <ul>
-          {friends.length > 0 ? (
-            friends.map((friend) => <li key={friend.userid}>{friend.userid}</li>)
-          ) : (
-            <p>Chưa có bạn bè nào.</p>
-          )}
-        </ul>
+        <h3>Danh sách bạn bè:</h3>
+        {friends.length > 0 ? (
+          <ul>
+            {friends.map((friend) => (
+              <li key={friend.userid}>
+                {friend.userid} - {friend.days_friends} ngày làm bạn
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Bạn chưa có bạn bè nào.</p>
+        )}
       </div>
     </div>
   );
