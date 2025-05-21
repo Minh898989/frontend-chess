@@ -17,7 +17,7 @@ function Friends() {
     if (!user?.userid) return;
 
     axios
-      .get(`${API_BASE}/friends/${user.userid}`)
+      .post(`${API_BASE}/friends/${user.userid}`)
       .then((res) => setFriends(res.data.friends || []))
       .catch((err) => setError("Không thể tải danh sách bạn bè."));
   }, [user]);
