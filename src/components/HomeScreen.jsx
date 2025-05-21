@@ -85,7 +85,7 @@ const sendFriendRequest = (receiverId) => {
 const openReceivedRequestsModal = () => {
   setShowReceivedModal(true);
   axios
-    .get(`${API_BASE}/friends/received/${user.id}`)
+    .get(`${API_BASE}/friends/received/${user.userid}`)
     .then((res) => {
       setReceivedRequests(res.data);
     })
