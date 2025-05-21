@@ -31,7 +31,7 @@ function Friends() {
     if (!searchText.trim()) return;
 
     try {
-      const res = await axios.post(`${API_BASE}/friends/search`, {
+      const res = await axios.post(`${API_BASE}/search`, {
         userid: searchText.trim(),
       });
 
