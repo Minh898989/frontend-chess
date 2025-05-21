@@ -32,6 +32,9 @@ function HomeScreen() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [friendSuccessMsg, setFriendSuccessMsg] = useState("");
+  const [receivedRequests, setReceivedRequests] = useState([]);
+  const [showReceivedModal, setShowReceivedModal] = useState(false);
+  const [respondMsg, setRespondMsg] = useState("");
 
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode");
@@ -77,6 +80,29 @@ const sendFriendRequest = (receiverId) => {
     })
     .catch((err) => {
       setFriendSuccessMsg("❌ Gửi lời mời thất bại hoặc đã tồn tại.");
+    });
+};
+const openReceivedRequestsModal = () => {
+  setShowReceivedModal(true);
+  axios
+    .get(`${API_BASE}/friends/received/${user.id}`)
+    .then((res) => {
+      setReceivedRequests(res.data);
+    })
+    .catch(() => {
+      setReceivedRequests([]);
+    });
+};
+
+const respondToRequest = (requestId, status) => {
+  axios
+    .post(`${API_BASE}/friends/respond`, { requestId, status })
+    .then(() => {
+      setRespondMsg(`✅ Đã ${status === "accepted" ? "chấp nhận" : "từ chối"} lời mời.`);
+      setReceivedRequests((prev) => prev.filter((req) => req.id !== requestId));
+    })
+    .catch(() => {
+      setRespondMsg("❌ Xử lý thất bại.");
     });
 };
 
@@ -232,6 +258,11 @@ const sendFriendRequest = (receiverId) => {
           <div className="extra-buttons">
             <button onClick={() => setShowFriendModal(true)}>🔍 Tìm bạn</button>
           </div>
+          <div className="extra-buttons">
+            <button onClick={openReceivedRequestsModal}>📨 Lời mời đến</button>
+          </div>
+
+          
         </>
       )}
   
@@ -343,6 +374,33 @@ const sendFriendRequest = (receiverId) => {
     </div>
   </div>
 )}
+{showReceivedModal && (
+  <div className="modal-overlay" onClick={() => setShowReceivedModal(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <h2>📨 Lời mời kết bạn đến</h2>
+      {receivedRequests.length === 0 ? (
+        <p>Không có lời mời nào.</p>
+      ) : (
+        <ul>
+          {receivedRequests.map((req) => (
+            <li key={req.id} style={{ margin: "10px 0" }}>
+              👤 {req.sender_userid}
+              <button onClick={() => respondToRequest(req.id, "accepted")} style={{ marginLeft: "10px" }}>
+                ✅ Chấp nhận
+              </button>
+              <button onClick={() => respondToRequest(req.id, "rejected")} style={{ marginLeft: "5px" }}>
+                ❌ Từ chối
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {respondMsg && <p>{respondMsg}</p>}
+      <button onClick={() => setShowReceivedModal(false)}>Đóng</button>
+    </div>
+  </div>
+)}
+
 
     </div>
   );
