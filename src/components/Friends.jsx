@@ -51,7 +51,7 @@ function Friends() {
     if (!searchResult) return;
 
     try {
-      await axios.post(`${API_BASE}/friends/send-request`, {
+      await axios.post(`${API_BASE}/send-request`, {
         senderId: user.userid,
         receiverId: searchResult.userid,
       });
