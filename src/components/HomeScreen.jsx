@@ -13,7 +13,7 @@ function HomeScreen() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || null);
-
+  
   // Profile modal states
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userStats, setUserStats] = useState(null);
@@ -25,8 +25,13 @@ function HomeScreen() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [errorLeaderboard, setErrorLeaderboard] = useState("");
-  
-
+  // Friend search modal states
+  const [showFriendModal, setShowFriendModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [friendSuccessMsg, setFriendSuccessMsg] = useState("");
 
   const searchParams = new URLSearchParams(location.search);
   const mode = searchParams.get("mode");
@@ -43,6 +48,38 @@ function HomeScreen() {
     navigate(`/game/${selectedMode}`);
   }
 };
+const handleFriendSearch = () => {
+  setSearchLoading(true);
+  setSearchError("");
+  setFriendSuccessMsg("");
+
+  axios
+    .get(`${API_BASE}/friends/search?userid=${searchQuery}`)
+    .then((res) => {
+      const results = res.data.filter((u) => u.userid !== user.userid); // tránh tìm chính mình
+      setSearchResults(results);
+      setSearchLoading(false);
+    })
+    .catch((err) => {
+      setSearchError("Không thể tìm người dùng.");
+      setSearchLoading(false);
+    });
+};
+
+const sendFriendRequest = (receiverId) => {
+  axios
+    .post(`${API_BASE}/friends/send`, {
+      senderId: user.id,
+      receiverId,
+    })
+    .then(() => {
+      setFriendSuccessMsg("✅ Đã gửi lời mời kết bạn.");
+    })
+    .catch((err) => {
+      setFriendSuccessMsg("❌ Gửi lời mời thất bại hoặc đã tồn tại.");
+    });
+};
+
 
 
   const handleAvatarChange = (event) => {
@@ -192,9 +229,12 @@ function HomeScreen() {
           <div className="extra-buttons">
             <button onClick={openLeaderboardModal}>🏆 Bảng xếp hạng</button>
           </div>
+          <div className="extra-buttons">
+            <button onClick={() => setShowFriendModal(true)}>🔍 Tìm bạn</button>
+          </div>
         </>
       )}
-
+  
       {/* Profile Modal */}
       {showProfileModal && (
         <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
@@ -265,6 +305,45 @@ function HomeScreen() {
           </div>
         </div>
       )}
+      {showFriendModal && (
+  <div className="modal-overlay" onClick={() => setShowFriendModal(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <h2>🔍 Tìm bạn</h2>
+      <input
+        type="text"
+        placeholder="Nhập userid..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{ width: "100%", padding: "6px", marginBottom: "10px" }}
+      />
+      <button onClick={handleFriendSearch}>Tìm</button>
+
+      {searchLoading ? (
+        <p>Đang tìm kiếm...</p>
+      ) : searchError ? (
+        <p style={{ color: "red" }}>{searchError}</p>
+      ) : (
+        <ul>
+          {searchResults.map((result) => (
+            <li key={result.id} style={{ margin: "10px 0" }}>
+              👤 {result.userid}
+              <button
+                onClick={() => sendFriendRequest(result.id)}
+                style={{ marginLeft: "10px" }}
+              >
+                ➕ Kết bạn
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {friendSuccessMsg && <p>{friendSuccessMsg}</p>}
+      <button onClick={() => setShowFriendModal(false)}>Đóng</button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
