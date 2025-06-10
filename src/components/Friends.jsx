@@ -1,174 +1,151 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "../styles/Friends.css";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const API_BASE = "https://backend-chess-va97.onrender.com";
+const API = 'https://backend-chess-va97.onrender.com';
 
-function Friends() {
-  const user = JSON.parse(localStorage.getItem("user"));
+const Friend = () => {
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
   const [friends, setFriends] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  // Lấy danh sách bạn bè
+  // Gọi dữ liệu lời mời & bạn bè khi load
   useEffect(() => {
-    if (!user?.userid) return;
-    axios
-      .get(`${API_BASE}/friends/${user.userid}`)
-      .then((res) => setFriends(res.data || []))
-      .catch(() => setError("Không thể tải danh sách bạn bè."));
-  }, [user]);
+    fetchPendingRequests();
+    fetchFriends();
+  }, []);
 
-  // Lấy danh sách lời mời kết bạn
-  useEffect(() => {
-    if (!user?.userid) return;
-    axios
-      .get(`${API_BASE}/requests/${user.userid}`)
-      .then((res) => setRequests(res.data || []))
-      .catch(() => setError("Không thể tải lời mời kết bạn."));
-  }, [user]);
+  const fetchPendingRequests = async () => {
+    try {
+      const res = await axios.get(`${API}/requests`);
+      setPendingRequests(res.data);
+    } catch (err) {
+      console.error('Pending error:', err);
+    }
+  };
 
-  // Tìm kiếm người dùng theo ID
+  const fetchFriends = async () => {
+    try {
+      const res = await axios.get(`${API}/friends`);
+      setFriends(res.data);
+    } catch (err) {
+      console.error('Friends error:', err);
+    }
+  };
+
   const handleSearch = async () => {
-    setError("");
-    setSuccess("");
-    setSearchResult(null);
-
-    if (!searchText.trim()) return;
-
+    if (!searchKeyword.trim()) return;
     try {
-      const res = await axios.post(`${API_BASE}/search`, {
-        userid: searchText.trim(),
-      });
-
-      if (res.data.userid === user.userid) {
-        setError("Không thể thêm chính bạn.");
-      } else {
-        setSearchResult(res.data);
-      }
-    } catch {
-      setError("Không tìm thấy người dùng.");
+      const res = await axios.get(`${API}/search?keyword=${searchKeyword}`);
+      setSearchResults(res.data);
+    } catch (err) {
+      console.error('Search error:', err);
     }
   };
 
-  // Gửi lời mời kết bạn
-  const handleAddFriend = async () => {
-    if (!searchResult) return;
-
+  const handleSendRequest = async (receiverId) => {
     try {
-      await axios.post(`${API_BASE}/send-request`, {
-        senderId: user.userid,
-        receiverId: searchResult.userid,
-      });
-      setSuccess("Đã gửi lời mời kết bạn.");
-      setSearchResult(null);
-      setSearchText("");
-    } catch {
-      setError("Không thể gửi lời mời kết bạn.");
+      await axios.post(`${API}/request`, { receiverId });
+      alert('Đã gửi lời mời!');
+    } catch (err) {
+      alert('Gửi thất bại hoặc đã có lời mời');
     }
   };
 
-  // Chấp nhận hoặc từ chối lời mời
-  const handleRespond = async (requestId, action) => {
+  const handleRespond = async (requestId, status) => {
     try {
-      await axios.post(`${API_BASE}/respond`, { requestId, action });
-
-      setRequests((prev) => prev.filter((r) => r.id !== requestId));
-
-      if (action === "accept") {
-        const res = await axios.get(`${API_BASE}/friends/${user.userid}`);
-        setFriends(res.data || []);
-      }
-
-      setSuccess(`Đã ${action === "accept" ? "chấp nhận" : "từ chối"} lời mời.`);
-    } catch {
-      setError("Không thể xử lý lời mời.");
+      await axios.post(`${API}/respond`, { requestId, status });
+      fetchPendingRequests();
+      fetchFriends();
+    } catch (err) {
+      alert('Xử lý thất bại');
     }
   };
-  const getBadge = (days) => {
-  if (days >= 30) return "👑 Vua bạn bè";
-  if (days >= 21) return "💎 Kim cương";
-  if (days >= 14) return "🔥 Lửa cháy";
-  if (days >= 7) return "🏆 Vàng";
-  if (days >= 3) return "🥈 Bạc";
-  if (days >= 1) return "🥉 Đồng";
-  return "⏳ Mới kết bạn";
-};
-
 
   return (
-    <div className="friends-page">
-      <h2>👥 Danh sách bạn bè</h2>
+    <div className="max-w-2xl mx-auto p-4 space-y-6">
+      <h1 className="text-2xl font-bold text-center">💬 Quản lý bạn bè</h1>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
-
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Nhập ID người dùng..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <button onClick={handleSearch}>Tìm kiếm</button>
-      </div>
-
-      {searchResult && (
-        <div className="search-results">
-          <h3>Kết quả tìm kiếm:</h3>
-          <p>{searchResult.userid}</p>
-          <button onClick={handleAddFriend}>Thêm bạn</button>
+      {/* Tìm bạn */}
+      <div className="bg-white shadow-md rounded-xl p-4">
+        <h2 className="font-semibold mb-2">🔍 Tìm bạn</h2>
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            className="flex-1 border rounded p-2"
+            placeholder="Nhập tên người dùng..."
+          />
+          <button onClick={handleSearch} className="bg-blue-500 text-white px-4 py-2 rounded">
+            Tìm
+          </button>
         </div>
-      )}
-
-      <div className="friends-list">
-        <h3>Danh sách bạn bè:</h3>
-        {friends.length > 0 ? (
-          <ul>
-            {friends.map((friend) => (
-              <li key={friend.userid}>
-                {friend.userid} - {friend.days_friends} ngày làm bạn{" "}
-                <span className="badge">{getBadge(friend.days_friends)}</span>
-              </li>
-              
-            ))}
-          </ul>
-        ) : (
-          <p>Bạn chưa có bạn bè nào.</p>
-        )}
+        <ul className="mt-4 space-y-2">
+          {searchResults.map((user) => (
+            <li key={user.userid} className="flex justify-between items-center border-b pb-1">
+              <span>{user.userid}</span>
+              <button
+                onClick={() => handleSendRequest(user.userid)}
+                className="text-sm bg-green-500 text-white px-3 py-1 rounded"
+              >
+                Kết bạn
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="friend-requests">
-        <h3>Lời mời kết bạn:</h3>
-        {requests.length > 0 ? (
-          <ul>
-            {requests.map((req) => (
-              <li key={req.id}>
-                {req.from_user} gửi lời mời lúc{" "}
-                {new Date(req.created_at).toLocaleString()}
-                <div style={{ marginTop: "5px" }}>
-                  <button onClick={() => handleRespond(req.id, "accept")}>
-                    ✅ Chấp nhận
+      {/* Lời mời */}
+      <div className="bg-white shadow-md rounded-xl p-4">
+        <h2 className="font-semibold mb-2">📥 Lời mời kết bạn</h2>
+        {pendingRequests.length === 0 ? (
+          <p className="text-gray-500">Không có lời mời nào.</p>
+        ) : (
+          <ul className="space-y-2">
+            {pendingRequests.map((r) => (
+              <li key={r.id} className="flex justify-between items-center border-b pb-1">
+                <span>{r.sender}</span>
+                <div className="space-x-2">
+                  <button
+                    onClick={() => handleRespond(r.id, 'accepted')}
+                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                  >
+                    Chấp nhận
                   </button>
                   <button
-                    onClick={() => handleRespond(req.id, "reject")}
-                    style={{ marginLeft: "8px" }}
+                    onClick={() => handleRespond(r.id, 'declined')}
+                    className="bg-gray-400 text-white px-3 py-1 rounded"
                   >
-                    ❌ Từ chối
+                    Từ chối
                   </button>
                 </div>
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      {/* Bạn bè */}
+      <div className="bg-white shadow-md rounded-xl p-4">
+        <h2 className="font-semibold mb-2">👥 Bạn bè</h2>
+        {friends.length === 0 ? (
+          <p className="text-gray-500">Chưa có bạn nào.</p>
         ) : (
-          <p>Không có lời mời nào.</p>
+          <ul className="space-y-2">
+            {friends.map((f) => (
+              <li key={f.friend_id} className="flex justify-between border-b pb-1">
+                <span>{f.friend_id}</span>
+                <span className="text-sm text-gray-600">
+                  {f.days_of_friendship} ngày làm bạn
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>
   );
-}
+};
 
-export default Friends;
+export default Friend;
