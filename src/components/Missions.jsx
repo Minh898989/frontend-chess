@@ -4,8 +4,7 @@ import "../styles/Missions.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import confetti from "canvas-confetti";
-import { ArrowLeftOutlined,CheckCircleTwoTone, CloseCircleTwoTone , GiftTwoTone, ClockCircleTwoTone } from "@ant-design/icons"; // Thêm dòng này ở đầu file
-
+import { ArrowLeftOutlined,CheckCircleTwoTone, CloseCircleTwoTone , GiftTwoTone, ClockCircleTwoTone } from "@ant-design/icons";
 
 const Mission = () => {
   const [missions, setMissions] = useState([]);
@@ -46,7 +45,7 @@ const Mission = () => {
 
     try {
       const response = await axios.post(
-        "hhttps://backend-chess-va97.onrender.com/api/missions/claim",
+        "https://backend-chess-va97.onrender.com/api/missions/claim",
         {
           userid,
           missionId,
