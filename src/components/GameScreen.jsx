@@ -28,7 +28,7 @@ function GameScreen() {
   const updateLocalStats = useCallback(async (didPlayerWin, minutesPlayed = 0, capturedCount = 0) => {
     if (!userId) return;
     try {
-      await axios.post("https://backend-chess-fjr7.onrender.com/api/stats/update", {
+      await axios.post("https://backend-chess-va97.onrender.com/api/stats/update", {
         userid: userId,
         didWin: didPlayerWin,
         minutesPlayed,

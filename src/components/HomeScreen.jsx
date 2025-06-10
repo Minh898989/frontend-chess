@@ -5,7 +5,7 @@ import {UserOutlined,LogoutOutlined,} from "@ant-design/icons";
 
 import "../styles/HomeScreen.css";
 
-const API_BASE = "https://backend-chess-fjr7.onrender.com/api";
+const API_BASE = "https://backend-chess-va97.onrender.com/api";
 
 function HomeScreen() {
   const navigate = useNavigate();
@@ -193,8 +193,8 @@ function HomeScreen() {
             <button onClick={openLeaderboardModal}>🏆 Bảng xếp hạng</button>
           </div>
           <div className="extra-buttons">
-  <button onClick={() => navigate("/friends")}>👥 Quản lý bạn bè</button>
-</div>
+            <button onClick={() => navigate("/friends")}>👥 Quản lý bạn bè</button>
+          </div>
 
           
 

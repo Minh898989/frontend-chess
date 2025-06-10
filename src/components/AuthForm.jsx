@@ -19,7 +19,7 @@ const AuthForm = () => {
 
     try {
       const res = await axios.post(
-        `https://backend-chess-fjr7.onrender.com/api/auth/${endpoint}`,
+        `https://backend-chess-va97.onrender.com/api/auth/${endpoint}`,
         { userid, password },
         {
           withCredentials: true, // Ensure cookies are sent/received (if necessary)

@@ -9,7 +9,7 @@ import ChatButton from './ChatButton';
 
 import "../styles/chess.css";
 
-const API_BASE = 'https://backend-chess-fjr7.onrender.com';
+const API_BASE = 'https://backend-chess-va97.onrender.com';
 
 const GameScreen = () => {
   const { roomCode } = useParams();

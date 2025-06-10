@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Friends.css";
 
-const API_BASE = "https://backend-chess-fjr7.onrender.com/api";
+const API_BASE = "https://backend-chess-va97.onrender.com";
 
 function Friends() {
   const user = JSON.parse(localStorage.getItem("user"));

@@ -27,7 +27,7 @@ const Mission = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://backend-chess-fjr7.onrender.com/api/missions/user/${userid}`
+          `https://backend-chess-va97.onrender.com/api/missions/user/${userid}`
         );
         setMissions(response.data.missions);
         setTotalPoints(response.data.totalPoints);
@@ -46,7 +46,7 @@ const Mission = () => {
 
     try {
       const response = await axios.post(
-        "https://backend-chess-fjr7.onrender.com/api/missions/claim",
+        "hhttps://backend-chess-va97.onrender.com/api/missions/claim",
         {
           userid,
           missionId,

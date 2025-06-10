@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import "../styles/Room.css";
 
-const API_BASE = 'https://backend-chess-fjr7.onrender.com';
+const API_BASE = 'https://backend-chess-va97.onrender.com';
 
 const RoomManager = () => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
