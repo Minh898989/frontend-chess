@@ -13,11 +13,23 @@ const Friend = () => {
 
   // Lấy current user từ localStorage
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser && storedUser.username) {
-      setCurrentUser(storedUser.username);
+  const stored = localStorage.getItem('user');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      console.log('Parsed user:', parsed); // DEBUG
+      if (parsed && parsed.username) {
+        setCurrentUser(parsed.username);
+      } else {
+        console.warn('Không tìm thấy username trong localStorage');
+      }
+    } catch (e) {
+      console.error('Lỗi parse localStorage user:', e);
     }
-  }, []);
+  } else {
+    console.warn('Không có user trong localStorage');
+  }
+}, []);
 
   // Lấy danh sách bạn bè
   const fetchFriends = async () => {
