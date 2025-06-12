@@ -1,137 +1,179 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const API_BASE = 'https://backend-chess-va97.onrender.com/api/friends';
+const API = axios.create({
+  baseURL: "https://backend-chess-va97.onrender.com/api/friends",
+  withCredentials: true,
+});
 
-const Friends = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  const userid = user?.userid;
-
-  const [searchId, setSearchId] = useState('');
-  const [searchResult, setSearchResult] = useState(null);
+const FriendsPage = () => {
+  const { userid } = JSON.parse(localStorage.getItem("user"));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const [friends, setFriends] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [sentRequests, setSentRequests] = useState([]);
-
-  useEffect(() => {
-    if (!userid) return;
-    fetchFriends();
-    fetchPendingRequests();
-    fetchSentRequests();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userid]);
-
-  const fetchFriends = async () => {
-    const res = await axios.get(`${API_BASE}/friends/${userid}`);
-    setFriends(res.data);
-  };
-
-  const fetchPendingRequests = async () => {
-    const res = await axios.get(`${API_BASE}/requests/${userid}`);
-    setPendingRequests(res.data);
-  };
-
-  const fetchSentRequests = async () => {
-    const res = await axios.get(`${API_BASE}/sent/${userid}`);
-    setSentRequests(res.data);
-  };
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
     try {
-      const res = await axios.get(`${API_BASE}/search/${searchId}`);
-      setSearchResult(res.data);
-    } catch {
-      setSearchResult(null);
-      alert('User not found');
-    }
-  };
-
-  const sendFriendRequest = async () => {
-    try {
-      await axios.post(`${API_BASE}/request`, {
-        from_user: userid,
-        to_user: searchResult.userid,
-      });
-      alert('Friend request sent!');
-      fetchSentRequests();
+      setLoading(true);
+      const res = await API.get(`/search?userid=${searchQuery}`);
+      setSearchResults(res.data);
     } catch (err) {
-      alert(err.response?.data?.message || 'Error sending request');
+      alert("Lỗi tìm kiếm");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const acceptRequest = async (from_user) => {
-    await axios.post(`${API_BASE}/accept`, { from_user, to_user: userid });
-    fetchFriends();
-    fetchPendingRequests();
+  const handleSendRequest = async (receiver_id) => {
+    try {
+      await API.post("/request", { sender_id: userid, receiver_id });
+      alert("Đã gửi lời mời kết bạn");
+    } catch (err) {
+      alert(err.response?.data?.error || "Lỗi gửi lời mời");
+    }
   };
 
-  const rejectRequest = async (from_user) => {
-    await axios.post(`${API_BASE}/reject`, { from_user, to_user: userid });
-    fetchPendingRequests();
+  const handleRespond = async (sender_id, action) => {
+    try {
+      await API.post("/respond", { sender_id, receiver_id: userid, action });
+      alert(`Đã ${action === "accept" ? "chấp nhận" : "từ chối"} lời mời`);
+      fetchRequests();
+      fetchFriends();
+    } catch (err) {
+      alert("Lỗi khi phản hồi lời mời");
+    }
   };
+
+  const fetchFriends = async () => {
+    try {
+      const res = await API.get(`/list/${userid}`);
+      setFriends(res.data);
+    } catch (err) {
+      alert("Lỗi tải danh sách bạn bè");
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get(
+        `https://backend-chess-va97.onrender.com/api/friends/requests/${userid}`,
+        { withCredentials: true }
+      );
+      setRequests(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi tải lời mời kết bạn");
+    }
+  };
+
+  useEffect(() => {
+    fetchFriends();
+    fetchRequests();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Friends Page</h2>
+    <div style={{ padding: "20px", maxWidth: "700px", margin: "auto" }}>
+      <h2>Kết bạn</h2>
 
-      <div>
-        <h3>Search User</h3>
+      <div style={{ marginBottom: "20px" }}>
         <input
-          value={searchId}
-          onChange={(e) => setSearchId(e.target.value)}
-          placeholder="Enter userid"
+          type="text"
+          placeholder="Tìm kiếm userid..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ padding: "8px", width: "70%" }}
         />
-        <button onClick={handleSearch}>Search</button>
+        <button onClick={handleSearch} style={{ padding: "8px 12px", marginLeft: "8px" }}>
+          {loading ? "Đang tìm..." : "Tìm"}
+        </button>
+      </div>
 
-        {searchResult && (
-          <div>
-            <p>Found: {searchResult.userid}</p>
-            <img src={searchResult.avatar} alt="avatar" width={50} />
-            <button onClick={sendFriendRequest}>Send Friend Request</button>
-          </div>
-        )}
+      <div>
+        <h4>Kết quả tìm kiếm:</h4>
+        <ul>
+          {searchResults.length === 0 && <li>Không có kết quả</li>}
+          {searchResults.map((user) => (
+            <li key={user.userid} style={{ marginBottom: "10px" }}>
+              <img
+                src={user.avatar}
+                alt=""
+                width="30"
+                height="30"
+                style={{ borderRadius: "50%", marginRight: "10px" }}
+              />
+              {user.name} ({user.userid})
+              {user.userid !== userid && (
+                <button
+                  onClick={() => handleSendRequest(user.userid)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Kết bạn
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <hr />
 
       <div>
-        <h3>Pending Requests You've Sent</h3>
-        {sentRequests.map((req) => (
-          <div key={req.to_user}>
-            <p>{req.to_user}</p>
-            <img src={req.avatar} alt="avatar" width={40} />
-            <span style={{ color: 'gray' }}>Waiting for acceptance</span>
-          </div>
-        ))}
+        <h4>🧾 Lời mời kết bạn đến bạn:</h4>
+        <ul>
+          {requests.length === 0 && <li>Không có lời mời</li>}
+          {requests.map((r) => (
+            <li key={r.userid} style={{ marginBottom: "10px" }}>
+              <img
+                src={r.avatar}
+                alt=""
+                width="30"
+                height="30"
+                style={{ borderRadius: "50%", marginRight: "10px" }}
+              />
+              {r.name} ({r.userid})
+              <button
+                onClick={() => handleRespond(r.userid, "accept")}
+                style={{ marginLeft: "10px" }}
+              >
+                ✔️ Chấp nhận
+              </button>
+              <button
+                onClick={() => handleRespond(r.userid, "decline")}
+                style={{ marginLeft: "5px" }}
+              >
+                ❌ Từ chối
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <hr />
 
       <div>
-        <h3>Pending Friend Requests</h3>
-        {pendingRequests.map((req) => (
-          <div key={req.from_user}>
-            <p>{req.from_user}</p>
-            <img src={req.avatar} alt="avatar" width={40} />
-            <button onClick={() => acceptRequest(req.from_user)}>Accept</button>
-            <button onClick={() => rejectRequest(req.from_user)}>Reject</button>
-          </div>
-        ))}
-      </div>
-
-      <hr />
-
-      <div>
-        <h3>Your Friends</h3>
-        {friends.map((f) => (
-          <div key={f.friendid}>
-            <p>{f.friendid}</p>
-            <img src={f.avatar} alt="avatar" width={40} />
-          </div>
-        ))}
+        <h4>👥 Danh sách bạn bè:</h4>
+        <ul>
+          {friends.length === 0 && <li>Chưa có bạn bè</li>}
+          {friends.map((f) => (
+            <li key={f.userid} style={{ marginBottom: "10px" }}>
+              <img
+                src={f.avatar}
+                alt=""
+                width="30"
+                height="30"
+                style={{ borderRadius: "50%", marginRight: "10px" }}
+              />
+              {f.name} ({f.userid})
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
 };
 
-export default Friends;
+export default FriendsPage;
