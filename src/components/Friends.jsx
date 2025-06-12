@@ -59,7 +59,7 @@ const FriendsPage = () => {
   const fetchRequests = async () => {
     try {
       const res = await axios.get(
-        `https://backend-chess-va97.onrender.com/api/friends/requests/${userid}`,
+        `https://backend-chess-va97.onrender.com/requests/${userid}`,
         { withCredentials: true }
       );
       setRequests(res.data);
