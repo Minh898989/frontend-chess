@@ -3,12 +3,21 @@ import axios from 'axios';
 
 const API = 'https://backend-chess-va97.onrender.com/api/friends';
 
-const Friend = ({ currentUser }) => {
+const Friend = () => {
+  const [currentUser, setCurrentUser] = useState(null);
   const [searchId, setSearchId] = useState('');
   const [searchResult, setSearchResult] = useState(null);
   const [friends, setFriends] = useState([]);
   const [requests, setRequests] = useState([]);
   const [message, setMessage] = useState('');
+
+  // Lấy current user từ localStorage
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (storedUser && storedUser.username) {
+      setCurrentUser(storedUser.username);
+    }
+  }, []);
 
   // Lấy danh sách bạn bè
   const fetchFriends = async () => {
@@ -20,19 +29,21 @@ const Friend = ({ currentUser }) => {
     }
   };
 
-  // Lấy danh sách lời mời kết bạn đến (chưa có API, nên ta cần bạn tạo thêm ở backend nếu cần)
+  // Lấy danh sách lời mời kết bạn đến
   const fetchRequests = async () => {
     try {
       const res = await axios.get(`${API}/requests/${currentUser}`);
       setRequests(res.data);
     } catch (err) {
-      console.warn('Không thể lấy lời mời đang chờ (có thể chưa có API)');
+      console.warn('Không thể lấy lời mời đang chờ:', err);
     }
   };
 
   useEffect(() => {
-    fetchFriends();
-    fetchRequests();
+    if (currentUser) {
+      fetchFriends();
+      fetchRequests();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
@@ -55,7 +66,7 @@ const Friend = ({ currentUser }) => {
         from_user: currentUser,
         to_user: searchResult.userid,
       });
-      setMessage('Đã gửi lời mời kết bạn!');
+      setMessage('✅ Đã gửi lời mời kết bạn!');
     } catch (err) {
       setMessage(err.response?.data?.message || 'Lỗi khi gửi lời mời.');
     }
@@ -68,7 +79,7 @@ const Friend = ({ currentUser }) => {
         from_user,
         to_user: currentUser,
       });
-      setMessage('Đã chấp nhận lời mời.');
+      setMessage('✅ Đã chấp nhận lời mời.');
       fetchFriends();
       fetchRequests();
     } catch (err) {
@@ -83,18 +94,20 @@ const Friend = ({ currentUser }) => {
         from_user,
         to_user: currentUser,
       });
-      setMessage('Đã từ chối lời mời.');
+      setMessage('⛔ Đã từ chối lời mời.');
       fetchRequests();
     } catch (err) {
       setMessage('Lỗi khi từ chối lời mời.');
     }
   };
 
+  if (!currentUser) return <p>Đang tải thông tin người dùng...</p>;
+
   return (
     <div style={{ padding: 20 }}>
-      <h2>Quản lý bạn bè</h2>
+      <h2>👥 Quản lý bạn bè</h2>
 
-      {/* Tìm kiếm */}
+      {/* Tìm kiếm người dùng */}
       <div>
         <input
           type="text"
@@ -121,12 +134,12 @@ const Friend = ({ currentUser }) => {
       )}
 
       {/* Thông báo */}
-      {message && <p>{message}</p>}
+      {message && <p style={{ color: 'green' }}>{message}</p>}
 
-      {/* Lời mời kết bạn đến */}
+      {/* Lời mời kết bạn */}
       {requests.length > 0 && (
         <div style={{ marginTop: 20 }}>
-          <h3>Lời mời kết bạn</h3>
+          <h3>📨 Lời mời kết bạn</h3>
           {requests.map((r) => (
             <div key={r.from_user} style={{ marginBottom: 10 }}>
               <b>{r.from_user}</b> muốn kết bạn.
@@ -141,7 +154,7 @@ const Friend = ({ currentUser }) => {
 
       {/* Danh sách bạn bè */}
       <div style={{ marginTop: 30 }}>
-        <h3>Danh sách bạn bè</h3>
+        <h3>✅ Danh sách bạn bè</h3>
         {friends.length === 0 ? (
           <p>Chưa có bạn nào.</p>
         ) : (
