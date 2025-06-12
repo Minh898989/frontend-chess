@@ -1,144 +1,159 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = 'https://backend-chess-va97.onrender.com';
+const API = 'https://backend-chess-va97.onrender.com/api/friends';
 
-const Friend = () => {
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
+const Friend = ({ currentUser }) => {
+  const [searchId, setSearchId] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
   const [friends, setFriends] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [message, setMessage] = useState('');
 
-  // Gọi dữ liệu lời mời & bạn bè khi load
-  useEffect(() => {
-    fetchPendingRequests();
-    fetchFriends();
-  }, []);
-
-  const fetchPendingRequests = async () => {
-    try {
-      const res = await axios.get(`${API}/requests`);
-      setPendingRequests(res.data);
-    } catch (err) {
-      console.error('Pending error:', err);
-    }
-  };
-
+  // Lấy danh sách bạn bè
   const fetchFriends = async () => {
     try {
-      const res = await axios.get(`${API}/friends`);
+      const res = await axios.get(`${API}/friends/${currentUser}`);
       setFriends(res.data);
     } catch (err) {
-      console.error('Friends error:', err);
+      console.error('Lỗi khi tải danh sách bạn bè:', err);
     }
   };
 
+  // Lấy danh sách lời mời kết bạn đến (chưa có API, nên ta cần bạn tạo thêm ở backend nếu cần)
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get(`${API}/requests/${currentUser}`);
+      setRequests(res.data);
+    } catch (err) {
+      console.warn('Không thể lấy lời mời đang chờ (có thể chưa có API)');
+    }
+  };
+
+  useEffect(() => {
+    fetchFriends();
+    fetchRequests();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
+
+  // Tìm người dùng
   const handleSearch = async () => {
-    if (!searchKeyword.trim()) return;
     try {
-      const res = await axios.get(`${API}/search?keyword=${searchKeyword}`);
-      setSearchResults(res.data);
+      const res = await axios.get(`${API}/search/${searchId}`);
+      setSearchResult(res.data);
+      setMessage('');
     } catch (err) {
-      console.error('Search error:', err);
+      setSearchResult(null);
+      setMessage('Không tìm thấy người dùng.');
     }
   };
 
-  const handleSendRequest = async (receiverId) => {
+  // Gửi lời mời kết bạn
+  const handleSendRequest = async () => {
     try {
-      await axios.post(`${API}/request`, { receiverId });
-      alert('Đã gửi lời mời!');
+      await axios.post(`${API}/request`, {
+        from_user: currentUser,
+        to_user: searchResult.userid,
+      });
+      setMessage('Đã gửi lời mời kết bạn!');
     } catch (err) {
-      alert('Gửi thất bại hoặc đã có lời mời');
+      setMessage(err.response?.data?.message || 'Lỗi khi gửi lời mời.');
     }
   };
 
-  const handleRespond = async (requestId, status) => {
+  // Chấp nhận lời mời
+  const handleAccept = async (from_user) => {
     try {
-      await axios.post(`${API}/respond`, { requestId, status });
-      fetchPendingRequests();
+      await axios.post(`${API}/accept`, {
+        from_user,
+        to_user: currentUser,
+      });
+      setMessage('Đã chấp nhận lời mời.');
       fetchFriends();
+      fetchRequests();
     } catch (err) {
-      alert('Xử lý thất bại');
+      setMessage('Lỗi khi chấp nhận lời mời.');
+    }
+  };
+
+  // Từ chối lời mời
+  const handleReject = async (from_user) => {
+    try {
+      await axios.post(`${API}/reject`, {
+        from_user,
+        to_user: currentUser,
+      });
+      setMessage('Đã từ chối lời mời.');
+      fetchRequests();
+    } catch (err) {
+      setMessage('Lỗi khi từ chối lời mời.');
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-center">💬 Quản lý bạn bè</h1>
+    <div style={{ padding: 20 }}>
+      <h2>Quản lý bạn bè</h2>
 
-      {/* Tìm bạn */}
-      <div className="bg-white shadow-md rounded-xl p-4">
-        <h2 className="font-semibold mb-2">🔍 Tìm bạn</h2>
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            className="flex-1 border rounded p-2"
-            placeholder="Nhập tên người dùng..."
+      {/* Tìm kiếm */}
+      <div>
+        <input
+          type="text"
+          placeholder="Nhập userid cần tìm"
+          value={searchId}
+          onChange={(e) => setSearchId(e.target.value)}
+        />
+        <button onClick={handleSearch}>Tìm</button>
+      </div>
+
+      {/* Kết quả tìm kiếm */}
+      {searchResult && (
+        <div style={{ marginTop: 10 }}>
+          <p><b>{searchResult.userid}</b></p>
+          <img
+            src={searchResult.avatar}
+            alt="avatar"
+            style={{ width: 60, height: 60, borderRadius: '50%' }}
           />
-          <button onClick={handleSearch} className="bg-blue-500 text-white px-4 py-2 rounded">
-            Tìm
-          </button>
+          <div>
+            <button onClick={handleSendRequest}>Gửi lời mời kết bạn</button>
+          </div>
         </div>
-        <ul className="mt-4 space-y-2">
-          {searchResults.map((user) => (
-            <li key={user.userid} className="flex justify-between items-center border-b pb-1">
-              <span>{user.userid}</span>
-              <button
-                onClick={() => handleSendRequest(user.userid)}
-                className="text-sm bg-green-500 text-white px-3 py-1 rounded"
-              >
-                Kết bạn
-              </button>
-            </li>
+      )}
+
+      {/* Thông báo */}
+      {message && <p>{message}</p>}
+
+      {/* Lời mời kết bạn đến */}
+      {requests.length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <h3>Lời mời kết bạn</h3>
+          {requests.map((r) => (
+            <div key={r.from_user} style={{ marginBottom: 10 }}>
+              <b>{r.from_user}</b> muốn kết bạn.
+              <div>
+                <button onClick={() => handleAccept(r.from_user)}>Chấp nhận</button>
+                <button onClick={() => handleReject(r.from_user)} style={{ marginLeft: 10 }}>Từ chối</button>
+              </div>
+            </div>
           ))}
-        </ul>
-      </div>
+        </div>
+      )}
 
-      {/* Lời mời */}
-      <div className="bg-white shadow-md rounded-xl p-4">
-        <h2 className="font-semibold mb-2">📥 Lời mời kết bạn</h2>
-        {pendingRequests.length === 0 ? (
-          <p className="text-gray-500">Không có lời mời nào.</p>
-        ) : (
-          <ul className="space-y-2">
-            {pendingRequests.map((r) => (
-              <li key={r.id} className="flex justify-between items-center border-b pb-1">
-                <span>{r.sender}</span>
-                <div className="space-x-2">
-                  <button
-                    onClick={() => handleRespond(r.id, 'accepted')}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
-                  >
-                    Chấp nhận
-                  </button>
-                  <button
-                    onClick={() => handleRespond(r.id, 'declined')}
-                    className="bg-gray-400 text-white px-3 py-1 rounded"
-                  >
-                    Từ chối
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Bạn bè */}
-      <div className="bg-white shadow-md rounded-xl p-4">
-        <h2 className="font-semibold mb-2">👥 Bạn bè</h2>
+      {/* Danh sách bạn bè */}
+      <div style={{ marginTop: 30 }}>
+        <h3>Danh sách bạn bè</h3>
         {friends.length === 0 ? (
-          <p className="text-gray-500">Chưa có bạn nào.</p>
+          <p>Chưa có bạn nào.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul>
             {friends.map((f) => (
-              <li key={f.friend_id} className="flex justify-between border-b pb-1">
-                <span>{f.friend_id}</span>
-                <span className="text-sm text-gray-600">
-                  {f.days_of_friendship} ngày làm bạn
-                </span>
+              <li key={f.friendid}>
+                <img
+                  src={f.avatar}
+                  alt="avatar"
+                  style={{ width: 40, height: 40, borderRadius: '50%', marginRight: 10 }}
+                />
+                {f.friendid} - Là bạn từ {new Date(f.friendship_date).toLocaleDateString()}
               </li>
             ))}
           </ul>
