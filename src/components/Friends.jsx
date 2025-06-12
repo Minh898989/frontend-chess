@@ -11,37 +11,36 @@ const Friends = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [friends, setFriends] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
 
   useEffect(() => {
     if (!userid) return;
     fetchFriends();
     fetchPendingRequests();
+    fetchSentRequests();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userid]);
 
   const fetchFriends = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/friends/${userid}`);
-      setFriends(res.data);
-    } catch (err) {
-      console.error('Error fetching friends:', err);
-    }
+    const res = await axios.get(`${API_BASE}/friends/${userid}`);
+    setFriends(res.data);
   };
 
   const fetchPendingRequests = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/requests/${userid}`);
-      setPendingRequests(res.data);
-    } catch (err) {
-      console.error('Error fetching requests:', err);
-    }
+    const res = await axios.get(`${API_BASE}/requests/${userid}`);
+    setPendingRequests(res.data);
+  };
+
+  const fetchSentRequests = async () => {
+    const res = await axios.get(`${API_BASE}/sent/${userid}`);
+    setSentRequests(res.data);
   };
 
   const handleSearch = async () => {
     try {
       const res = await axios.get(`${API_BASE}/search/${searchId}`);
       setSearchResult(res.data);
-    } catch (err) {
+    } catch {
       setSearchResult(null);
       alert('User not found');
     }
@@ -54,28 +53,21 @@ const Friends = () => {
         to_user: searchResult.userid,
       });
       alert('Friend request sent!');
+      fetchSentRequests();
     } catch (err) {
       alert(err.response?.data?.message || 'Error sending request');
     }
   };
 
   const acceptRequest = async (from_user) => {
-    try {
-      await axios.post(`${API_BASE}/accept`, { from_user, to_user: userid });
-      fetchFriends();
-      fetchPendingRequests();
-    } catch (err) {
-      alert('Error accepting request');
-    }
+    await axios.post(`${API_BASE}/accept`, { from_user, to_user: userid });
+    fetchFriends();
+    fetchPendingRequests();
   };
 
   const rejectRequest = async (from_user) => {
-    try {
-      await axios.post(`${API_BASE}/reject`, { from_user, to_user: userid });
-      fetchPendingRequests();
-    } catch (err) {
-      alert('Error rejecting request');
-    }
+    await axios.post(`${API_BASE}/reject`, { from_user, to_user: userid });
+    fetchPendingRequests();
   };
 
   return (
@@ -103,11 +95,12 @@ const Friends = () => {
       <hr />
 
       <div>
-        <h3>Your Friends</h3>
-        {friends.map((f) => (
-          <div key={f.friendid}>
-            <p>{f.friendid}</p>
-            <img src={f.avatar} alt="avatar" width={40} />
+        <h3>Pending Requests You've Sent</h3>
+        {sentRequests.map((req) => (
+          <div key={req.to_user}>
+            <p>{req.to_user}</p>
+            <img src={req.avatar} alt="avatar" width={40} />
+            <span style={{ color: 'gray' }}>Waiting for acceptance</span>
           </div>
         ))}
       </div>
@@ -119,8 +112,21 @@ const Friends = () => {
         {pendingRequests.map((req) => (
           <div key={req.from_user}>
             <p>{req.from_user}</p>
+            <img src={req.avatar} alt="avatar" width={40} />
             <button onClick={() => acceptRequest(req.from_user)}>Accept</button>
             <button onClick={() => rejectRequest(req.from_user)}>Reject</button>
+          </div>
+        ))}
+      </div>
+
+      <hr />
+
+      <div>
+        <h3>Your Friends</h3>
+        {friends.map((f) => (
+          <div key={f.friendid}>
+            <p>{f.friendid}</p>
+            <img src={f.avatar} alt="avatar" width={40} />
           </div>
         ))}
       </div>
