@@ -57,17 +57,14 @@ const FriendsPage = () => {
   };
 
   const fetchRequests = async () => {
-    try {
-      const res = await axios.get(
-        `https://backend-chess-va97.onrender.com/requests/${userid}`,
-        { withCredentials: true }
-      );
-      setRequests(res.data);
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi tải lời mời kết bạn");
-    }
-  };
+  try {
+    const res = await API.get(`/requests/${userid}`);
+    setRequests(res.data);
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi tải lời mời kết bạn");
+  }
+}; 
 
   useEffect(() => {
     fetchFriends();
