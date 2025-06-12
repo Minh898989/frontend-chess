@@ -110,7 +110,7 @@ const Friend = () => {
                   height="30"
                   style={{ borderRadius: "50%" }}
                 />
-                {user.name || user.userid} ({user.userid})
+                { user.userid} ({user.userid})
                 <button onClick={() => sendRequest(user.userid)}>Kết bạn</button>
               </li>
             ))}
@@ -136,7 +136,7 @@ const Friend = () => {
                   height="30"
                   style={{ borderRadius: "50%" }}
                 />
-                {friend.name || friend.userid} ({friend.userid})
+                { friend.userid} ({friend.userid})
               </li>
             ))}
           </ul>
@@ -161,7 +161,7 @@ const Friend = () => {
                   height="30"
                   style={{ borderRadius: "50%" }}
                 />
-                {req.name || req.userid} ({req.userid})
+                { req.userid} ({req.userid})
                 <button onClick={() => respondRequest(req.userid, "accept")}>
                   Chấp nhận
                 </button>
