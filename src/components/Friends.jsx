@@ -7,12 +7,15 @@ const Friend = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [friends, setFriends] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+
   const user = JSON.parse(localStorage.getItem("user"));
   const userid = user?.userid;
 
   useEffect(() => {
     if (userid) {
       fetchFriends();
+      fetchPendingRequests();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userid]);
@@ -23,6 +26,15 @@ const Friend = () => {
       setFriends(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy danh sách bạn bè", err);
+    }
+  };
+
+  const fetchPendingRequests = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/requests/${userid}`);
+      setPendingRequests(res.data);
+    } catch (err) {
+      console.error("Lỗi khi lấy lời mời", err);
     }
   };
 
@@ -37,7 +49,7 @@ const Friend = () => {
 
     try {
       const res = await axios.get(`${API_BASE}/search`, {
-        params: { userid: value }
+        params: { userid: value },
       });
       const filtered = res.data.filter((u) => u.userid !== userid);
       setSearchResults(filtered);
@@ -50,7 +62,7 @@ const Friend = () => {
     try {
       await axios.post(`${API_BASE}/request`, {
         sender_id: userid,
-        receiver_id
+        receiver_id,
       });
       alert("Đã gửi lời mời kết bạn!");
     } catch (err) {
@@ -58,10 +70,28 @@ const Friend = () => {
     }
   };
 
+  const respondRequest = async (sender_id, action) => {
+    try {
+      await axios.post(`${API_BASE}/respond`, {
+        sender_id,
+        receiver_id: userid,
+        action,
+      });
+      alert(
+        `Đã ${action === "accept" ? "chấp nhận" : "từ chối"} lời mời kết bạn.`
+      );
+      fetchFriends();
+      fetchPendingRequests();
+    } catch (err) {
+      alert(err.response?.data?.error || "Lỗi xử lý lời mời");
+    }
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h2>Quản lý bạn bè</h2>
 
+      {/* Tìm kiếm người dùng */}
       <div>
         <input
           type="text"
@@ -73,8 +103,14 @@ const Friend = () => {
           <ul>
             {searchResults.map((user) => (
               <li key={user.userid}>
-                <img src={user.avatar} alt="avatar" width="30" height="30" />
-                {user.name} ({user.userid})
+                <img
+                  src={user.avatar}
+                  alt="avatar"
+                  width="30"
+                  height="30"
+                  style={{ borderRadius: "50%" }}
+                />
+                {user.name || user.userid} ({user.userid})
                 <button onClick={() => sendRequest(user.userid)}>Kết bạn</button>
               </li>
             ))}
@@ -84,6 +120,7 @@ const Friend = () => {
 
       <hr />
 
+      {/* Danh sách bạn bè */}
       <div>
         <h3>Danh sách bạn bè</h3>
         {friends.length === 0 ? (
@@ -92,8 +129,45 @@ const Friend = () => {
           <ul>
             {friends.map((friend) => (
               <li key={friend.userid}>
-                <img src={friend.avatar} alt="avatar" width="30" height="30" />
-                {friend.name} ({friend.userid})
+                <img
+                  src={friend.avatar}
+                  alt="avatar"
+                  width="30"
+                  height="30"
+                  style={{ borderRadius: "50%" }}
+                />
+                {friend.name || friend.userid} ({friend.userid})
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <hr />
+
+      {/* Lời mời kết bạn */}
+      <div>
+        <h3>Lời mời kết bạn</h3>
+        {pendingRequests.length === 0 ? (
+          <p>Không có lời mời nào.</p>
+        ) : (
+          <ul>
+            {pendingRequests.map((req) => (
+              <li key={req.userid}>
+                <img
+                  src={req.avatar}
+                  alt="avatar"
+                  width="30"
+                  height="30"
+                  style={{ borderRadius: "50%" }}
+                />
+                {req.name || req.userid} ({req.userid})
+                <button onClick={() => respondRequest(req.userid, "accept")}>
+                  Chấp nhận
+                </button>
+                <button onClick={() => respondRequest(req.userid, "decline")}>
+                  Từ chối
+                </button>
               </li>
             ))}
           </ul>
