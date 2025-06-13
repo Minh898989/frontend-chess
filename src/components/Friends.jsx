@@ -82,11 +82,13 @@ const Friend = () => {
   };
 
 return (
-    <div className="friend-container">
-      <h2 className="friend-title">📋 Quản lý bạn bè</h2>
+    
+  <div className="friend-container">
+    <h2 className="friend-title">📋 Quản lý bạn bè</h2>
 
-      <div className="friend-grid">
-        {/* Tìm kiếm */}
+    <div className="friend-content">
+      {/* Cột trái: Tìm kiếm + Lời mời */}
+      <div className="friend-column">
         <div className="friend-card">
           <h3>🔍 Tìm người dùng</h3>
           <input
@@ -96,65 +98,43 @@ return (
             value={searchTerm}
             onChange={handleSearch}
           />
-          {searchResults.length > 0 &&
-            searchResults.map((user) => (
-              <div key={user.userid} className="search-result">
-                <div className="flex items-center">
-                  <img src={user.avatar} alt="avatar" className="search-avatar" />
-                  <span>{user.userid}</span>
-                </div>
+          {searchResults.map((user) => (
+            <div key={user.userid} className="user-item">
+              <img src={user.avatar} alt="avatar" className="avatar" />
+              <div className="user-info">
+                <span>{user.userid}</span>
+              </div>
+              <div className="friend-actions">
                 <button
+                  className="add-btn"
                   onClick={() => sendRequest(user.userid)}
-                  className="friend-actions add-btn"
                 >
                   Kết bạn
                 </button>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
 
-        {/* Bạn bè */}
-        <div className="friend-card">
-          <h3>👥 Bạn bè</h3>
-          {friends.length === 0 ? (
-            <p>Chưa có bạn bè nào.</p>
-          ) : (
-            friends.map((friend) => (
-              <div key={friend.userid} className="friend-item">
-                <div className="flex items-center">
-                  <img src={friend.avatar} alt="avatar" className="friend-avatar" />
-                  <div className="friend-info">
-                    <span>{friend.userid}</span>
-                    <small>Bạn bè được {friend.days_friends} ngày</small>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Lời mời kết bạn */}
         <div className="friend-card">
           <h3>📨 Lời mời kết bạn</h3>
           {pendingRequests.length === 0 ? (
             <p>Không có lời mời nào.</p>
           ) : (
             pendingRequests.map((req) => (
-              <div key={req.userid} className="request-item">
-                <div className="flex items-center">
-                  <img src={req.avatar} alt="avatar" className="request-avatar" />
-                  <span>{req.userid}</span>
-                </div>
+              <div key={req.userid} className="user-item">
+                <img src={req.avatar} alt="avatar" className="avatar" />
+                <span>{req.userid}</span>
                 <div className="friend-actions">
                   <button
-                    onClick={() => respondRequest(req.userid, "accept")}
                     className="accept-btn"
+                    onClick={() => respondRequest(req.userid, "accept")}
                   >
                     ✔
                   </button>
                   <button
-                    onClick={() => respondRequest(req.userid, "decline")}
                     className="decline-btn"
+                    onClick={() => respondRequest(req.userid, "decline")}
                   >
                     ✖
                   </button>
@@ -164,8 +144,30 @@ return (
           )}
         </div>
       </div>
+
+      {/* Cột phải: Danh sách bạn bè */}
+      <div className="friend-column">
+        <div className="friend-card">
+          <h3>👥 Danh sách bạn bè</h3>
+          {friends.length === 0 ? (
+            <p>Bạn chưa có bạn nào.</p>
+          ) : (
+            friends.map((friend) => (
+              <div key={friend.userid} className="user-item">
+                <img src={friend.avatar} alt="avatar" className="avatar" />
+                <div className="user-info">
+                  <span>{friend.userid}</span>
+                  <small>Bạn bè được {friend.days_friends} ngày</small>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default Friend;
