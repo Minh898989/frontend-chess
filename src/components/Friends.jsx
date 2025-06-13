@@ -84,88 +84,86 @@ const Friend = () => {
 return (
     
   <div className="friend-container">
-    <h2 className="friend-title">📋 Quản lý bạn bè</h2>
+  <h2 className="friend-title">📋 Quản lý bạn bè</h2>
 
-    <div className="friend-content">
-      {/* Cột trái: Tìm kiếm + Lời mời */}
-      <div className="friend-column">
-        <div className="friend-card">
-          <h3>🔍 Tìm người dùng</h3>
-          <input
-            type="text"
-            className="friend-input"
-            placeholder="Nhập ID người dùng..."
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-          {searchResults.map((user) => (
-            <div key={user.userid} className="user-item">
-              <img src={user.avatar} alt="avatar" className="avatar" />
-              <div className="user-info">
-                <span>{user.userid}</span>
-              </div>
-              <div className="friend-actions">
-                <button
-                  className="add-btn"
-                  onClick={() => sendRequest(user.userid)}
-                >
-                  Kết bạn
-                </button>
-              </div>
+  <div className="friend-wrapper">
+    {/* Tìm kiếm người dùng */}
+    <div className="friend-card">
+      <h3>🔍 Tìm người dùng</h3>
+      <input
+        type="text"
+        className="friend-input"
+        placeholder="Nhập ID người dùng..."
+        value={searchTerm}
+        onChange={handleSearch}
+      />
+      {searchResults.map((user) => (
+        <div key={user.userid} className="user-item">
+          <img src={user.avatar} alt="avatar" className="avatar" />
+          <div className="user-info">
+            <span>{user.userid}</span>
+          </div>
+          <div className="friend-actions">
+            <button
+              className="add-btn"
+              onClick={() => sendRequest(user.userid)}
+            >
+              Kết bạn
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Lời mời kết bạn */}
+    <div className="friend-card">
+      <h3>📨 Lời mời kết bạn</h3>
+      {pendingRequests.length === 0 ? (
+        <p>Không có lời mời nào.</p>
+      ) : (
+        pendingRequests.map((req) => (
+          <div key={req.userid} className="user-item">
+            <img src={req.avatar} alt="avatar" className="avatar" />
+            <span>{req.userid}</span>
+            <div className="friend-actions">
+              <button
+                className="accept-btn"
+                onClick={() => respondRequest(req.userid, "accept")}
+              >
+                ✔
+              </button>
+              <button
+                className="decline-btn"
+                onClick={() => respondRequest(req.userid, "decline")}
+              >
+                ✖
+              </button>
             </div>
-          ))}
-        </div>
+          </div>
+        ))
+      )}
+    </div>
 
-        <div className="friend-card">
-          <h3>📨 Lời mời kết bạn</h3>
-          {pendingRequests.length === 0 ? (
-            <p>Không có lời mời nào.</p>
-          ) : (
-            pendingRequests.map((req) => (
-              <div key={req.userid} className="user-item">
-                <img src={req.avatar} alt="avatar" className="avatar" />
-                <span>{req.userid}</span>
-                <div className="friend-actions">
-                  <button
-                    className="accept-btn"
-                    onClick={() => respondRequest(req.userid, "accept")}
-                  >
-                    ✔
-                  </button>
-                  <button
-                    className="decline-btn"
-                    onClick={() => respondRequest(req.userid, "decline")}
-                  >
-                    ✖
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Cột phải: Danh sách bạn bè */}
-      <div className="friend-column">
-        <div className="friend-card">
-          <h3>👥 Danh sách bạn bè</h3>
-          {friends.length === 0 ? (
-            <p>Bạn chưa có bạn nào.</p>
-          ) : (
-            friends.map((friend) => (
-              <div key={friend.userid} className="user-item">
-                <img src={friend.avatar} alt="avatar" className="avatar" />
-                <div className="user-info">
-                  <span>{friend.userid}</span>
-                  <small>Bạn bè được {friend.days_friends} ngày</small>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+    {/* Danh sách bạn bè */}
+    <div className="friend-card">
+      <h3>👥 Danh sách bạn bè</h3>
+      {friends.length === 0 ? (
+        <p>Bạn chưa có bạn nào.</p>
+      ) : (
+        friends.map((friend) => (
+          <div key={friend.userid} className="user-item">
+            <img src={friend.avatar} alt="avatar" className="avatar" />
+            <div className="user-info">
+              <span>{friend.userid}</span>
+              <small>Bạn bè được {friend.days_friends} ngày</small>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   </div>
+</div>
+
 );
 
 };
