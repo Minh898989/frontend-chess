@@ -81,25 +81,27 @@ const Friend = () => {
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
-      <h2 className="text-2xl font-bold text-center">📋 Quản lý bạn bè</h2>
+ return (
+  <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-700 text-white p-6">
+    <h2 className="text-3xl font-bold text-center mb-8">📋 Quản lý bạn bè</h2>
 
-      {/* Tìm kiếm */}
-      <div className="bg-white p-4 rounded-xl shadow space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      {/* Tìm kiếm người dùng */}
+      <div className="bg-slate-800 p-4 rounded-xl shadow space-y-4">
+        <h3 className="text-xl font-semibold">🔍 Tìm người dùng</h3>
         <input
           type="text"
-          className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="🔍 Tìm người dùng..."
+          className="w-full p-2 rounded-lg text-black focus:ring-2 ring-blue-400"
+          placeholder="Nhập ID người dùng..."
           value={searchTerm}
           onChange={handleSearch}
         />
         {searchResults.length > 0 && (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {searchResults.map((user) => (
               <li
                 key={user.userid}
-                className="flex items-center justify-between p-2 border rounded hover:bg-gray-50"
+                className="flex items-center justify-between bg-slate-700 p-2 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -107,11 +109,11 @@ const Friend = () => {
                     alt="avatar"
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                  <span className="font-medium">{user.userid}</span>
+                  <span>{user.userid}</span>
                 </div>
                 <button
                   onClick={() => sendRequest(user.userid)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  className="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white"
                 >
                   Kết bạn
                 </button>
@@ -122,28 +124,26 @@ const Friend = () => {
       </div>
 
       {/* Danh sách bạn bè */}
-      <div className="bg-white p-4 rounded-xl shadow space-y-3">
-        <h3 className="text-lg font-semibold">👥 Bạn bè</h3>
+      <div className="bg-slate-800 p-4 rounded-xl shadow space-y-4">
+        <h3 className="text-xl font-semibold">👥 Bạn bè</h3>
         {friends.length === 0 ? (
-          <p className="text-gray-500">Chưa có bạn bè nào.</p>
+          <p className="text-gray-300">Chưa có bạn bè nào.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {friends.map((friend) => (
               <li
                 key={friend.userid}
-                className="flex items-center justify-between border p-2 rounded"
+                className="flex items-center gap-4 bg-slate-700 p-3 rounded-lg"
               >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={friend.avatar}
-                    alt="avatar"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="font-medium">{friend.userid}</div>
-                    <div className="text-sm text-gray-500">
-                      Bạn bè được {friend.days_friends} ngày
-                    </div>
+                <img
+                  src={friend.avatar}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <div className="font-semibold">{friend.userid}</div>
+                  <div className="text-sm text-gray-400">
+                    Bạn bè được {friend.days_friends} ngày
                   </div>
                 </div>
               </li>
@@ -153,16 +153,16 @@ const Friend = () => {
       </div>
 
       {/* Lời mời kết bạn */}
-      <div className="bg-white p-4 rounded-xl shadow space-y-3">
-        <h3 className="text-lg font-semibold">📨 Lời mời kết bạn</h3>
+      <div className="bg-slate-800 p-4 rounded-xl shadow space-y-4">
+        <h3 className="text-xl font-semibold">📨 Lời mời kết bạn</h3>
         {pendingRequests.length === 0 ? (
-          <p className="text-gray-500">Không có lời mời nào.</p>
+          <p className="text-gray-300">Không có lời mời nào.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {pendingRequests.map((req) => (
               <li
                 key={req.userid}
-                className="flex items-center justify-between border p-2 rounded"
+                className="flex items-center justify-between bg-slate-700 p-3 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -170,20 +170,20 @@ const Friend = () => {
                     alt="avatar"
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                  <span className="font-medium">{req.userid}</span>
+                  <span>{req.userid}</span>
                 </div>
                 <div className="space-x-2">
                   <button
                     onClick={() => respondRequest(req.userid, "accept")}
-                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                    className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white"
                   >
-                    Chấp nhận
+                    ✔
                   </button>
                   <button
                     onClick={() => respondRequest(req.userid, "decline")}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-white"
                   >
-                    Từ chối
+                    ✖
                   </button>
                 </div>
               </li>
@@ -192,7 +192,9 @@ const Friend = () => {
         )}
       </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default Friend;
