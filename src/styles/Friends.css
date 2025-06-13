@@ -1,206 +1,90 @@
-.friends-page {
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+.friend-container {
   min-height: 100vh;
-  padding: 40px 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #ffffff;
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  color: white;
+  padding: 2rem;
+}
+
+.friend-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.friend-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .friend-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.friend-card {
+  background-color: #1e293b;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.friend-input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  outline: none;
+  border: none;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-result,
+.friend-item,
+.request-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #334155;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.search-avatar,
+.friend-avatar,
+.request-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+  margin-right: 0.75rem;
+}
+
+.friend-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
-/* Tiêu đề chính */
-.friends-page h2 {
-  font-size: 2.5rem;
-  color: #00ffd9;
-  text-shadow: 0 0 12px #00ffd9;
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-/* Thanh tìm kiếm */
-.search-bar {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 30px;
-  width: 100%;
-  max-width: 600px;
-}
-
-.search-bar input {
-  flex: 1;
-  min-width: 200px;
-  padding: 12px 18px;
-  border-radius: 20px;
+.friend-actions button {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
   border: none;
-  font-size: 16px;
-  outline: none;
-  background-color: #f1f1f1;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
-}
-
-.search-bar input:focus {
-  border: 2px solid #00ffd9;
-  background-color: #ffffff;
-}
-
-.search-bar button {
-  background-color: #00c853;
+  border-radius: 0.375rem;
   color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 12px 22px;
-  font-size: 16px;
-  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
 }
 
-.search-bar button:hover {
-  background-color: #00e676;
-  transform: scale(1.05);
+.friend-actions .accept-btn {
+  background-color: #22c55e;
 }
 
-/* Kết quả tìm kiếm */
-.search-results {
-  background: linear-gradient(to right, #1f2c3e, #2d3f50);
-  border-radius: 16px;
-  padding: 20px;
-  margin: 20px auto;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-  text-align: center;
+.friend-actions .decline-btn {
+  background-color: #ef4444;
 }
 
-.search-results h3 {
-  color: #00ffe5;
-  margin-bottom: 10px;
-}
-
-.search-results button {
-  background-color: #2196f3;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 20px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  margin-top: 10px;
-}
-.badge {
-  margin-left: 10px;
-  font-weight: bold;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 4px 10px;
-  color: #89d8ce;
-  font-size: 0.9rem;
-  display: inline-block;
-  text-shadow: 0 0 4px #58978e;
-}
-
-
-.search-results button:hover {
-  background-color: #64b5f6;
-  transform: scale(1.05);
-}
-
-/* Danh sách bạn bè & yêu cầu */
-.friends-list, .friend-requests {
-  background: linear-gradient(to right, #1f2c3e, #2d3f50);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 20px auto;
-  width: 100%;
-  max-width: 700px;
-  box-shadow: 0 0 18px rgba(0, 255, 255, 0.1);
-}
-
-.friends-list h3, .friend-requests h3 {
-  color: #00ffe5;
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.friends-list ul, .friend-requests ul {
-  list-style: none;
-  padding-left: 0;
-}
-
-.friends-list li, .friend-requests li {
-  margin-bottom: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 14px 16px;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-/* Nút xác nhận / từ chối */
-.friend-requests li div {
-  display: flex;
-  gap: 10px;
-}
-
-.friend-requests button {
-  background-color: #00c853;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.3s;
-}
-
-.friend-requests button:hover {
-  transform: scale(1.05);
-}
-
-.friend-requests button:nth-child(2) {
-  background-color: #d32f2f;
-}
-
-.friend-requests button:nth-child(2):hover {
-  background-color: #ef5350;
-}
-
-/* Responsive nhỏ hơn 600px */
-@media (max-width: 600px) {
-  .friends-page {
-    padding: 30px 12px;
-  }
-
-  .friends-page h2 {
-    font-size: 1.8rem;
-  }
-
-  .search-bar {
-    flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-  }
-
-  .search-bar input,
-  .search-bar button {
-    width: 100%;
-  }
-
-  .friends-list li,
-  .friend-requests li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .friend-requests li div {
-    width: 100%;
-    justify-content: space-between;
-  }
+.friend-actions .add-btn {
+  background-color: #3b82f6;
 }

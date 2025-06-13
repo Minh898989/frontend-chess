@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import '../styles/Friends.css';
 const API_BASE = "https://backend-chess-va97.onrender.com/api/friends";
 
 const Friend = () => {
@@ -81,120 +81,91 @@ const Friend = () => {
     }
   };
 
- return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-700 text-white p-6">
-    <h2 className="text-3xl font-bold text-center mb-8">📋 Quản lý bạn bè</h2>
+return (
+    <div className="friend-container">
+      <h2 className="friend-title">📋 Quản lý bạn bè</h2>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-      {/* Tìm kiếm người dùng */}
-      <div className="bg-slate-800 p-4 rounded-xl shadow space-y-4">
-        <h3 className="text-xl font-semibold">🔍 Tìm người dùng</h3>
-        <input
-          type="text"
-          className="w-full p-2 rounded-lg text-black focus:ring-2 ring-blue-400"
-          placeholder="Nhập ID người dùng..."
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        {searchResults.length > 0 && (
-          <ul className="space-y-3">
-            {searchResults.map((user) => (
-              <li
-                key={user.userid}
-                className="flex items-center justify-between bg-slate-700 p-2 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={user.avatar}
-                    alt="avatar"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+      <div className="friend-grid">
+        {/* Tìm kiếm */}
+        <div className="friend-card">
+          <h3>🔍 Tìm người dùng</h3>
+          <input
+            type="text"
+            className="friend-input"
+            placeholder="Nhập ID người dùng..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+          {searchResults.length > 0 &&
+            searchResults.map((user) => (
+              <div key={user.userid} className="search-result">
+                <div className="flex items-center">
+                  <img src={user.avatar} alt="avatar" className="search-avatar" />
                   <span>{user.userid}</span>
                 </div>
                 <button
                   onClick={() => sendRequest(user.userid)}
-                  className="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white"
+                  className="friend-actions add-btn"
                 >
                   Kết bạn
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
-        )}
-      </div>
+        </div>
 
-      {/* Danh sách bạn bè */}
-      <div className="bg-slate-800 p-4 rounded-xl shadow space-y-4">
-        <h3 className="text-xl font-semibold">👥 Bạn bè</h3>
-        {friends.length === 0 ? (
-          <p className="text-gray-300">Chưa có bạn bè nào.</p>
-        ) : (
-          <ul className="space-y-3">
-            {friends.map((friend) => (
-              <li
-                key={friend.userid}
-                className="flex items-center gap-4 bg-slate-700 p-3 rounded-lg"
-              >
-                <img
-                  src={friend.avatar}
-                  alt="avatar"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div>
-                  <div className="font-semibold">{friend.userid}</div>
-                  <div className="text-sm text-gray-400">
-                    Bạn bè được {friend.days_friends} ngày
+        {/* Bạn bè */}
+        <div className="friend-card">
+          <h3>👥 Bạn bè</h3>
+          {friends.length === 0 ? (
+            <p>Chưa có bạn bè nào.</p>
+          ) : (
+            friends.map((friend) => (
+              <div key={friend.userid} className="friend-item">
+                <div className="flex items-center">
+                  <img src={friend.avatar} alt="avatar" className="friend-avatar" />
+                  <div className="friend-info">
+                    <span>{friend.userid}</span>
+                    <small>Bạn bè được {friend.days_friends} ngày</small>
                   </div>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              </div>
+            ))
+          )}
+        </div>
 
-      {/* Lời mời kết bạn */}
-      <div className="bg-slate-800 p-4 rounded-xl shadow space-y-4">
-        <h3 className="text-xl font-semibold">📨 Lời mời kết bạn</h3>
-        {pendingRequests.length === 0 ? (
-          <p className="text-gray-300">Không có lời mời nào.</p>
-        ) : (
-          <ul className="space-y-3">
-            {pendingRequests.map((req) => (
-              <li
-                key={req.userid}
-                className="flex items-center justify-between bg-slate-700 p-3 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={req.avatar}
-                    alt="avatar"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+        {/* Lời mời kết bạn */}
+        <div className="friend-card">
+          <h3>📨 Lời mời kết bạn</h3>
+          {pendingRequests.length === 0 ? (
+            <p>Không có lời mời nào.</p>
+          ) : (
+            pendingRequests.map((req) => (
+              <div key={req.userid} className="request-item">
+                <div className="flex items-center">
+                  <img src={req.avatar} alt="avatar" className="request-avatar" />
                   <span>{req.userid}</span>
                 </div>
-                <div className="space-x-2">
+                <div className="friend-actions">
                   <button
                     onClick={() => respondRequest(req.userid, "accept")}
-                    className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white"
+                    className="accept-btn"
                   >
                     ✔
                   </button>
                   <button
                     onClick={() => respondRequest(req.userid, "decline")}
-                    className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-white"
+                    className="decline-btn"
                   >
                     ✖
                   </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 };
 
 export default Friend;
