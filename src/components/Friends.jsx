@@ -137,6 +137,9 @@ const Friend = () => {
                   style={{ borderRadius: "50%" }}
                 />
                 { friend.userid} ({friend.userid})
+                <span style={{ color: "gray" }}>
+                  bạn bè được {friend.days_friends} ngày
+                </span>
               </li>
             ))}
           </ul>
